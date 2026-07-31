@@ -282,6 +282,18 @@ Ayırt edici soru: *"proje sahibinin bir konsola girmesi veya bir karar vermesi 
 
 ---
 
+## 10.1 Proje sahibinin çalışma tercihleri
+
+Bunlar bir kereye mahsus talimat değil, **kalıcı tercihlerdir**.
+
+| Tercih | Uygulama |
+|---|---|
+| **Kararlar tek tek sorulur** | Birden fazla açık karar varsa hepsini tek seferde toplu sorma. Sırayla, her birinin sonucunu bir öncekine göre değerlendirerek sor |
+| Öneri şart | Her seçenek setinde bir öneri ve gerekçesi bulunmalı |
+| Kısıt geldiğinde geri it | Bir istek maliyet/fayda dengesi bozuyorsa uygulamadan önce gerekçeyle belirt (ör. 5 dilde dokümantasyon talebi arayüz/doküman ayrımına çevrildi) |
+
+---
+
 ## 11. Repo hijyeni
 
 - Arama için `rg` (ripgrep) tercih edilir; `grep -r` yavaş ve gürültülü
