@@ -56,7 +56,7 @@ Blueprint (`docs/blueprint/`) **referanstır, talimat değildir**. Güncel gerç
 | **T2** | Minimum hedef **macOS 14.0**. Daha düşük sürüm API'si varsayılmaz | [0003](docs/architecture/adr/0003-minimum-macos-14.md) | Derleme |
 | **T3** | Mimari **yalnızca arm64**. Intel kod yolu yazılmaz | [0004](docs/architecture/adr/0004-apple-silicon-only.md) | Derleme |
 | **T4** | **Sıfır çalışma zamanı bağımlılığı.** Yalnızca Apple çatıları | [0013](docs/architecture/adr/0013-json-config-zero-deps.md) | `make gate-deps` |
-| **T5** | Proje dosyası `project.yml`'den üretilir; `.xcodeproj` commit edilmez | [0001](docs/architecture/adr/0001-native-swift.md) | `.gitignore` + `make gate-repo` |
+| **T5** | Proje dosyası `project.yml`'den üretilir; `.xcodeproj` commit edilmez | [0001](docs/architecture/adr/0001-native-swift.md) | `.gitignore` + `make gate-layers` |
 
 ### 2.4 Mimari değişmezler
 

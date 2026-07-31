@@ -102,11 +102,15 @@ fi
 # ---------------------------------------------------------------------------
 # 4. Dokümandaki make komutları Makefile'da var mı
 # ---------------------------------------------------------------------------
+# Dondurulmuş blueprint bu denetimin dışındadır: planlanan (henüz yazılmamış)
+# hedefleri tarif eder, mevcut durumu değil.
 if [ -f Makefile ]; then
   MISSING=""
   while IFS= read -r tgt; do
     grep -qE "^${tgt}:" Makefile || MISSING+="    make $tgt"$'\n'
-  done < <(git ls-files '*.md' 2>/dev/null | xargs grep -ohE '\bmake [a-z][a-z0-9-]*' 2>/dev/null \
+  done < <(git ls-files '*.md' 2>/dev/null \
+           | grep -vE '^(BLUEPRINT\.md|docs/blueprint/)' \
+           | tr '\n' '\0' | xargs -0 grep -ohE '\bmake [a-z][a-z0-9-]*' 2>/dev/null \
            | awk '{print $2}' | sort -u)
   if [ -n "$MISSING" ]; then
     fail "dokümanda geçen ama Makefile'da olmayan hedef:"

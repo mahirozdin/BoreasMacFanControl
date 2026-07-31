@@ -19,12 +19,30 @@ echo "▶ gate-names — üçüncü taraf ürün adı / karşılaştırmalı paz
 require_tools git grep sed sort xargs
 
 # ---------------------------------------------------------------------------
-# Politika dosyaları taramadan muaftır: kuralın KENDİ metnini içerdikleri için
-# kaçınılmaz olarak yanlış pozitif üretirler.
+# MUAFİYET — iki katman
+#
+# Politika dosyaları kuralın KENDİ metnini içerdikleri için kaçınılmaz olarak
+# yanlış pozitif üretir (ör. yasaklı kalıpları listeleyen bir tablo).
+#
+#   1) Sabit muafiyet: temel yönetişim dosyaları
+#   2) İşaretleyici muafiyeti: içinde POLICY_MARKER geçen her dosya
+#
+# İşaretleyici tercih edilir çünkü dosya kendi muafiyetini beyan eder ve bu
+# beyan kod incelemesinde görünür. Sabit liste zamanla bayatlar.
 # ---------------------------------------------------------------------------
-EXCLUDE_RE='^(LEGAL\.md|AGENTS\.md|CLAUDE\.md|BLUEPRINT\.md|BOOT\.md|docs/blueprint/|docs/architecture/adr/0006-|docs/reference/blueprint-map\.md|scripts/gates/check-names\.sh|scripts/gates/_lib\.sh|\.github/PULL_REQUEST_TEMPLATE\.md)'
+POLICY_MARKER='gate-names:policy-doc'
+EXCLUDE_RE='^(LEGAL\.md|AGENTS\.md|CLAUDE\.md|BLUEPRINT\.md|BOOT\.md|docs/blueprint/|scripts/gates/check-names\.sh|scripts/gates/_lib\.sh)'
 
-FILES=$(tracked "" "$EXCLUDE_RE")
+ALL_FILES=$(tracked "" "$EXCLUDE_RE")
+
+# İşaretleyici taşıyan dosyaları da çıkar
+MARKED=$(grep_files "$ALL_FILES" -lF -e "$POLICY_MARKER" || true)
+if [ -n "$MARKED" ]; then
+  FILES=$(printf '%s\n' "$ALL_FILES" | grep -vxF "$(printf '%s\n' "$MARKED")" || true)
+  note "politika işaretleyicisiyle muaf: $(printf '%s\n' "$MARKED" | grep -c .) dosya"
+else
+  FILES="$ALL_FILES"
+fi
 COUNT=$(printf '%s\n' "$FILES" | grep -c . || true)
 note "taranan dosya: $COUNT"
 

@@ -78,8 +78,16 @@ test: ## Testleri çalıştır
 	@echo "P2'de etkinleşecek (bkz. TODO.md)"
 
 .PHONY: lint
-lint: ## swift-format + SwiftLint
+lint: ## swift-format + SwiftLint (denetim)
 	@echo "P1'de etkinleşecek (bkz. TODO.md)"
+
+.PHONY: format
+format: ## swift-format ile biçimlendir (yazma)
+	@echo "P1'de etkinleşecek (bkz. TODO.md)"
+
+.PHONY: release
+release: ## İmzala, notarize et, DMG üret
+	@echo "P8'de etkinleşecek (bkz. TODO.md)"
 
 .PHONY: clean
 clean: ## Derleme çıktılarını temizle

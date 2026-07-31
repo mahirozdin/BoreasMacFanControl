@@ -92,6 +92,21 @@ Y5 ve Y6'nın **tam otomatik** zorlanamamasının nedeni ve kalan katmanlar:
 | **Marka sembolü taraması** | `™` `®` — üçüncü taraf marka referansının işareti |
 | **Yerel ad listesi** (opsiyonel) | `scripts/gates/.forbidden-names.local` varsa kullanılır — **bu dosya `.gitignore`'dadır** |
 
+#### Politika dosyası muafiyeti
+
+Yasaklı kalıpları **tarif eden** dosyalar (bu dosya, README spesifikasyonu, ilgili ADR'ler) kaçınılmaz olarak yanlış pozitif üretir. Bu dosyalar muafiyetlerini kendileri beyan eder:
+
+```html
+<!-- gate-names:policy-doc — Bu dosya yasaklı kalıpları TARİF ettiği için
+     gate-names taramasından muaftır. Bkz. LEGAL.md §5.1 -->
+```
+
+Kapı, bu işaretleyiciyi taşıyan dosyaları atlar ve **kaç dosyanın muaf olduğunu her çalıştığında raporlar** — muafiyet sessiz değildir.
+
+Sabit bir dosya listesi yerine işaretleyici tercih edildi çünkü: (a) dosya kendi muafiyetini beyan eder, (b) beyan kod incelemesinde görünür, (c) sabit liste zamanla bayatlar.
+
+⚠️ **İşaretleyici eklemek bilinçli bir eylemdir ve incelemede sorgulanır.** Gerçek bir ihlali gizlemek için kullanılamaz.
+
 ### 5.2 Neden ad listesi depoya konmuyor
 
 Yasaklı ürün adlarını bir dosyada saklamak, **yasağın kendisini ihlal ederdi** — o adlar depoya girmiş olurdu. Bu, Y5'in kaçınılmaz bir sonucudur.
