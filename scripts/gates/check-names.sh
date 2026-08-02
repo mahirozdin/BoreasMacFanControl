@@ -77,7 +77,7 @@ fi
 #    Ad listesi tutmadan üçüncü taraf ürün referansını yakalamanın yolu:
 #    izinli olmayan her dış alan adı insan incelemesi ister.
 # ---------------------------------------------------------------------------
-ALLOWED='(apple\.com|developer\.apple\.com|support\.apple\.com|github\.com|githubusercontent\.com|swift\.org|opensource\.org|spdx\.org|keepachangelog\.com|semver\.org|contributor-covenant\.org|brew\.sh|conventionalcommits\.org|localhost|127\.0\.0\.1|example\.org|example\.com|bubiapps\.com)'
+ALLOWED='(apple\.com|developer\.apple\.com|support\.apple\.com|github\.com|githubusercontent\.com|swift\.org|opensource\.org|spdx\.org|keepachangelog\.com|semver\.org|contributor-covenant\.org|brew\.sh|conventionalcommits\.org|www\.apache\.org|apache\.org|localhost|127\.0\.0\.1|example\.org|example\.com|bubiapps\.com)'
 
 if [ "$COUNT" -gt 0 ]; then
   URLS=$(grep_files "$FILES" -ohE 'https?://[a-zA-Z0-9._-]+' || true)

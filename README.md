@@ -83,4 +83,6 @@ Faz durumu ve sıradaki iş: [`TODO.md`](TODO.md) durum özeti.
 
 ## Lisans
 
-Apache-2.0 (P1'de eklenecek). Proje Apple Inc. ile ilişkili değildir, onaylanmamıştır.
+[Apache-2.0](LICENSE) — atıflar ve marka bildirimleri için [`NOTICE`](NOTICE).
+
+Proje Apple Inc. ile ilişkili değildir, onaylanmamıştır.

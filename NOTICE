@@ -1,0 +1,63 @@
+Boreas
+Copyright 2026 Mahir Taha Ozdin
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file for the full license text.
+
+================================================================================
+THIRD-PARTY SOFTWARE
+================================================================================
+
+Boreas has zero runtime dependencies. It uses only frameworks provided by
+Apple as part of macOS and the Xcode SDK.
+
+If a third-party dependency is ever added, it must be listed here with:
+  - project name
+  - version
+  - license (MIT, BSD, Apache-2.0 or ISC only)
+  - source URL
+  - what it is used for
+
+GPL, LGPL, AGPL and SSPL licensed code must never be included. This is
+enforced by the `gate-deps` check.
+
+Currently: none.
+
+================================================================================
+DEVELOPMENT TOOLS
+================================================================================
+
+The following tools are used during development only. They are not distributed
+with the application and are not linked into it.
+
+  XcodeGen      - MIT      - generates the Xcode project from project.yml
+  SwiftLint     - MIT      - Swift style and convention enforcement
+  swift-format  - Apache-2.0 - Swift source formatting
+
+================================================================================
+ACKNOWLEDGEMENTS
+================================================================================
+
+This section records prior art and public knowledge that informed the design,
+in the interest of transparency. Listing a source here does not imply that any
+code was copied from it. No code has been copied from any of these sources.
+
+  - Apple's public documentation for IOKit, ServiceManagement, HIDDriverKit
+    and the Human Interface Guidelines.
+  - Publicly documented System Management Controller key naming conventions.
+  - General control theory literature on hysteresis, slew rate limiting and
+    exponentially weighted moving averages.
+
+All temperature sensor discovery, fan control logic, the curve based control
+model and the safety chain were designed and implemented independently for this
+project. See LEGAL.md and docs/architecture/adr/0006-independent-development-policy.md
+
+================================================================================
+TRADEMARKS
+================================================================================
+
+Apple, Mac, macOS, MacBook, Mac mini, Mac Studio and Apple Silicon are
+trademarks of Apple Inc., registered in the U.S. and other countries.
+
+Boreas is an independent project. It is not affiliated with, authorized by,
+endorsed by, or sponsored by Apple Inc.

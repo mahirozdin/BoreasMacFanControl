@@ -3,7 +3,7 @@
 - **Plan sürümü:** 1.0
 - **Baseline tarihi:** 2026-07-31
 - **Kaynak blueprint:** v1.1 (dondurulmuş: `docs/blueprint/boreas-blueprint-v1.1.md`)
-- **Genel durum:** P0 tamamlandı — doküman sistemi, 18 ADR ve 8 kapı kuruldu ve kanıtlandı. Kod yazımı P1.01'den başlıyor.
+- **Genel durum:** P0 tamamlandı. Uzak depo kuruldu (**private** — public'e çevirme kararı proje sahibinde). P1 başladı: LICENSE ve NOTICE yerinde. Sıradaki: P1.01.
 
 ---
 
@@ -23,7 +23,7 @@
 | Faz | Durum | Tema | Sıradaki tamamlanmamış iş |
 |---|---|---|---|
 | P0 | `DONE` | Doküman sistemi ve kapılar | (tamamlandı) |
-| P1 | `NOT_STARTED` | Depo iskeleti ve araç zinciri | **P1.01 — Brewfile + bootstrap.sh** |
+| P1 | `IN_PROGRESS` | Depo iskeleti ve araç zinciri | **P1.01 — Brewfile + bootstrap.sh** |
 | P2 | `NOT_STARTED` | Donanım okuma + Mock/Replay | P2.01 |
 | P3 | `NOT_STARTED` | Ayrıcalık katmanı ve daemon | P3.01 |
 | P4 | `NOT_STARTED` | Fan kontrolü ve güvenlik zinciri | P4.01 |
@@ -102,7 +102,7 @@ R6 (hukuki iddia) — `LEGAL.md` ve ADR 0006 ile azaltıldı.
 ## P1 — Depo iskeleti ve araç zinciri
 
 - **ID:** P1
-- **Durum:** `NOT_STARTED`
+- **Durum:** `IN_PROGRESS`
 - **Bağımlılık:** P0
 - **Amaç:** Kod yazmaya hazır, kapıları çalışan, CI'sı ayakta bir depo.
 
@@ -111,8 +111,8 @@ R6 (hukuki iddia) — `LEGAL.md` ve ADR 0006 ile azaltıldı.
 - [ ] **P1.01 — `Brewfile` ve `scripts/bootstrap.sh`.** Araçları *var mı* değil **çalışıyor mu** diye kontrol et (`--version`); eksikte uygulanabilir çözüm öner. Idempotent olduğunu iki kez çalıştırarak kanıtla.
 - [ ] **P1.02 — `project.yml` (XcodeGen).** App, Daemon, CLI hedefleri; `DEPLOYMENT_TARGET: 14.0`, `ARCHS: arm64`. Ürün adı **tek değişkende**. `make generate` çalıştığını kanıtla.
 - [ ] **P1.03 — SPM paket iskeletleri.** `Core`, `HardwareKit`, `SharedIPC` — boş ama derlenebilir. `Core`'un yalnızca Foundation'a bağlandığını `make gate-layers` ile kanıtla.
-- [ ] **P1.04 — `LICENSE`.** Apache-2.0 tam metnini **kanonik kaynaktan** indir (elle yazma — hata riski). SHA ile doğrula.
-- [ ] **P1.05 — `NOTICE`.** Telif bildirimi + boş atıf bölümü + "Acknowledgements".
+- [x] **P1.04 — `LICENSE`.** Apache-2.0 tam metnini **kanonik kaynaktan** indir (elle yazma — hata riski). SHA ile doğrula.
+- [x] **P1.05 — `NOTICE`.** Telif bildirimi + boş atıf bölümü + "Acknowledgements".
 - [ ] **P1.06 — `CONTRIBUTING.md`.** Kurulum, stil, commit kuralları, PR süreci, **bağımsız geliştirme beyanı** (`LEGAL.md` §4), yeni sensör desteği ekleme rehberi. İngilizce.
 - [ ] **P1.07 — `CODE_OF_CONDUCT.md`.** Contributor Covenant 2.1.
 - [ ] **P1.08 — `CHANGELOG.md`.** Keep a Changelog, `Unreleased` bölümüyle.
@@ -363,7 +363,7 @@ Ajanın yapamayacağı, **proje sahibinin** yapması gereken işler. *"Bende ne 
 | # | İş | Neden gerekli | Bloke ettiği | Durum |
 |---|---|---|---|---|
 | M01 | TÜRKPATENT + EUIPO/USPTO marka araması (`Boreas`, 9. ve 42. sınıflar) | Ad kesinleşmeden yayın yapılmamalı | P8 | OPEN |
-| M02 | GitHub deposu oluştur: `boreas-mac-fan-control`, açıklama ve topics ayarla | Depo olmadan CI ve dağıtım yok | P1.12, P8 | OPEN |
+| M02 | GitHub deposu oluştur: `boreas-mac-fan-control`, açıklama ve topics ayarla | Depo olmadan CI ve dağıtım yok | P1.12, P8 | **DONE** (2026-08-02, private) |
 | M03 | Developer ID sertifikasını dışa aktar, GitHub secret olarak tanımla | İmzalama ve daemon kaydı için zorunlu | P3, P8 | OPEN |
 | M04 | App Store Connect API anahtarı üret (notarytool için), secret olarak tanımla | Notarizasyon için zorunlu | P8 | OPEN |
 | M05 | Homebrew cask adı müsaitliğini doğrula ve gönderim yap | Birincil dağıtım kanalı | P8.08 | OPEN |
@@ -402,6 +402,7 @@ Append-only. Geçmiş **yeniden yazılmaz**; yanlış kayıt yeni bir satırla d
 | 2026-07-31 | kurulum | P0.08–P0.32 | DONE | 18 ADR (`Zorlama` bölümleri dolu), `docs/` ağacı, izlenebilirlik matrisi (25/25 eşlendi, kayıp 0), `SECURITY.md`. **Bulgu:** `privilege-model.md` yazılırken yanlışlıkla bir üçüncü taraf helper yolu metne girdi — Y5 ihlali. Dosya commit edilmeden düzeltildi; git geçmişi taranarak temiz olduğu doğrulandı. Bu olay ADR 0006'daki "otomatik katman ad listesi tutamaz" sınırlamasının neden insan incelemesi katmanı gerektirdiğini somutlaştırıyor. **İkinci bulgu:** geçmiş taraması için yazdığım `... \| grep \| head` komutu her zaman 0 dönüyordu (`head` exit kodu) — kontrol komutunun kendisi sahte kapıydı; sayım tabanlı kontrole çevrildi. | Yasaklı terim taraması: geçmişte 0, çalışma ağacında 0 eşleşme | 18 ADR · `docs/**` (44 dosya) · `SECURITY.md` | R6 azaltıldı | Next: P0.33 |
 | 2026-07-31 | kurulum | P0.33–P0.34 | DONE | Kök README (geliştirme giriş noktası) yazıldı ve `make check` tam yeşile alındı. **Bulgu 1:** gate-names, kuralı TARİF eden dosyaları yakalıyordu (readme-spec, ADR 0002 vb.). Sabit istisna listesi yerine `gate-names:policy-doc` işaretleyici konvansiyonu kuruldu; dosya kendi muafiyetini beyan eder, kapı muaf dosya sayısını her çalıştığında raporlar. Muafiyet eklendikten sonra kapı **yeniden kanıtlandı** (işaretleyicisiz ihlal yakalanıyor, işaretleyicili muaf oluyor). **Bulgu 2:** docs-check, `AGENTS.md`'de var olmayan bir kapıya (`gate-repo` hedefi) referans verdiğimi yakaladı; referans `gate-layers` hedefine düzeltildi ve `format`/`release` hedefleri Makefile'a eklendi. Dondurulmuş blueprint bu denetimden çıkarıldı (planlanan hedefleri tarif ediyor, mevcut durumu değil). **Bulgu 3:** probe temizliğinde `git checkout` iki kez staged bozuk sürümü geri getirdi — probe'lardan sonra `git checkout` değil, doğrudan içerik onarımı yapılmalı. | `make check` exit=0, 8/8 kapı PASS · docs-check 3 ayrı ihlalle kanıtlandı (kırık link, matriste var olmayan hedef, indekste olmayan ADR) | `README.md` `TODO.md` `LEGAL.md` `Makefile` `scripts/gates/check-docs.sh` | — | Next: P1.01 |
 | 2026-07-31 | kurulum | P0.34 (düzeltme) | DONE | Önceki kayıt commit edilirken `make check` kırmızıydı ve bu fark edilmeden commit atıldı — disiplin ihlali, düzeltici commit ile kapatıldı. Sebep özyineleme: docs-check, **Run Log'un kendisinde** var olmayan bir hedefe `make <hedef>` biçiminde referans verdiğimi yakaladı. Metin, hedef adını `make` öneki olmadan yazacak şekilde düzeltildi. **Ders:** doküman metni de kapı kapsamındadır; bir bulguyu anlatırken kullanılan söz dizimi kapıyı tetikleyebilir. | `make check` exit=0, 8/8 PASS | `TODO.md` | — | Next: P1.01 |
+| 2026-08-02 | kurulum | M02, P1.04, P1.05 | DONE | GitHub deposu `mahirozdin/boreas-mac-fan-control` oluşturuldu ve push edildi; açıklama ile 16 konu etiketi §18.4'e göre ayarlandı; wiki ve projects kapatıldı. **Depo bilinçli olarak PRIVATE açıldı:** o an `LICENSE` yoktu ve lisanssız yayınlanan bir depo varsayılan olarak "tüm hakları saklıdır" sayılır — açık kaynak niyetinin tersi. Ardından P1.04 ve P1.05 yapıldı, artık public'e çevirmeyi engelleyen bir şey yok; karar proje sahibinde. LICENSE metni GitHub Licenses API'sinden alındı (yeni bir dış kaynağa gerek kalmadı, gh zaten yetkiliydi); 202 satır, patent hibesi maddesi doğrulandı. LICENSE içindeki apache.org bağlantısı nedeniyle gate-names allowlist'ine `apache.org` eklendi. | `make check` exit=0, 8/8 PASS · LICENSE bütünlük kontrolleri PASS (başlık, sürüm, patent maddesi, 202 satır) | `LICENSE` `NOTICE` `TODO.md` `scripts/gates/check-names.sh` | M02 kapandı | Next: P1.01 |
 
 ### Run Log kayıt şablonu
 
