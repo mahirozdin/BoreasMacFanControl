@@ -7,12 +7,12 @@ Projenin açılışında kesinleşen altı karar. Her biri bir ADR'ye bağlıdı
 
 | # | Karar | Sonuç | ADR |
 |---|---|---|---|
-| **A1** | Ürün adı | **Boreas** · depo `boreas-mac-fan-control` · bundle `com.bubiapps.boreas` · CLI `boreas` | [0002](../architecture/adr/0002-product-name.md) |
+| **A1** | Ürün adı | **Boreas** · depo `boreas-mac-fan-control` · bundle `com.bubiapps.boreas` · CLI `boreas`. Marka araması proje sahibi tarafından yapıldı, engel bulunmadı (2026-08-03) | [0002](../architecture/adr/0002-product-name.md) |
 | **A2** | Minimum macOS | **14.0 Sonoma** | [0003](../architecture/adr/0003-minimum-macos-14.md) |
 | **A3** | Depo sahibi | **Kişisel GitHub hesabı.** İleride organizasyona taşınabilir; GitHub eski URL'i yönlendirir. Bundle ID buna bağlı değil | (mimari etkisi yok) |
-| **A4** | Developer ID | **Mevcut, aktif üyelik.** İmzalama + notarizasyon + Homebrew cask zinciri planlandığı gibi | [0017](../architecture/adr/0017-distribution-channels.md) |
+| **A4** | Developer ID | **P8'e ertelendi** (2026-08-03 revizyonu). P1–P7 imzalama kimliği gerektirmiyor; karar ve iki yolun sonuçları ADR 0019'da | [0019](../architecture/adr/0019-signing-identity-deferred.md) |
 | **A5** | Test donanımı | **Yalnızca Mac mini (M4, 2024) — `Mac16,10`.** Tek fanlı, pilsiz masaüstü | [0011](../architecture/adr/0011-hardware-abstraction.md) |
-| **A6** | Dil kapsamı | **Arayüz 5 dil** (`en` `tr` `ru` `es` `zh-Hans`) · **dokümantasyon İngilizce** | [0016](../architecture/adr/0016-language-scope.md) |
+| **A6** | Dil kapsamı | **Arayüz 5 dil** (`en` `tr` `ru` `es` `zh-Hans`) · **dokümantasyon İngilizce**. Çeviriler proje içinde üretilir, kökenleri `TRANSLATORS.md`'de işaretlenir (2026-08-03 eki) | [0016](../architecture/adr/0016-language-scope.md) |
 
 ## Kararların birbirini etkilediği noktalar
 

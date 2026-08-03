@@ -3,7 +3,7 @@
 - **Plan sürümü:** 1.0
 - **Baseline tarihi:** 2026-07-31
 - **Kaynak blueprint:** v1.1 (dondurulmuş: `docs/blueprint/boreas-blueprint-v1.1.md`)
-- **Genel durum:** P0 tamamlandı. Uzak depo kuruldu (**private** — public'e çevirme kararı proje sahibinde). P1 başladı: LICENSE ve NOTICE yerinde. Sıradaki: P1.01.
+- **Genel durum:** P0 tamamlandı. Uzak depo kuruldu (**private**). P1 başladı: LICENSE, NOTICE ve uygulama simgesi yerinde. İmzalama kimliği P8'e ertelendi (ADR 0019) — P1–P7 bloke değil. Sıradaki: P1.01.
 
 ---
 
@@ -117,7 +117,7 @@ R6 (hukuki iddia) — `LEGAL.md` ve ADR 0006 ile azaltıldı.
 - [ ] **P1.07 — `CODE_OF_CONDUCT.md`.** Contributor Covenant 2.1.
 - [ ] **P1.08 — `CHANGELOG.md`.** Keep a Changelog, `Unreleased` bölümüyle.
 - [ ] **P1.09 — `.github/PULL_REQUEST_TEMPLATE.md`.** `LEGAL.md` §4 beyanının üç onay kutusu + test kontrol listesi.
-- [ ] **P1.10 — Issue şablonları.** `bug_report.yml`, `feature_request.yml`, **`unknown_sensor.yml`** (çip modeli, ham sensör adları, beklenen grup).
+- [ ] **P1.10 — Issue şablonları.** `bug_report.yml`, `feature_request.yml`, **`unknown_sensor.yml`** (çip modeli, ham sensör adları, beklenen grup) ve **`translation_fix.yml`** (tek dize düzeltme — ADR 0016 eki).
 - [ ] **P1.11 — `.swiftlint.yml` ve `.swift-format`.** `Core` için zorla açma yasağı kuralı dahil. `make lint` hedefini etkinleştir.
 - [ ] **P1.12 — CI iş akışı.** lint → generate → build → test → kapılar. Var olmayan hedefler **sessizce atlanmalı**, kırmamalı.
 - [ ] **P1.13 — `scripts/rename-product.sh`.** Ürün adını tek komutla değiştirir. Sahte bir adla çalıştırıp geri alarak kanıtla.
@@ -180,13 +180,14 @@ R1 (API kırılması), R2 (yeni çip adlandırması), R8 (donanım kapsaması)
 
 - **ID:** P3
 - **Durum:** `NOT_STARTED`
-- **Bağımlılık:** P2, M03
+- **Bağımlılık:** P2
 - **Amaç:** Güvenli, dar yüzeyli, kendini denetleyen ayrıcalıklı yardımcı.
 
 ### Alt işler
 
 - [ ] **P3.01 — XPC protokolü (`SharedIPC`).** Yalnızca dört metot. `make gate-daemon` yüzeyi doğruluyor.
 - [ ] **P3.02 — Daemon iskeleti + launchd plist.** `SMAppService.daemon` ile kayıt.
+- [ ] **P3.00 — Development sertifikasıyla ampirik doğrulama.** `SMAppService` daemon kaydının ve XPC imza doğrulamasının ücretsiz hesap Development sertifikasıyla gerçekten çalıştığını **kanıtla** (varsayma). Çalışmıyorsa [ADR 0019](docs/architecture/adr/0019-signing-identity-deferred.md) revize edilir.
 - [ ] **P3.03 — Çift yönlü imza doğrulaması.** `SecCodeCheckValidity` + `SecRequirement`. **İmzasız bir istemcinin reddedildiğini testle kanıtla.**
 - [ ] **P3.04 — Kurulum akışı (UI).** Ne olacağı, hangi dosyaların nereye yazılacağı ve nasıl geri alınacağı **kurulumdan önce** gösterilir.
 - [ ] **P3.05 — Sistem Ayarları yönlendirmesi.** Arka plan onayı gerekiyorsa durumu algıla ve doğrudan ilgili panele götür.
@@ -347,7 +348,7 @@ make test && make check
 - [ ] **P8.02 — Notarizasyon betiği.** `notarytool` + `stapler`. **Başarısızsa sürüm üretilmez.**
 - [ ] **P8.03 — DMG üretimi.** SHA-256 yayınlanır.
 - [ ] **P8.04 — CI release job'ı.** Etiketle tetiklenir.
-- [ ] **P8.05 — Ürün `README.md` (İngilizce).** `docs/release/readme-spec.md`'ye göre; **"Test edilen donanım" bölümü dürüst**.
+- [ ] **P8.05 — Ürün `README.md` (İngilizce).** Simge kaynağı hazır: `Design/icon/`. `docs/release/readme-spec.md`'ye göre; **"Test edilen donanım" bölümü dürüst**.
 - [ ] **P8.06 — README çevirileri.** `tr`, `ru`, `es`, `zh-Hans` + "geride kalmış olabilir" notu.
 - [ ] **P8.07 — Keşfedilebilirlik kurulumu.** Depo açıklaması, topics, Homebrew cask `desc`, README SSS.
 - [ ] **P8.08 — Homebrew cask.** Gönderim (M05'e bağlı).
@@ -362,14 +363,14 @@ Ajanın yapamayacağı, **proje sahibinin** yapması gereken işler. *"Bende ne 
 
 | # | İş | Neden gerekli | Bloke ettiği | Durum |
 |---|---|---|---|---|
-| M01 | TÜRKPATENT + EUIPO/USPTO marka araması (`Boreas`, 9. ve 42. sınıflar) | Ad kesinleşmeden yayın yapılmamalı | P8 | OPEN |
+| M01 | Marka araması (`Boreas`) | Ad kesinleşmeden yayın yapılmamalı | P8 | **DONE** (2026-08-03, engel yok) |
 | M02 | GitHub deposu oluştur: `boreas-mac-fan-control`, açıklama ve topics ayarla | Depo olmadan CI ve dağıtım yok | P1.12, P8 | **DONE** (2026-08-02, private) |
-| M03 | Developer ID sertifikasını dışa aktar, GitHub secret olarak tanımla | İmzalama ve daemon kaydı için zorunlu | P3, P8 | OPEN |
-| M04 | App Store Connect API anahtarı üret (notarytool için), secret olarak tanımla | Notarizasyon için zorunlu | P8 | OPEN |
+| M03 | Developer ID sertifikasını dışa aktar, GitHub secret olarak tanımla | Yalnızca dağıtım için. P1–P7 gerektirmiyor — bkz. [ADR 0019](docs/architecture/adr/0019-signing-identity-deferred.md) | **yalnızca P8** | OPEN (ertelendi) |
+| M04 | App Store Connect API anahtarı üret (notarytool için), secret olarak tanımla | Notarizasyon için zorunlu | **yalnızca P8** | OPEN (ertelendi) |
 | M05 | Homebrew cask adı müsaitliğini doğrula ve gönderim yap | Birincil dağıtım kanalı | P8.08 | OPEN |
-| M06 | `ru` / `es` / `zh-Hans` çevirileri için anadili konuşuru incelemesi | Çeviri kalitesi ajan tarafından doğrulanamaz | P8 | OPEN |
+| M06 | ~~Anadili konuşuru çeviri incelemesi~~ | **KALDIRILDI** (2026-08-03). Çeviriler proje içinde üretilir; köken `TRANSLATORS.md`'de işaretlenir — [ADR 0016 eki](docs/architecture/adr/0016-language-scope.md) | — | İPTAL |
 | M07 | Topluluktan farklı Mac modelleri için sensör/fan raporu toplama | R8 — doğrulanamayan kod yolları | Sürekli | OPEN |
-| M08 | Uygulama simgesi tasarımı (özgün, hava akışı temalı) | Görsel kimlik | P8.05 | OPEN |
+| M08 | Uygulama simgesi tasarımı | Görsel kimlik | P8.05 | **DONE** (2026-08-03, `Design/icon/`) |
 
 **Girmez:** yerel araç kurulumu (`brew install …`), bozuk yerel kurulum onarımı, `xcodegen generate`. **Bunlar ajanın işidir.**
 
@@ -403,6 +404,7 @@ Append-only. Geçmiş **yeniden yazılmaz**; yanlış kayıt yeni bir satırla d
 | 2026-07-31 | kurulum | P0.33–P0.34 | DONE | Kök README (geliştirme giriş noktası) yazıldı ve `make check` tam yeşile alındı. **Bulgu 1:** gate-names, kuralı TARİF eden dosyaları yakalıyordu (readme-spec, ADR 0002 vb.). Sabit istisna listesi yerine `gate-names:policy-doc` işaretleyici konvansiyonu kuruldu; dosya kendi muafiyetini beyan eder, kapı muaf dosya sayısını her çalıştığında raporlar. Muafiyet eklendikten sonra kapı **yeniden kanıtlandı** (işaretleyicisiz ihlal yakalanıyor, işaretleyicili muaf oluyor). **Bulgu 2:** docs-check, `AGENTS.md`'de var olmayan bir kapıya (`gate-repo` hedefi) referans verdiğimi yakaladı; referans `gate-layers` hedefine düzeltildi ve `format`/`release` hedefleri Makefile'a eklendi. Dondurulmuş blueprint bu denetimden çıkarıldı (planlanan hedefleri tarif ediyor, mevcut durumu değil). **Bulgu 3:** probe temizliğinde `git checkout` iki kez staged bozuk sürümü geri getirdi — probe'lardan sonra `git checkout` değil, doğrudan içerik onarımı yapılmalı. | `make check` exit=0, 8/8 kapı PASS · docs-check 3 ayrı ihlalle kanıtlandı (kırık link, matriste var olmayan hedef, indekste olmayan ADR) | `README.md` `TODO.md` `LEGAL.md` `Makefile` `scripts/gates/check-docs.sh` | — | Next: P1.01 |
 | 2026-07-31 | kurulum | P0.34 (düzeltme) | DONE | Önceki kayıt commit edilirken `make check` kırmızıydı ve bu fark edilmeden commit atıldı — disiplin ihlali, düzeltici commit ile kapatıldı. Sebep özyineleme: docs-check, **Run Log'un kendisinde** var olmayan bir hedefe `make <hedef>` biçiminde referans verdiğimi yakaladı. Metin, hedef adını `make` öneki olmadan yazacak şekilde düzeltildi. **Ders:** doküman metni de kapı kapsamındadır; bir bulguyu anlatırken kullanılan söz dizimi kapıyı tetikleyebilir. | `make check` exit=0, 8/8 PASS | `TODO.md` | — | Next: P1.01 |
 | 2026-08-02 | kurulum | M02, P1.04, P1.05 | DONE | GitHub deposu `mahirozdin/boreas-mac-fan-control` oluşturuldu ve push edildi; açıklama ile 16 konu etiketi §18.4'e göre ayarlandı; wiki ve projects kapatıldı. **Depo bilinçli olarak PRIVATE açıldı:** o an `LICENSE` yoktu ve lisanssız yayınlanan bir depo varsayılan olarak "tüm hakları saklıdır" sayılır — açık kaynak niyetinin tersi. Ardından P1.04 ve P1.05 yapıldı, artık public'e çevirmeyi engelleyen bir şey yok; karar proje sahibinde. LICENSE metni GitHub Licenses API'sinden alındı (yeni bir dış kaynağa gerek kalmadı, gh zaten yetkiliydi); 202 satır, patent hibesi maddesi doğrulandı. LICENSE içindeki apache.org bağlantısı nedeniyle gate-names allowlist'ine `apache.org` eklendi. | `make check` exit=0, 8/8 PASS · LICENSE bütünlük kontrolleri PASS (başlık, sürüm, patent maddesi, 202 satır) | `LICENSE` `NOTICE` `TODO.md` `scripts/gates/check-names.sh` | M02 kapandı | Next: P1.01 |
+| 2026-08-03 | kurulum | M01, M06, M08 + ADR 0019 | DONE | **M01** kapandı (proje sahibi marka araması yaptı, engel yok). **M06 iptal** — çeviriler proje içinde üretilecek; ADR 0016'ya ek yazıldı: köken `TRANSLATORS.md`'de açıkça işaretlenir, `translation_fix.yml` şablonu eklenir. Kaliteyi garanti edemediğimiz yerde en azından dürüst oluyoruz. **M08 tamamlandı** — dört kanatlı fan simgesi elle yazılmış SVG geometrisiyle üretildi (üretken görsel YZ kullanılmadı: telif kökeni belirsiz olurdu, LEGAL.md bunu kaldırmaz). On varyant elendi. **Rasterleştirme gerçek bir geometri hatası yakaladı:** kanat kökleri r=110'da, göbek r=88'de — 22px boşluk, önizleme boyutunda görünmüyordu, tam çözünürlükte kırık eklem olarak çıktı; kök göbeğin içine alındı. İlk beş varyant (ince kanat) 'örümcek/X' gibi okunuyordu, geniş kanat geometrisine geçildi. **ADR 0019** yazıldı: imzalama kimliği P8 ön koşulu, P1–P7 bloke değil; Yol B (imzasız) seçilirse ayrıcalıklı daemon'un çalışmayacağı ve ürünün ikiye bölüneceği önceden kayda geçti. | `make check` exit=0 · docs-check 19 ADR senkronu PASS · simge 1024/512/256/128/64/32'de görsel doğrulandı | `Design/icon/*` · `docs/architecture/adr/0019-*` · ADR 0016 eki · `ARCHITECTURE.md` `decisions.md` `ui.md` `TODO.md` | M03/M04 P8'e ertelendi | Next: P1.01 |
 
 ### Run Log kayıt şablonu
 

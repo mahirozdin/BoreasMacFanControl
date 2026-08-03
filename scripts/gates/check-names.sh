@@ -50,12 +50,14 @@ if [ "$COUNT" -eq 0 ]; then
   warn "taranacak tracked dosya yok — 'git add' yapılmamış olabilir"
 fi
 
+# NOT: tüm metin taramalarında grep -I kullanılır — ikili dosyalar (PNG vb.)
+# atlanır. Aksi halde rastgele bayt dizileri ™/® olarak eşleşiyor.
 # ---------------------------------------------------------------------------
 # 1. Karşılaştırmalı pazarlama kalıpları (Y6)
 # ---------------------------------------------------------------------------
 COMPARATIVE='(alternative[[:space:]]+to|better[[:space:]]+than|instead[[:space:]]+of[[:space:]]+[A-Z]|replacement[[:space:]]+for|drop-in[[:space:]]+replacement|competitor|rakip[[:space:]]+(ürün|uygulama|yazılım)|alternatifidir|alternatifi[[:space:]]+olarak|yerine[[:space:]]+kullanılabilir|gibi[[:space:]]+ama)'
 
-if HITS=$(grep_files "$FILES" -nEHi "$COMPARATIVE"); then
+if HITS=$(grep_files "$FILES" -InEHi "$COMPARATIVE"); then
   fail "karşılaştırmalı pazarlama kalıbı bulundu (Y6)"
   printf '%s\n' "$HITS" | head -15 | sed 's/^/      /'
 else
@@ -65,7 +67,7 @@ fi
 # ---------------------------------------------------------------------------
 # 2. Marka sembolü — üçüncü taraf marka referansının işareti
 # ---------------------------------------------------------------------------
-if HITS=$(grep_files "$FILES" -nH -e '™' -e '®'); then
+if HITS=$(grep_files "$FILES" -InH -e '™' -e '®'); then
   fail "marka sembolü (™/®) bulundu — üçüncü taraf marka referansı olabilir"
   printf '%s\n' "$HITS" | head -10 | sed 's/^/      /'
 else
@@ -77,10 +79,10 @@ fi
 #    Ad listesi tutmadan üçüncü taraf ürün referansını yakalamanın yolu:
 #    izinli olmayan her dış alan adı insan incelemesi ister.
 # ---------------------------------------------------------------------------
-ALLOWED='(apple\.com|developer\.apple\.com|support\.apple\.com|github\.com|githubusercontent\.com|swift\.org|opensource\.org|spdx\.org|keepachangelog\.com|semver\.org|contributor-covenant\.org|brew\.sh|conventionalcommits\.org|www\.apache\.org|apache\.org|localhost|127\.0\.0\.1|example\.org|example\.com|bubiapps\.com)'
+ALLOWED='(apple\.com|developer\.apple\.com|support\.apple\.com|github\.com|githubusercontent\.com|swift\.org|opensource\.org|spdx\.org|keepachangelog\.com|semver\.org|contributor-covenant\.org|brew\.sh|conventionalcommits\.org|www\.apache\.org|apache\.org|www\.w3\.org|w3\.org|localhost|127\.0\.0\.1|example\.org|example\.com|bubiapps\.com)'
 
 if [ "$COUNT" -gt 0 ]; then
-  URLS=$(grep_files "$FILES" -ohE 'https?://[a-zA-Z0-9._-]+' || true)
+  URLS=$(grep_files "$FILES" -IohE 'https?://[a-zA-Z0-9._-]+' || true)
   UNKNOWN=$(printf '%s\n' "$URLS" | sed -E 's#https?://##' | grep . | sort -u \
             | grep -vE "^${ALLOWED}$" || true)
   if [ -n "$UNKNOWN" ]; then
@@ -101,7 +103,7 @@ if [ -f "$LOCAL_LIST" ]; then
   while IFS= read -r name; do
     [ -z "$name" ] && continue
     case "$name" in \#*) continue ;; esac
-    if OUT=$(grep_files "$FILES" -nHiF -e "$name"); then
+    if OUT=$(grep_files "$FILES" -InHiF -e "$name"); then
       HITS_FOUND=1
       printf '%s\n' "$OUT" | head -5 | sed 's/^/      /'
     fi

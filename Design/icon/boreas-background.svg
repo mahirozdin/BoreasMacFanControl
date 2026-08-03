@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Boreas — app icon, BACKGROUND layer
+    Liquid Glass source asset. Canvas 1024x1024.
+
+    Rules honoured (Apple Icon Composer guidance):
+      - No platform mask (no rounded rectangle) — the system applies it.
+      - No baked-in shadows or specular highlights — the system renders those.
+      - Full-bleed fill, edge to edge.
+
+    Palette: cold north-wind blues. Deep at the bottom, bright at the top,
+    so the foreground blades read against the darker lower half at small sizes.
+  -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0"    stop-color="#5FC8F5"/>
+      <stop offset="0.45" stop-color="#2E86DE"/>
+      <stop offset="1"    stop-color="#123E86"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" fill="url(#sky)"/>
+</svg>

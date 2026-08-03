@@ -29,6 +29,7 @@ Format: Michael Nygard — `Bağlam` / `Karar` / `Alternatifler` / `Sonuçlar` /
 | [0016](0016-language-scope.md) | 5 dil arayüz / İngilizce dokümantasyon | Kabul | Ürün |
 | [0017](0017-distribution-channels.md) | Dağıtım kanalları; App Store dışlandı | Kabul | Yayın |
 | [0018](0018-undocumented-sensor-api.md) | Dokümante edilmemiş sensör API'si kabulü | Kabul | Risk |
+| [0019](0019-signing-identity-deferred.md) | İmzalama kimliği P8'e ertelendi | Kabul | Yayın |
 
 ## Yeni ADR yazarken
 

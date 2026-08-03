@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Boreas — app icon, FOREGROUND layer
+    Four broad swept fan blades on a solid hub.
+    Transparent background (required by Icon Composer).
+
+    Geometry (polar, centre 512,512 — angles measured counter-clockwise from +X)
+      blade count       4, repeated with rotate(n * 90)
+      hub disc          r = 145
+      blade root arc    r = 130, spanning 26deg   (sits inside the hub disc)
+      blade outer arc   r = 385, spanning 70deg
+      lean              outer arc centre is offset +30deg from the root centre
+      outer extent      r = 385  =>  127 px clear margin inside the 1024 canvas
+
+    Why these numbers
+      - Blades are BROAD, not strips. A narrow blade reads as a spider or an
+        "X"; the outer arc has to subtend a large angle for the shape to read
+        as a fan at a glance.
+      - 4-fold symmetry suits a square canvas, and reads as a fan rather
+        than a pinwheel or a recycling mark.
+      - The 30deg lean implies rotation without motion blur, which the Liquid
+        Glass renderer would fight with.
+      - The root arc (r = 130) is inside the hub disc (r = 145) so blade and
+        hub merge into one silhouette with no visible joint. An earlier
+        revision had the root outside the hub, which left a gap that was
+        invisible at preview size but broke at full resolution.
+
+    Constraints honoured (Apple Icon Composer guidance)
+      - No platform mask, no baked shadows, no specular highlights,
+        no gradients: the system renders depth and light at runtime.
+      - Single flat fill so every appearance variant (default / dark /
+        clear / tinted) derives cleanly.
+      - Geometry only; no text, nothing to outline.
+  -->
+  <defs>
+    <path id="blade"
+          d="M 541.2 385.3
+             Q 523.2 254.7 545.6 128.5
+             A 385 385 0 0 0 163.1 349.3
+             Q 373.6 294.8 482.8 385.3
+             A 130 130 0 0 1 541.2 385.3
+             Z"/>
+  </defs>
+
+  <g fill="#FFFFFF">
+    <use href="#blade"/>
+    <use href="#blade" transform="rotate(90 512 512)"/>
+    <use href="#blade" transform="rotate(180 512 512)"/>
+    <use href="#blade" transform="rotate(270 512 512)"/>
+    <circle cx="512" cy="512" r="145"/>
+  </g>
+</svg>

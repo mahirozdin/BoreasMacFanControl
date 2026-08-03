@@ -186,6 +186,7 @@ CONTROLLING ──(K3 tetiklendi)──▶ PANIC ──(normale döner)──▶
 | [0016](docs/architecture/adr/0016-language-scope.md) | 5 dil arayüz / İngilizce dokümantasyon | Kabul |
 | [0017](docs/architecture/adr/0017-distribution-channels.md) | Dağıtım kanalları; App Store dışlandı | Kabul |
 | [0018](docs/architecture/adr/0018-undocumented-sensor-api.md) | Dokümante edilmemiş sensör API'si kabulü | Kabul |
+| [0019](docs/architecture/adr/0019-signing-identity-deferred.md) | İmzalama kimliği P8'e ertelendi | Kabul |
 
 ---
 

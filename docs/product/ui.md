@@ -13,9 +13,11 @@ Görsel kimlik sıfırdan tasarlanır. Bağlayıcı kararlar:
 | Renk sistemi | **Sıcaklık ve fan için ayrı skalalar.** Sıcaklık: soğuk mavi → nötr → sıcak turuncu, **sürekli** geçiş. Fan: nötr gri doluluk. Kırmızı **yalnızca** panik/hata için ayrılmıştır |
 | Neden sürekli skala | Ayrık üç renkli bant, sürekli eğri felsefesiyle çelişir. Sürekli veri sürekli görselleştirilir |
 | İkonografi | SF Symbols; özel ikon yalnızca uygulama simgesi |
-| Uygulama simgesi | Özgün, hava akışı temalı soyut form. **Fan pervanesi klişesinden kaçınılır** |
+| Uygulama simgesi | Özgün, **dört kanatlı fan** + göbek; soğuk mavi gradyan. Kaynak ve gerekçe: [`Design/icon/`](../../Design/icon/README.md) |
 | Karanlık/aydınlık | İkisi de birinci sınıf |
 | Animasyon | Yalnızca anlam taşıyanlar; dekoratif animasyon yok |
+
+> **Karar değişikliği (2026-08-03):** Bu tablo önceden "fan pervanesi klişesinden kaçınılır" diyordu. Proje sahibi açıkça fan motifi istedi ve bu karar uygulandı. Klişe riski, geometrinin özgünlüğüyle karşılanıyor: geniş süpürülmüş kanatlar, parametrik olarak tanımlanmış ve her sayısı gerekçelendirilmiş. Ayrıntı `Design/icon/README.md`.
 
 **Metin ilkesi:** Tüm arayüz metinleri sıfırdan yazılır. Türkçe metinler çeviri gibi durmaz — Türkçe düşünülerek yazılır, İngilizce ayrıca yazılır. → `docs/development/localization.md`
 
