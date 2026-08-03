@@ -19,6 +19,6 @@ let package = Package(
             name: "CoreTests",
             dependencies: ["Core"],
             swiftSettings: [.swiftLanguageMode(.v6)]
-        )
+        ),
     ]
 )

@@ -15,7 +15,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 echo "▶ gate-daemon — ayrıcalıklı yüzey sınırları"
 require_tools git grep awk sort xargs
 
-DAEMON=$(tracked 'Daemon/*.swift Daemon/**/*.swift')
+DAEMON=$(tracked 'Daemon/' | grep '\.swift$' || true)
 COUNT=$(printf '%s\n' "$DAEMON" | grep -c . || true)
 
 if [ "$COUNT" -eq 0 ]; then
@@ -26,7 +26,7 @@ else
   # -------------------------------------------------------------------------
   # M4 — XPC protokolü yalnızca dört metot içerir
   # -------------------------------------------------------------------------
-  PROTO=$(tracked 'Packages/SharedIPC/Sources/**/*.swift')
+  PROTO=$(tracked 'Packages/SharedIPC/Sources/' | grep '\.swift$' || true)
   if [ -n "$PROTO" ]; then
     ALLOWED='^(describeFans|applyTargets|releaseToFirmware|heartbeat)$'
     if FUNCS=$(grep_files "$PROTO" -hoE '^[[:space:]]*func[[:space:]]+[A-Za-z0-9_]+'); then

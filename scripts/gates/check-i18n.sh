@@ -11,7 +11,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 echo "▶ gate-i18n — sabit yazılmış kullanıcı metni"
 require_tools git grep xargs
 
-UI=$(tracked 'App/Sources/*.swift App/Sources/**/*.swift')
+UI=$(tracked 'App/Sources/' | grep '\.swift$' || true)
 COUNT=$(printf '%s\n' "$UI" | grep -c . || true)
 
 if [ "$COUNT" -eq 0 ]; then

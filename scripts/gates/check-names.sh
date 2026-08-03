@@ -55,14 +55,28 @@ fi
 # ---------------------------------------------------------------------------
 # 1. Karşılaştırmalı pazarlama kalıpları (Y6)
 # ---------------------------------------------------------------------------
-COMPARATIVE='(alternative[[:space:]]+to|better[[:space:]]+than|instead[[:space:]]+of[[:space:]]+[A-Z]|replacement[[:space:]]+for|drop-in[[:space:]]+replacement|competitor|rakip[[:space:]]+(ürün|uygulama|yazılım)|alternatifidir|alternatifi[[:space:]]+olarak|yerine[[:space:]]+kullanılabilir|gibi[[:space:]]+ama)'
+# Büyük/küçük harf DUYARSIZ kalıplar: bir ürün adının nasıl yazıldığından
+# bağımsız olarak karşılaştırma yapan ifadeler.
+COMPARATIVE_ANY='(alternative[[:space:]]+to|better[[:space:]]+than|replacement[[:space:]]+for|drop-in[[:space:]]+replacement|competitor|rakip[[:space:]]+(ürün|uygulama|yazılım)|alternatifidir|alternatifi[[:space:]]+olarak|yerine[[:space:]]+kullanılabilir|gibi[[:space:]]+ama)'
 
-if HITS=$(grep_files "$FILES" -InEHi "$COMPARATIVE"); then
+# Büyük harf DUYARLI kalıplar: burada büyük harf, bir ÜRÜN ADINI işaret eder.
+# Bu ayrım şart — `grep -i` ile taransaydı [A-Z] şartı anlamsızlaşır ve
+# "instead of returning", "instead of failing" gibi sıradan İngilizce de
+# eşleşirdi. Gerçekten oldu.
+COMPARATIVE_CASED='instead[[:space:]]+of[[:space:]]+[A-Z]'
+
+COMP_FAIL=0
+if HITS=$(grep_files "$FILES" -InEHi "$COMPARATIVE_ANY"); then
   fail "karşılaştırmalı pazarlama kalıbı bulundu (Y6)"
-  printf '%s\n' "$HITS" | head -15 | sed 's/^/      /'
-else
-  ok "karşılaştırmalı pazarlama kalıbı yok"
+  printf '%s\n' "$HITS" | head -10 | sed 's/^/      /'
+  COMP_FAIL=1
 fi
+if HITS=$(grep_files "$FILES" -InEH "$COMPARATIVE_CASED"); then
+  fail "büyük harfli ürün adıyla karşılaştırma kalıbı (Y6)"
+  printf '%s\n' "$HITS" | head -10 | sed 's/^/      /'
+  COMP_FAIL=1
+fi
+[ "$COMP_FAIL" -eq 0 ] && ok "karşılaştırmalı pazarlama kalıbı yok"
 
 # ---------------------------------------------------------------------------
 # 2. Marka sembolü — üçüncü taraf marka referansının işareti

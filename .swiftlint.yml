@@ -37,6 +37,13 @@ opt_in_rules:
 
 disabled_rules:
   - todo                       # TODO.md sistemi var; koddaki TODO'lar iş listesine taşınır
+  # Biçimlendirme swift-format'ın işi. Bu kurallar onunla ÇAKIŞIYOR:
+  # swift-format çok satırlı literallere trailing comma ekliyor, SwiftLint
+  # ise yasaklıyordu — 'make format' çalıştıkça 'make lint' kırılıyordu.
+  # Sınır net: swift-format biçimi, SwiftLint anlamı denetler.
+  - trailing_comma
+  - opening_brace
+  - vertical_whitespace
 
 line_length:
   warning: 110

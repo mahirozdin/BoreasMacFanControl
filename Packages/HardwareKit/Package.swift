@@ -22,6 +22,6 @@ let package = Package(
             name: "HardwareKitTests",
             dependencies: ["HardwareKit"],
             swiftSettings: [.swiftLanguageMode(.v6)]
-        )
+        ),
     ]
 )

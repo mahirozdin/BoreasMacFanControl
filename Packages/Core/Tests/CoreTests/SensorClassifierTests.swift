@@ -33,7 +33,7 @@ struct SensorClassifierTests {
             ("LPDDR bank 2", SensorGroup.memory),
             ("Wi-Fi module", SensorGroup.wireless),
             ("Fin Stack Proximity", SensorGroup.airflow),
-            ("Trackpad Actuator", SensorGroup.chassis)
+            ("Trackpad Actuator", SensorGroup.chassis),
         ]
     )
     func knownAreas(raw: String, expected: SensorGroup) {
@@ -56,8 +56,9 @@ struct SensorClassifierTests {
 
     @Test("abbreviations expand and trailing digits get a space")
     func normalisation() {
-        #expect(SensorClassifier.normalize(rawName: "pACC MTR Temp Sensor1")
-            == "Performance Cluster Sensor Temperature Sensor 1")
+        #expect(
+            SensorClassifier.normalize(rawName: "pACC MTR Temp Sensor1")
+                == "Performance Cluster Sensor Temperature Sensor 1")
         #expect(SensorClassifier.normalize(rawName: "gpu_temp") == "GPU Temperature")
     }
 
@@ -102,5 +103,53 @@ struct SensorClassifierTests {
     func plausibility(celsius: Double, expected: Bool) {
         let reading = SensorClassifier.makeReading(rawName: "CPU die", celsius: celsius)
         #expect(reading.isPlausible == expected)
+    }
+}
+
+@Suite("SMC key heuristics")
+struct SMCKeyHeuristicTests {
+
+    @Test(
+        "bare SMC keys are recognised as keys, descriptions are not",
+        arguments: [
+            ("TpMz", true), ("Tg0D", true), ("TC0P", true),
+            ("CPU die", false), ("pACC MTR Temp Sensor1", false),
+            ("Tp", false), ("TpMzX", false),
+        ]
+    )
+    func keyDetection(name: String, expected: Bool) {
+        #expect(SensorClassifier.looksLikeSMCKey(name) == expected)
+    }
+
+    @Test(
+        "SMC prefixes map to the right group",
+        arguments: [
+            ("TpMz", SensorGroup.computePerformance),
+            ("Te05", SensorGroup.computeEfficiency),
+            ("Tg0D", SensorGroup.graphics),
+            ("Ts1P", SensorGroup.chassis),
+            ("TH0x", SensorGroup.storage),
+            ("TW0P", SensorGroup.wireless),
+        ]
+    )
+    func prefixMapping(key: String, expected: SensorGroup) {
+        #expect(SensorClassifier.group(rawName: key) == expected)
+    }
+
+    @Test("a key with an unknown prefix stays uncategorized rather than being forced")
+    func unknownPrefixStaysHonest() {
+        #expect(SensorClassifier.group(rawName: "TQ4X") == .uncategorized)
+    }
+
+    @Test("descriptive names win over key heuristics")
+    func descriptiveNamesWin() {
+        // Would match no SMC prefix, but the words are unambiguous.
+        #expect(SensorClassifier.group(rawName: "eACC cluster") == .computeEfficiency)
+    }
+
+    @Test("SMC keys are shown as-is, not expanded into invented words")
+    func keysAreNotExpanded() {
+        #expect(SensorClassifier.normalize(rawName: "TpMz") == "TpMz")
+        #expect(SensorClassifier.normalize(rawName: "Tg0D") == "Tg0D")
     }
 }

@@ -15,7 +15,7 @@ require_tools git grep awk sort xargs
 # ---------------------------------------------------------------------------
 # M1 — Core yalnızca Foundation'a bağlanır
 # ---------------------------------------------------------------------------
-CORE=$(tracked 'Packages/Core/Sources/**/*.swift Packages/Core/Sources/*.swift')
+CORE=$(tracked 'Packages/Core/Sources/' | grep '\.swift$' || true)
 CORE_N=$(printf '%s\n' "$CORE" | grep -c . || true)
 
 if [ "$CORE_N" -eq 0 ]; then
@@ -47,8 +47,8 @@ fi
 # ---------------------------------------------------------------------------
 # M2 — Her donanım protokolünün Live + Mock uygulaması olmalı
 # ---------------------------------------------------------------------------
-PROTOS=$(tracked 'Packages/HardwareKit/Sources/HardwareKit/Protocols/*.swift')
-HW=$(tracked 'Packages/HardwareKit/Sources/**/*.swift')
+PROTOS=$(tracked 'Packages/HardwareKit/Sources/HardwareKit/Protocols/' | grep '\.swift$' || true)
+HW=$(tracked 'Packages/HardwareKit/Sources/' | grep '\.swift$' || true)
 
 if [ -z "$PROTOS" ]; then
   skip "HardwareKit protokolleri yok — P2'de oluşacak"

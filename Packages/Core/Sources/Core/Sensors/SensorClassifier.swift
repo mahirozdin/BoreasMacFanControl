@@ -38,7 +38,7 @@ public enum SensorClassifier: Sendable {
         ("tdie", "Die"),
         ("batt", "Battery"),
         ("wifi", "Wi-Fi"),
-        ("nw", "Network")
+        ("nw", "Network"),
     ]
 
     /// Produces a readable name from whatever the hardware reported.
@@ -48,11 +48,17 @@ public enum SensorClassifier: Sendable {
     /// split, expand known abbreviations, tidy spacing. It never invents
     /// meaning it cannot support.
     public static func normalize(rawName: String) -> String {
-        let separated = rawName
+        // A bare SMC key means something to whoever reports it. Expanding it
+        // would invent meaning the code cannot support.
+        if looksLikeSMCKey(rawName) { return rawName }
+
+        let separated =
+            rawName
             .replacingOccurrences(of: "_", with: " ")
             .replacingOccurrences(of: "-", with: " ")
 
-        let words = separated
+        let words =
+            separated
             .split(separator: " ", omittingEmptySubsequences: true)
             .map(String.init)
 
@@ -92,6 +98,59 @@ public enum SensorClassifier: Sendable {
         return String(first).uppercased() + word.dropFirst().lowercased()
     }
 
+    // MARK: - SMC key heuristics
+
+    /// Two character prefixes used by Apple Silicon SMC temperature keys.
+    ///
+    /// The SMC namespace is opaque: keys look like `TpMz` or `Tg0D`, not
+    /// `pACC MTR Temp Sensor1`. Readable names come from the HID sensor
+    /// interface; the SMC is the fallback, and without these prefixes every
+    /// sensor on that path would land in ``SensorGroup/uncategorized`` — 174 of
+    /// them on the development machine, which is technically honest and
+    /// practically useless.
+    ///
+    /// Prefixes are a documented convention rather than a per-model table, so
+    /// they survive new chip generations that follow the same scheme. They are
+    /// a *heuristic*: a key that does not match still shows up uncategorised
+    /// rather than being forced into a group it may not belong to.
+    private static let smcPrefixes: [(prefix: String, group: SensorGroup)] = [
+        ("Tp", .computePerformance),  // performance cluster
+        ("TP", .computePerformance),
+        ("Te", .computeEfficiency),  // efficiency cluster
+        ("TE", .computeEfficiency),
+        ("Tg", .graphics),  // graphics
+        ("TG", .graphics),
+        ("Ts", .chassis),  // skin and enclosure
+        ("TS", .chassis),
+        ("Tm", .memory),
+        ("TM", .memory),
+        ("TH", .storage),  // NAND and disk
+        ("TB", .battery),
+        ("Tb", .battery),
+        ("TW", .wireless),
+        ("TA", .airflow),  // ambient and airflow
+        ("Ta", .airflow),
+        ("TV", .power),  // regulators
+        ("TR", .power),
+        ("TC", .computePerformance),  // legacy CPU naming
+        ("TZ", .chassis),
+        ("Tz", .chassis),
+    ]
+
+    /// True when a name looks like a bare SMC key rather than a description:
+    /// exactly four characters, starting with `T`, no spaces.
+    static func looksLikeSMCKey(_ name: String) -> Bool {
+        name.count == 4
+            && name.hasPrefix("T")
+            && !name.contains(" ")
+            && name.allSatisfy { $0.isLetter || $0.isNumber }
+    }
+
+    private static func smcGroup(for key: String) -> SensorGroup? {
+        let prefix = String(key.prefix(2))
+        return smcPrefixes.first { $0.prefix == prefix }?.group
+    }
+
     // MARK: - Grouping
 
     /// Substring patterns checked in order. First match wins, so the more
@@ -108,15 +167,20 @@ public enum SensorClassifier: Sendable {
         (["airflow", "fin stack", "heatsink", "exhaust", "intake"], .airflow),
         (["wifi", "wi-fi", "wireless", "airport", "bluetooth"], .wireless),
         (["palm", "trackpad", "keyboard", "enclosure", "case", "chassis", "ambient"], .chassis),
-        (["cpu", "soc", "die", "core"], .computePerformance)
+        (["cpu", "soc", "die", "core"], .computePerformance),
     ]
 
     /// Files a sensor into a group. Matching is done on the raw name because
     /// normalisation can expand an abbreviation the rules rely on.
     public static func group(rawName: String) -> SensorGroup {
+        // Descriptive names are matched first: they carry real meaning, and a
+        // four letter code that happens to look like a word should not win.
         let haystack = rawName.lowercased()
         for rule in rules where rule.needles.contains(where: haystack.contains) {
             return rule.group
+        }
+        if looksLikeSMCKey(rawName), let group = smcGroup(for: rawName) {
+            return group
         }
         return .uncategorized
     }
