@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: Gates
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run all gates
+        run: make check
+
+      - name: Next actionable task
+        run: make next || true
+
+  lint:
+    name: Lint
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: brew bundle --no-upgrade
+
+      - name: SwiftLint and swift format
+        run: make lint
+
+  build:
+    name: Build and test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Toolchain versions
+        run: |
+          swift --version
+          xcodebuild -version
+
+      # ------------------------------------------------------------------
+      # Var olmayan bileşenlerin adımları SESSİZCE atlanır, kırmaz.
+      # Fazlar ilerledikçe bu koşullar kendiliğinden doğru olur.
+      # ------------------------------------------------------------------
+      - name: Are the Swift packages present
+        id: pkgs
+        run: |
+          if [ -f Packages/Core/Package.swift ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build packages
+        if: steps.pkgs.outputs.ready == 'true'
+        run: make build
+
+      - name: Test packages
+        if: steps.pkgs.outputs.ready == 'true'
+        run: make test
+
+      - name: Is there an Xcode project definition
+        id: xcgen
+        run: |
+          if [ -f project.yml ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install XcodeGen
+        if: steps.xcgen.outputs.ready == 'true'
+        run: brew install xcodegen xcbeautify
+
+      - name: Generate project
+        if: steps.xcgen.outputs.ready == 'true'
+        run: make generate
+
+      - name: Build app
+        if: steps.xcgen.outputs.ready == 'true'
+        run: |
+          set -o pipefail
+          xcodebuild -project Boreas.xcodeproj -scheme Boreas \
+            -configuration Debug -destination 'platform=macOS,arch=arm64' \
+            CODE_SIGNING_ALLOWED=NO build | xcbeautify --quieter
+
+      - name: Build CLI
+        if: steps.xcgen.outputs.ready == 'true'
+        run: |
+          set -o pipefail
+          xcodebuild -project Boreas.xcodeproj -scheme boreas \
+            -configuration Debug -destination 'platform=macOS,arch=arm64' \
+            CODE_SIGNING_ALLOWED=NO build | xcbeautify --quieter
+
+      # ------------------------------------------------------------------
+      # Kapsam kapısı P2.10'da bloklayıcı hale gelir. Şimdi rapor eder.
+      # ------------------------------------------------------------------
+      - name: Coverage report for Core
+        if: steps.pkgs.outputs.ready == 'true'
+        run: |
+          cd Packages/Core
+          swift test --enable-code-coverage 2>&1 | tail -3 || true

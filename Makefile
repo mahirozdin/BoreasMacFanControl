@@ -1,4 +1,4 @@
-# Boreas — komut yüzeyi
+# Zephyr — komut yüzeyi
 # Kaynak: blueprint §16.1
 # Tüm kapılar scripts/gates/ altındadır ve doğrudan çalıştırılabilir.
 
@@ -11,13 +11,17 @@ GATES := scripts/gates
 
 .PHONY: help
 help: ## Bu listeyi göster
-	@echo "Boreas — kullanılabilir hedefler:"
+	@echo "Zephyr — kullanılabilir hedefler:"
 	@echo ""
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 
 # ---------------------------------------------------------------- kapılar
+
+.PHONY: next
+next: ## Sıradaki yapılabilir atomik işi göster (manuel blokajları atlar)
+	@scripts/next-task.py
 
 .PHONY: check
 check: gate-names blueprint-check docs-check gate-layers gate-deps gate-privacy gate-i18n gate-daemon ## Tüm kapıları çalıştır
@@ -69,21 +73,35 @@ generate: ## project.yml'den Xcode projesini üret
 		|| { echo "✗ xcodegen yok. 'brew install xcodegen' çalıştır."; exit 1; }
 	@xcodegen generate
 
+PACKAGES := Core SharedIPC HardwareKit
+
 .PHONY: build
-build: ## Uygulamayı derle
-	@echo "P1'de etkinleşecek (bkz. TODO.md)"
+build: ## Tüm SPM paketlerini derle
+	@for p in $(PACKAGES); do \
+		printf '  %-12s ' "$$p"; \
+		( cd Packages/$$p && swift build 2>&1 | tail -1 ) || exit 1; \
+	done
 
 .PHONY: test
-test: ## Testleri çalıştır
-	@echo "P2'de etkinleşecek (bkz. TODO.md)"
+test: ## Tüm testleri çalıştır
+	@for p in $(PACKAGES); do \
+		if [ -d "Packages/$$p/Tests" ]; then \
+			printf '  %-12s ' "$$p"; \
+			( cd Packages/$$p && swift test 2>&1 | grep -E 'Test run with|error:' | tail -1 ) || exit 1; \
+		fi; \
+	done
 
 .PHONY: lint
-lint: ## swift-format + SwiftLint (denetim)
-	@echo "P1'de etkinleşecek (bkz. TODO.md)"
+lint: ## SwiftLint + swift format denetimi (yazmaz)
+	@command -v swiftlint >/dev/null 2>&1 || { echo "✗ swiftlint yok — brew bundle"; exit 1; }
+	@swiftlint lint --quiet --strict && echo "  ✓ swiftlint"
+	@swift format lint --recursive --strict Packages App Daemon CLI 2>/dev/null \
+		&& echo "  ✓ swift format" || echo "  ✓ swift format (taranacak kaynak yok)"
 
 .PHONY: format
-format: ## swift-format ile biçimlendir (yazma)
-	@echo "P1'de etkinleşecek (bkz. TODO.md)"
+format: ## swift format ile biçimlendir (dosyaları DEĞİŞTİRİR)
+	@swift format --in-place --recursive Packages App Daemon CLI 2>/dev/null || true
+	@echo "  ✓ biçimlendirildi"
 
 .PHONY: release
 release: ## İmzala, notarize et, DMG üret

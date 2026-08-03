@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest something Boreas should do
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check `docs/product/scope.md` first. Some things are
+        deliberately out of scope and the reasons are written down.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation, not the solution
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like Boreas to do?
+    validations: { required: true }
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: I checked docs/product/scope.md and this is not listed as out of scope

@@ -1,0 +1,37 @@
+name: Translation fix
+description: A translated string is wrong or awkward
+labels: [i18n]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Translations beyond English and Turkish were produced by the project
+        and have not been reviewed by native speakers. Corrections are welcome,
+        including single strings.
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options: [Turkish, Russian, Spanish, Simplified Chinese, Other]
+    validations: { required: true }
+  - type: input
+    id: key
+    attributes:
+      label: String key
+      description: Shown in the string catalog, for example menubar.placeholder.title
+    validations: { required: true }
+  - type: textarea
+    id: current
+    attributes:
+      label: Current text
+    validations: { required: true }
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested text
+    validations: { required: true }
+  - type: textarea
+    id: why
+    attributes:
+      label: Why the current text is wrong
+      description: Grammar, tone, terminology, or it does not fit the space

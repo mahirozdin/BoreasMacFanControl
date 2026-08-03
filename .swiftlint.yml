@@ -1,0 +1,75 @@
+# Boreas — SwiftLint yapılandırması
+# Kaynak: AGENTS.md §6 · docs/development/setup.md
+
+included:
+  - Packages
+  - App
+  - Daemon
+  - CLI
+
+excluded:
+  - "**/.build"
+  - "**/Tests/Fixtures"
+
+# --------------------------------------------------------------------------
+# Değişmez T1: uyarılar hata sayılır. Kırık pencere bırakılmaz.
+# --------------------------------------------------------------------------
+strict: true
+
+opt_in_rules:
+  - force_unwrapping          # AGENTS.md §6.2 — Core içinde zorla açma yasak
+  - implicitly_unwrapped_optional
+  - empty_count
+  - explicit_init
+  - first_where
+  - last_where
+  - contains_over_first_not_nil
+  - redundant_nil_coalescing
+  - toggle_bool
+  - unneeded_parentheses_in_closure_argument
+  - yoda_condition
+  - closure_spacing
+  - operator_usage_whitespace
+  - overridden_super_call
+  - prohibited_super_call
+  - fatal_error_message        # fatal_error gerekçesiz kullanılamaz
+  - discouraged_optional_boolean
+
+disabled_rules:
+  - todo                       # TODO.md sistemi var; koddaki TODO'lar iş listesine taşınır
+
+line_length:
+  warning: 110
+  error: 140
+  ignores_comments: true
+  ignores_urls: true
+
+identifier_name:
+  min_length: 2
+  excluded: [id, up, dx, dy, rc, ok]
+
+type_body_length: { warning: 300, error: 450 }
+function_body_length: { warning: 60, error: 100 }
+file_length: { warning: 450, error: 700 }
+cyclomatic_complexity: { warning: 10, error: 18 }
+
+# --------------------------------------------------------------------------
+# Özel kurallar — değişmezleri lint katmanında da yakala
+# --------------------------------------------------------------------------
+custom_rules:
+  no_hardcoded_user_string:
+    name: "Sabit yazılmış kullanıcı metni"
+    regex: '\b(Text|Label|Button)\(\s*"[^"]{2,}"'
+    match_kinds: [identifier, string]
+    message: "Değişmez Y1: String(localized:comment:) kullan. Bkz. AGENTS.md §2.8"
+    severity: error
+
+  no_print_statements:
+    name: "print yerine Logger"
+    # NOT: '^' SwiftLint'te satır başına DEĞİL dosya başına bağlanıyor.
+    # Kelime sınırı + identifier kind kullanılıyor; yorum ve dize içindeki
+    # "print" kelimesi eşleşmiyor.
+    regex: '\bprint\s*\('
+    match_kinds: [identifier]
+    message: "OSLog/Logger kullan. print() üretim kodunda kalmamalı."
+    severity: error

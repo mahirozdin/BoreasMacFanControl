@@ -42,6 +42,7 @@ Hepsini çalıştır. **Kırmızı olan varsa önce onu düzelt**, yeni iş alma
 
 ```bash
 make check
+make next     # sıradaki yapılabilir iş
 ```
 
 Tek tek çalıştırmak gerekirse:
@@ -88,9 +89,17 @@ git ls-files | grep -E '\.xcodeproj/' \
 
 ## 4. Sıradaki işi seç
 
-`AGENTS.md` §4'teki algoritmayı uygula. Özet:
+```bash
+make next
+```
 
-En düşük numaralı tamamlanmamış faz → bağımlılıkları `DONE` mu → ilk işaretlenmemiş atomik iş → bloke ise atla, sonrakine geç.
+Seçim **deterministiktir** — model yorumuna bırakılmaz. Manuel işe bağlı her iş otomatik atlanır, faz sınırı tanınmaz.
+
+- Çıkış `0` → iş var, yap
+- Çıkış `1` → yapılabilir iş yok; çıktı hangi manuel işlerin beklendiğini söyler, **proje sahibine bildir**
+- Çıkış `2` → `TODO.md` biçimi bozulmuş, önce onu düzelt
+
+Ayrıntı ve biçim sözleşmesi: `AGENTS.md` §4.
 
 ---
 

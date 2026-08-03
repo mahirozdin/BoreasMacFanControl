@@ -125,22 +125,41 @@ Blueprint (`docs/blueprint/`) **referanstır, talimat değildir**. Güncel gerç
 
 ## 4. "Sıradaki işi yap" algoritması
 
-```
-1. BOOT.md sağlık snapshot'ını çalıştır. Kırmızı kapı varsa ÖNCE onu düzelt.
-2. TODO.md durum özetini oku.
-3. En düşük numaralı, durumu NOT_STARTED veya IN_PROGRESS olan fazı bul.
-4. O fazın bağımlılıkları DONE mu? Değilse bağımlılığa geç.
-5. Fazdaki ilk işaretlenmemiş atomik işi seç.
-6. İş BLOCKED mı (manuel iş bekliyor)?
-   → Evet: bir sonraki işaretlenmemiş işe geç. BLOKAJ İŞİ DONDURMAZ.
-   → Hepsi bloke ise, bir sonraki fazın bağımsız işlerine geç.
-7. İşi yap.
-8. Doğrulama komutlarını ÇALIŞTIR. Çıktıyı gör.
-9. Definition of Done (§8) kontrol listesini geç.
-10. Oturumu kapat (§9): checkbox + durum özeti + Run Log — AYNI DEĞİŞİKLİKTE.
+**Seçim modele bırakılmaz — makineye sorulur:**
+
+```bash
+make next
 ```
 
-**Tek oturumda birden fazla atomik iş yapılabilir**, ama her biri kendi Run Log kaydını alır.
+Bu komut `TODO.md`'yi ayrıştırır ve **manuel işe bağlı her işi atlayarak** sıradaki yapılabilir atomik işi döndürür. Faz sınırı tanımaz: bir fazın kalan işleri bloke ise sonraki fazın bloke olmayan işine geçer.
+
+| Çıkış kodu | Anlamı | Ne yapılır |
+|---|---|---|
+| `0` | Yapılabilir iş var | O işi yap |
+| `1` | Yapılabilir iş yok | Çıktı hangi manuel işlerin beklendiğini söyler. **Dur ve proje sahibine bildir** |
+| `2` | Ayrıştırma hatası | `TODO.md` biçimi bozulmuş; önce onu düzelt |
+
+### Sözleşme
+
+`make next`'in doğru çalışması `TODO.md`'nin şu biçimi korumasına bağlıdır:
+
+| Öğe | Biçim |
+|---|---|
+| Atomik iş | `- [ ] **P<n>.<nn> — Başlık.** açıklama` |
+| Manuel blokaj | Satır sonunda `⛔ M03` (birden fazla: `⛔ M03 M04`) |
+| Faz bağımlılığı | Faz bloğunda `- **Bağımlılık:** P1, P2` |
+| Manuel iş durumu | Manuel işler tablosunda son sütun; `OPEN` dışındaki her değer çözülmüş sayılır |
+
+**Yeni iş eklerken bu biçime uy.** Bir iş manuel bir şeye bağlıysa `⛔` işaretini koy — koymazsan ajan o işe girer ve yarıda kalır.
+
+### Sonrasında
+
+1. Seçilen işi yap. `TODO.md`'deki iş metnindeki kısıtlara uy.
+2. Doğrulama komutlarını **çalıştır**, çıktıyı gör.
+3. §8 Definition of Done listesini geç.
+4. Oturumu kapat (§9): checkbox + durum özeti + Run Log — **aynı değişiklikte**.
+
+**Tek oturumda birden fazla iş yapılabilir**, ama her biri kendi Run Log kaydını alır ve her birinden sonra `make next` yeniden çalıştırılır.
 
 ---
 

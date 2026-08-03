@@ -1,0 +1,40 @@
+name: Unknown sensor
+description: Boreas shows a sensor as uncategorized on your Mac
+labels: [hardware, sensor-mapping]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sensor names differ between chip generations and the project is
+        developed on a single Mac model. Reports like this are the main way
+        support for other hardware improves. Thank you.
+  - type: input
+    id: model
+    attributes:
+      label: Mac model identifier
+      description: "Run: sysctl -n hw.model"
+      placeholder: Mac16,10
+    validations: { required: true }
+  - type: input
+    id: chip
+    attributes:
+      label: Chip
+      placeholder: Apple M4 Pro
+    validations: { required: true }
+  - type: textarea
+    id: sensors
+    attributes:
+      label: Raw sensor names shown as uncategorized
+      description: Copy them exactly as displayed
+      render: text
+    validations: { required: true }
+  - type: textarea
+    id: guess
+    attributes:
+      label: Where do you think each one belongs?
+      description: "Optional. Groups: compute.performance, compute.efficiency, graphics, memory, storage, power, battery, chassis, airflow, wireless"
+  - type: input
+    id: fans
+    attributes:
+      label: How many fans does this Mac have?
+      placeholder: "1"

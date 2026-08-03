@@ -1,0 +1,109 @@
+# Boreas — XcodeGen proje tanımı
+#
+# .xcodeproj bu dosyadan ÜRETİLİR ve asla commit edilmez (değişmez T5).
+# Üretmek için: make generate
+#
+# ÜRÜN ADI TEK YERDE: aşağıdaki PRODUCT_NAME / BUNDLE_PREFIX değişkenleri.
+# Yeniden adlandırma: scripts/rename-product.sh (değişmez K2)
+
+name: Boreas
+
+options:
+  bundleIdPrefix: com.bubiapps
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+
+settings:
+  base:
+    PRODUCT_NAME: Boreas
+    BUNDLE_PREFIX: com.bubiapps.boreas
+    ARCHS: arm64                    # ADR 0004 — yalnızca Apple Silicon
+    ONLY_ACTIVE_ARCH: NO
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY: YES
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
+    GCC_TREAT_WARNINGS_AS_ERRORS: YES
+    ENABLE_HARDENED_RUNTIME: YES     # blueprint §14.1
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    DEAD_CODE_STRIPPING: YES
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+
+packages:
+  Core:
+    path: Packages/Core
+  HardwareKit:
+    path: Packages/HardwareKit
+  SharedIPC:
+    path: Packages/SharedIPC
+
+targets:
+
+  # ------------------------------------------------------------------ app
+  Boreas:
+    type: application
+    platform: macOS
+    sources:
+      - path: App/Sources
+      - path: App/Resources
+        optional: true
+    dependencies:
+      - package: Core
+      - package: HardwareKit
+      - package: SharedIPC
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleName: $(PRODUCT_NAME)
+        CFBundleDisplayName: $(PRODUCT_NAME)
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSMinimumSystemVersion: "14.0"
+        # Menü çubuğu uygulaması: Dock simgesi yok (blueprint §9.2)
+        LSUIElement: true
+        NSHumanReadableCopyright: "Licensed under the Apache License 2.0"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas
+        CODE_SIGN_STYLE: Automatic
+        # İmzalama kimliği P8'e ertelendi — ADR 0019.
+        # Geliştirme sırasında Xcode otomatik seçer.
+
+  # ------------------------------------------------------------------ cli
+  boreas:
+    type: tool
+    platform: macOS
+    sources:
+      - path: CLI/Sources
+    dependencies:
+      - package: Core
+      - package: HardwareKit
+      - package: SharedIPC
+    settings:
+      base:
+        PRODUCT_NAME: boreas
+        PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas.cli
+
+  # ------------------------------------------------------------------ daemon
+  # Ayrıcalıklı yardımcı hedefi P3.02'de eklenir. Şimdi eklenmiyor çünkü
+  # gate-daemon, daemon kaynağı varsa XPC imza doğrulaması arar (değişmez G5)
+  # ve boş bir iskelet o kapıyı haklı olarak kırar.
+
+schemes:
+  Boreas:
+    build:
+      targets: { Boreas: all }
+    run:
+      config: Debug
+    test:
+      config: Debug
+
+  # CLI'nin kendi şeması olmak zorunda: xcodebuild -target ile SPM paket
+  # grafiği çözülmüyor, -scheme ile çözülüyor.
+  boreas:
+    build:
+      targets: { boreas: all }
+    run:
+      config: Debug

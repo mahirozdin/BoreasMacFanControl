@@ -104,14 +104,23 @@ fi
 # ---------------------------------------------------------------------------
 # Dondurulmuş blueprint bu denetimin dışındadır: planlanan (henüz yazılmamış)
 # hedefleri tarif eder, mevcut durumu değil.
+#
+# BAĞLAM ŞARTI: yalnızca KOD bağlamındaki "make x" sayılır —
+#   `make x`   (ters tırnak içinde)  veya
+#   ^make x    (satır başı, kod bloğu içinde)
+# Düz İngilizce metinde "make" bir fiildir ("make participation", "make a
+# report") ve bağlamsız bir regex bunları hedef sanıp kapıyı sahte biçimde
+# kırar. Bu gerçekten yaşandı.
 if [ -f Makefile ]; then
   MISSING=""
   while IFS= read -r tgt; do
+    [ -n "$tgt" ] || continue
     grep -qE "^${tgt}:" Makefile || MISSING+="    make $tgt"$'\n'
   done < <(git ls-files '*.md' 2>/dev/null \
            | grep -vE '^(BLUEPRINT\.md|docs/blueprint/)' \
-           | tr '\n' '\0' | xargs -0 grep -ohE '\bmake [a-z][a-z0-9-]*' 2>/dev/null \
-           | awk '{print $2}' | sort -u)
+           | tr '\n' '\0' \
+           | xargs -0 grep -ohE '`make [a-z][a-z0-9-]*`|^make [a-z][a-z0-9-]*' 2>/dev/null \
+           | tr -d '`' | awk '{print $2}' | sort -u)
   if [ -n "$MISSING" ]; then
     fail "dokümanda geçen ama Makefile'da olmayan hedef:"
     printf '%s' "$MISSING"

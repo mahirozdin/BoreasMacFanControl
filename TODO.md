@@ -3,7 +3,7 @@
 - **Plan sürümü:** 1.0
 - **Baseline tarihi:** 2026-07-31
 - **Kaynak blueprint:** v1.1 (dondurulmuş: `docs/blueprint/boreas-blueprint-v1.1.md`)
-- **Genel durum:** P0 tamamlandı. Uzak depo kuruldu (**private**). P1 başladı: LICENSE, NOTICE ve uygulama simgesi yerinde. İmzalama kimliği P8'e ertelendi (ADR 0019) — P1–P7 bloke değil. Sıradaki: P1.01.
+- **Genel durum:** P0 ve P1 tamamlandı. Araç zinciri kurulu, üç SPM paketi derleniyor, 4 test geçiyor, Xcode projesi `project.yml`'den üretiliyor, App ve CLI derleniyor, CI yazıldı. `make next` seçimi artık deterministik. Sıradaki: P2.01.
 
 ---
 
@@ -23,8 +23,8 @@
 | Faz | Durum | Tema | Sıradaki tamamlanmamış iş |
 |---|---|---|---|
 | P0 | `DONE` | Doküman sistemi ve kapılar | (tamamlandı) |
-| P1 | `IN_PROGRESS` | Depo iskeleti ve araç zinciri | **P1.01 — Brewfile + bootstrap.sh** |
-| P2 | `NOT_STARTED` | Donanım okuma + Mock/Replay | P2.01 |
+| P1 | `DONE` | Depo iskeleti ve araç zinciri | (tamamlandı) |
+| P2 | `NOT_STARTED` | Donanım okuma + Mock/Replay | **P2.01 — protokoller** |
 | P3 | `NOT_STARTED` | Ayrıcalık katmanı ve daemon | P3.01 |
 | P4 | `NOT_STARTED` | Fan kontrolü ve güvenlik zinciri | P4.01 |
 | P5 | `NOT_STARTED` | Kontrol motoru | P5.01 |
@@ -102,25 +102,25 @@ R6 (hukuki iddia) — `LEGAL.md` ve ADR 0006 ile azaltıldı.
 ## P1 — Depo iskeleti ve araç zinciri
 
 - **ID:** P1
-- **Durum:** `IN_PROGRESS`
+- **Durum:** `DONE`
 - **Bağımlılık:** P0
 - **Amaç:** Kod yazmaya hazır, kapıları çalışan, CI'sı ayakta bir depo.
 
 ### Alt işler
 
-- [ ] **P1.01 — `Brewfile` ve `scripts/bootstrap.sh`.** Araçları *var mı* değil **çalışıyor mu** diye kontrol et (`--version`); eksikte uygulanabilir çözüm öner. Idempotent olduğunu iki kez çalıştırarak kanıtla.
-- [ ] **P1.02 — `project.yml` (XcodeGen).** App, Daemon, CLI hedefleri; `DEPLOYMENT_TARGET: 14.0`, `ARCHS: arm64`. Ürün adı **tek değişkende**. `make generate` çalıştığını kanıtla.
-- [ ] **P1.03 — SPM paket iskeletleri.** `Core`, `HardwareKit`, `SharedIPC` — boş ama derlenebilir. `Core`'un yalnızca Foundation'a bağlandığını `make gate-layers` ile kanıtla.
+- [x] **P1.01 — `Brewfile` ve `scripts/bootstrap.sh`.** Araçları *var mı* değil **çalışıyor mu** diye kontrol et (`--version`); eksikte uygulanabilir çözüm öner. Idempotent olduğunu iki kez çalıştırarak kanıtla.
+- [x] **P1.02 — `project.yml` (XcodeGen).** App ve CLI hedefleri (**Daemon hedefi P3.02'ye taşındı**: boş bir daemon iskeleti `gate-daemon`'ı haklı olarak kırıyor, çünkü XPC imza doğrulaması arıyor); `DEPLOYMENT_TARGET: 14.0`, `ARCHS: arm64`. Ürün adı **tek değişkende**. `make generate` çalıştığını kanıtla.
+- [x] **P1.03 — SPM paket iskeletleri.** `Core`, `HardwareKit`, `SharedIPC` — boş ama derlenebilir. `Core`'un yalnızca Foundation'a bağlandığını `make gate-layers` ile kanıtla.
 - [x] **P1.04 — `LICENSE`.** Apache-2.0 tam metnini **kanonik kaynaktan** indir (elle yazma — hata riski). SHA ile doğrula.
 - [x] **P1.05 — `NOTICE`.** Telif bildirimi + boş atıf bölümü + "Acknowledgements".
-- [ ] **P1.06 — `CONTRIBUTING.md`.** Kurulum, stil, commit kuralları, PR süreci, **bağımsız geliştirme beyanı** (`LEGAL.md` §4), yeni sensör desteği ekleme rehberi. İngilizce.
-- [ ] **P1.07 — `CODE_OF_CONDUCT.md`.** Contributor Covenant 2.1.
-- [ ] **P1.08 — `CHANGELOG.md`.** Keep a Changelog, `Unreleased` bölümüyle.
-- [ ] **P1.09 — `.github/PULL_REQUEST_TEMPLATE.md`.** `LEGAL.md` §4 beyanının üç onay kutusu + test kontrol listesi.
-- [ ] **P1.10 — Issue şablonları.** `bug_report.yml`, `feature_request.yml`, **`unknown_sensor.yml`** (çip modeli, ham sensör adları, beklenen grup) ve **`translation_fix.yml`** (tek dize düzeltme — ADR 0016 eki).
-- [ ] **P1.11 — `.swiftlint.yml` ve `.swift-format`.** `Core` için zorla açma yasağı kuralı dahil. `make lint` hedefini etkinleştir.
-- [ ] **P1.12 — CI iş akışı.** lint → generate → build → test → kapılar. Var olmayan hedefler **sessizce atlanmalı**, kırmamalı.
-- [ ] **P1.13 — `scripts/rename-product.sh`.** Ürün adını tek komutla değiştirir. Sahte bir adla çalıştırıp geri alarak kanıtla.
+- [x] **P1.06 — `CONTRIBUTING.md`.** Kurulum, stil, commit kuralları, PR süreci, **bağımsız geliştirme beyanı** (`LEGAL.md` §4), yeni sensör desteği ekleme rehberi. İngilizce.
+- [x] **P1.07 — `CODE_OF_CONDUCT.md`.** Contributor Covenant 2.1.
+- [x] **P1.08 — `CHANGELOG.md`.** Keep a Changelog, `Unreleased` bölümüyle.
+- [x] **P1.09 — `.github/PULL_REQUEST_TEMPLATE.md`.** `LEGAL.md` §4 beyanının üç onay kutusu + test kontrol listesi.
+- [x] **P1.10 — Issue şablonları.** `bug_report.yml`, `feature_request.yml`, **`unknown_sensor.yml`** (çip modeli, ham sensör adları, beklenen grup) ve **`translation_fix.yml`** (tek dize düzeltme — ADR 0016 eki).
+- [x] **P1.11 — `.swiftlint.yml` ve `.swift-format`.** `Core` için zorla açma yasağı kuralı dahil. `make lint` hedefini etkinleştir.
+- [x] **P1.12 — CI iş akışı.** lint → generate → build → test → kapılar. Var olmayan hedefler **sessizce atlanmalı**, kırmamalı.
+- [x] **P1.13 — `scripts/rename-product.sh`.** Ürün adını tek komutla değiştirir. Sahte bir adla çalıştırıp geri alarak kanıtla.
 
 ### Kabul kriterleri
 - `make bootstrap` temiz bir makinede çalışır ve eksikleri raporlar
@@ -339,19 +339,19 @@ make test && make check
 
 - **ID:** P8
 - **Durum:** `NOT_STARTED`
-- **Bağımlılık:** P7, M01, M02, M03, M04
+- **Bağımlılık:** P7
 - **Amaç:** İmzalı, notarize, keşfedilebilir bir v1.0.
 
 ### Alt işler
 
-- [ ] **P8.01 — İmzalama betiği.** Uygulama, daemon ve CLI ayrı ayrı; Hardened Runtime.
-- [ ] **P8.02 — Notarizasyon betiği.** `notarytool` + `stapler`. **Başarısızsa sürüm üretilmez.**
-- [ ] **P8.03 — DMG üretimi.** SHA-256 yayınlanır.
-- [ ] **P8.04 — CI release job'ı.** Etiketle tetiklenir.
+- [ ] **P8.01 — İmzalama betiği.** Uygulama, daemon ve CLI ayrı ayrı; Hardened Runtime. ⛔ M03
+- [ ] **P8.02 — Notarizasyon betiği.** `notarytool` + `stapler`. **Başarısızsa sürüm üretilmez.** ⛔ M03 M04
+- [ ] **P8.03 — DMG üretimi.** SHA-256 yayınlanır. ⛔ M03
+- [ ] **P8.04 — CI release job'ı.** Etiketle tetiklenir. ⛔ M03 M04
 - [ ] **P8.05 — Ürün `README.md` (İngilizce).** Simge kaynağı hazır: `Design/icon/`. `docs/release/readme-spec.md`'ye göre; **"Test edilen donanım" bölümü dürüst**.
 - [ ] **P8.06 — README çevirileri.** `tr`, `ru`, `es`, `zh-Hans` + "geride kalmış olabilir" notu.
 - [ ] **P8.07 — Keşfedilebilirlik kurulumu.** Depo açıklaması, topics, Homebrew cask `desc`, README SSS.
-- [ ] **P8.08 — Homebrew cask.** Gönderim (M05'e bağlı).
+- [ ] **P8.08 — Homebrew cask.** Gönderim (M05'e bağlı). ⛔ M05
 - [ ] **P8.09 — Sürüm kapıları kontrol listesi.** `ARCHITECTURE.md` §10'daki tüm kapılar yeşil.
 
 ---
@@ -405,6 +405,7 @@ Append-only. Geçmiş **yeniden yazılmaz**; yanlış kayıt yeni bir satırla d
 | 2026-07-31 | kurulum | P0.34 (düzeltme) | DONE | Önceki kayıt commit edilirken `make check` kırmızıydı ve bu fark edilmeden commit atıldı — disiplin ihlali, düzeltici commit ile kapatıldı. Sebep özyineleme: docs-check, **Run Log'un kendisinde** var olmayan bir hedefe `make <hedef>` biçiminde referans verdiğimi yakaladı. Metin, hedef adını `make` öneki olmadan yazacak şekilde düzeltildi. **Ders:** doküman metni de kapı kapsamındadır; bir bulguyu anlatırken kullanılan söz dizimi kapıyı tetikleyebilir. | `make check` exit=0, 8/8 PASS | `TODO.md` | — | Next: P1.01 |
 | 2026-08-02 | kurulum | M02, P1.04, P1.05 | DONE | GitHub deposu `mahirozdin/boreas-mac-fan-control` oluşturuldu ve push edildi; açıklama ile 16 konu etiketi §18.4'e göre ayarlandı; wiki ve projects kapatıldı. **Depo bilinçli olarak PRIVATE açıldı:** o an `LICENSE` yoktu ve lisanssız yayınlanan bir depo varsayılan olarak "tüm hakları saklıdır" sayılır — açık kaynak niyetinin tersi. Ardından P1.04 ve P1.05 yapıldı, artık public'e çevirmeyi engelleyen bir şey yok; karar proje sahibinde. LICENSE metni GitHub Licenses API'sinden alındı (yeni bir dış kaynağa gerek kalmadı, gh zaten yetkiliydi); 202 satır, patent hibesi maddesi doğrulandı. LICENSE içindeki apache.org bağlantısı nedeniyle gate-names allowlist'ine `apache.org` eklendi. | `make check` exit=0, 8/8 PASS · LICENSE bütünlük kontrolleri PASS (başlık, sürüm, patent maddesi, 202 satır) | `LICENSE` `NOTICE` `TODO.md` `scripts/gates/check-names.sh` | M02 kapandı | Next: P1.01 |
 | 2026-08-03 | kurulum | M01, M06, M08 + ADR 0019 | DONE | **M01** kapandı (proje sahibi marka araması yaptı, engel yok). **M06 iptal** — çeviriler proje içinde üretilecek; ADR 0016'ya ek yazıldı: köken `TRANSLATORS.md`'de açıkça işaretlenir, `translation_fix.yml` şablonu eklenir. Kaliteyi garanti edemediğimiz yerde en azından dürüst oluyoruz. **M08 tamamlandı** — dört kanatlı fan simgesi elle yazılmış SVG geometrisiyle üretildi (üretken görsel YZ kullanılmadı: telif kökeni belirsiz olurdu, LEGAL.md bunu kaldırmaz). On varyant elendi. **Rasterleştirme gerçek bir geometri hatası yakaladı:** kanat kökleri r=110'da, göbek r=88'de — 22px boşluk, önizleme boyutunda görünmüyordu, tam çözünürlükte kırık eklem olarak çıktı; kök göbeğin içine alındı. İlk beş varyant (ince kanat) 'örümcek/X' gibi okunuyordu, geniş kanat geometrisine geçildi. **ADR 0019** yazıldı: imzalama kimliği P8 ön koşulu, P1–P7 bloke değil; Yol B (imzasız) seçilirse ayrıcalıklı daemon'un çalışmayacağı ve ürünün ikiye bölüneceği önceden kayda geçti. | `make check` exit=0 · docs-check 19 ADR senkronu PASS · simge 1024/512/256/128/64/32'de görsel doğrulandı | `Design/icon/*` · `docs/architecture/adr/0019-*` · ADR 0016 eki · `ARCHITECTURE.md` `decisions.md` `ui.md` `TODO.md` | M03/M04 P8'e ertelendi | Next: P1.01 |
+| 2026-08-03 | kurulum | Seçim mekanizması + P1 (11 iş) | DONE | **Yapısal değişiklik:** sıradaki iş seçimi `scripts/next-task.py` ile makineye devredildi. Manuel işe bağlı her iş atlanıyor, faz sınırı tanınmıyor. P8 işlerine ⛔ işaretleri kondu; üç senaryoyla kanıtlandı (bloke olmayan iş seçilir · yalnız bloke kalınca exit=1 + hangi manuel iş gerektiği · manuel iş çözülünce iş açılır). `AGENTS.md` §4 ve `BOOT.md` §4 buna bağlandı. **P1:** araç zinciri kuruldu (xcodegen/swiftlint/xcbeautify), `swift format`'ın Swift 6.2'ye yerleşik olduğu görülüp ayrı paket bağımlılığı düşürüldü. Üç SPM paketi (Core/HardwareKit/SharedIPC) derleniyor, 4 test geçiyor. `project.yml` yazıldı, App ve CLI derleniyor, CLI çalıştırıldı. Lint, LICENSE, NOTICE, CONTRIBUTING, CODE_OF_CONDUCT, CHANGELOG, PR ve 4 issue şablonu, CI. **Dört gerçek hata yakalandı ve düzeltildi:** (1) `bootstrap.sh` komutu tek string olarak geçiriyordu, zsh kelime ayırması yapmadığı için sağlıklı Xcode'u bozuk sanıyordu — argüman dizisine çevrildi. (2) SwiftLint özel kuralında `^` satır başına değil dosya başına bağlanıyor; `\b` + `match_kinds: [identifier]` ile düzeltildi. (3) `rename-product.sh` BSD sed'de çalışmayan `\b` kelime sınırı kullanıyordu, ad sessizce değişmiyordu — `[[:<:]]` `[[:>:]]` ile düzeltildi. (4) `docs-check` İngilizce düzyazıdaki 'make participation' fiilini Makefile hedefi sanıyordu — yalnızca ters tırnak veya kod bloğu bağlamı sayılacak şekilde daraltıldı. **Kapsam düzeltmesi:** Daemon hedefi P1.02'den çıkarılıp P3.02'ye taşındı; boş bir daemon iskeleti `gate-daemon`'ı haklı olarak kırıyor. | `make check` 8/8 PASS · `make build` PASS · `make test` 4/4 PASS · `make lint` PASS · Xcode App ve CLI derlemesi PASS · CLI çalıştırıldı · next-task 3 senaryo · lint özel kuralları 4 vaka · rename script gerçek dosyalarda · docs-check 3 vaka | `scripts/next-task.py` `scripts/bootstrap.sh` `scripts/rename-product.sh` `Brewfile` `project.yml` `Packages/**` `App/**` `CLI/**` `.swiftlint.yml` `.swift-format` `.github/**` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `CHANGELOG.md` | CI henüz uzakta çalışmadı | Next: P2.01 |
 
 ### Run Log kayıt şablonu
 
