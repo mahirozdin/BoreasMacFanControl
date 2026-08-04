@@ -61,7 +61,27 @@ Kurulum sistem klasörlerine dosya kopyalamadığı için kaldırma tek bir `unr
 5. Bağlantı uçtan uca kanıtlanır (nonce turu + fan dökümü, her iki yönde imza
    doğrulamasıyla) ve sonuç kullanıcıya bildirilir
 
-**Kaldırma:** Arayüzde tek düğme + CLI'da `boreas uninstall --all` + README'de manuel adımlar.
+## Kaldırma
+
+Üç yol, üçü de aynı sonuca çıkar:
+
+1. **Arayüz** — kurulum penceresindeki Remove düğmesi (`unregister()`)
+2. **CLI** — `boreas uninstall` yardımcıyı kaldırır; `--all` ayrıca
+   `~/Library/Application Support/<uygulama adı>/` dizinini siler. `SMAppService`
+   kaydı çağıran sürecin paketine bağlı olduğundan CLI kaldırmayı uygulamanın bakım
+   giriş noktasına devreder; kayıtlı bir şey yoksa komut hata değil başarı döner
+   (idempotent). Dizin adı çalışma zamanında bulunan paketten okunur (K2)
+3. **Sistem Ayarları** — Giriş Öğeleri'ndeki anahtar kapatılır
+
+Kaldırma sonrası geride hiçbir dosya kalmadığı gerçek donanımda beş açıdan kanıtlandı:
+`SMAppService` durumu, `launchctl` sorgusu, sistem klasörleri, kullanıcı veri dizini ve
+süreç listesi (Run Log, 2026-08-04 P3.06). Ürün README'sindeki manuel kaldırma adımları
+P8.05'te yazılacak.
+
+> **Bilinen kenar:** kaldır → hemen yeniden kur dizisi saniye-altı aralıkla yapılırsa
+> `register()` geçici olarak `Operation not permitted` verebiliyor (arka plan kaydının
+> asenkron temizliği otururken). Birkaç saniye sonra aynı çağrı başarılı; arayüzdeki
+> "Try Again" düğmesi bu durumu karşılar.
 
 ## Ölü adam anahtarı
 

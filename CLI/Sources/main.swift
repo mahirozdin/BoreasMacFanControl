@@ -28,6 +28,9 @@ enum CommandLineEntry {
         case "sensors":
             return await sensors(showRaw: arguments.contains("--raw"))
 
+        case "uninstall":
+            return UninstallCommand.run(removeUserData: arguments.contains("--all"))
+
         case "help", "--help", "-h":
             printUsage()
             return 0
@@ -91,7 +94,13 @@ enum CommandLineEntry {
             output += "fans     : unavailable — \(error)\n"
         }
 
-        output += "control  : not available yet (privileged helper lands in P3)\n"
+        // The helper's registration belongs to the app bundle, so the honest
+        // answer comes from the app itself rather than from a guess here.
+        if let app = AppBundle.locate(), let answer = app.run(argument: "--helper-status") {
+            output += "control  : \(answer.replacingOccurrences(of: "helper status: ", with: ""))\n"
+        } else {
+            output += "control  : app not found — fan control is set up from the app\n"
+        }
         write(output)
         return 0
     }
@@ -136,6 +145,7 @@ enum CommandLineEntry {
             commands:
               status            temperatures, fans and power at a glance
               sensors [--raw]   every sensor, grouped; --raw shows hardware names
+              uninstall [--all] remove the fan control helper; --all also deletes saved settings
               version           print version
               help              print this message
             """

@@ -3,7 +3,7 @@
 - **Plan sürümü:** 1.0
 - **Baseline tarihi:** 2026-07-31
 - **Kaynak blueprint:** v1.1 (dondurulmuş: `docs/blueprint/boreas-blueprint-v1.1.md`)
-- **Genel durum:** P0–P2 tamam, P3 ilerliyor. **Ayrıcalıklı yardımcı bu makinede kurulu ve çalışıyor.** Kurulum akışı UI'ı hazır: ne olacağı/neyin nereye yazılacağı/nasıl geri alınacağı kurulumdan önce gösteriliyor, Sistem Ayarları onayı algılanıp yönlendiriliyor. 77 test, 9 kapı. Sıradaki: P3.06.
+- **Genel durum:** P0–P2 tamam, P3 ilerliyor. **Ayrıcalıklı yardımcı bu makinede kurulu ve çalışıyor.** Kurulum yaşam döngüsü tamam: kurulumdan önce tam açıklama, Sistem Ayarları onay yönlendirmesi, kaldırma (UI + `boreas uninstall --all`) ve "geride hiçbir şey kalmıyor" kanıtı. 77 test, 9 kapı. Sıradaki: P3.07.
 
 ---
 
@@ -25,7 +25,7 @@
 | P0 | `DONE` | Doküman sistemi ve kapılar | (tamamlandı) |
 | P1 | `DONE` | Depo iskeleti ve araç zinciri | (tamamlandı) |
 | P2 | `DONE` | Donanım okuma + Mock/Replay | (tamamlandı) |
-| P3 | `IN_PROGRESS` | Ayrıcalık katmanı ve daemon | **P3.06 — kaldırma akışı** |
+| P3 | `IN_PROGRESS` | Ayrıcalık katmanı ve daemon | **P3.07 — Watchdog** |
 | P4 | `NOT_STARTED` | Fan kontrolü ve güvenlik zinciri | P4.01 |
 | P5 | `NOT_STARTED` | Kontrol motoru | P5.01 |
 | P6 | `NOT_STARTED` | Kullanıcı arayüzü | P6.01 |
@@ -191,7 +191,7 @@ R1 (API kırılması), R2 (yeni çip adlandırması), R8 (donanım kapsaması)
 - [x] **P3.03 — Çift yönlü imza doğrulaması.** `SecCodeCheckValidity` + `SecRequirement`. **İmzasız bir istemcinin reddedildiğini testle kanıtla.**
 - [x] **P3.04 — Kurulum akışı (UI).** Ne olacağı, hangi dosyaların nereye yazılacağı ve nasıl geri alınacağı **kurulumdan önce** gösterilir.
 - [x] **P3.05 — Sistem Ayarları yönlendirmesi.** Arka plan onayı gerekiyorsa durumu algıla ve doğrudan ilgili panele götür.
-- [ ] **P3.06 — Kaldırma akışı.** UI düğmesi + `boreas uninstall --all`. Kaldırma sonrası hiçbir dosya kalmadığını kanıtla.
+- [x] **P3.06 — Kaldırma akışı.** UI düğmesi + `boreas uninstall --all`. Kaldırma sonrası hiçbir dosya kalmadığını kanıtla.
 - [ ] **P3.07 — `Watchdog`.** Kalp atışı denetimi, 3 kaçırmada devretme. **`kill -9` ile kanıtla.**
 - [ ] **P3.08 — `StateRestorer`.** Uyku, kapanış, daemon durdurma olaylarında anında devretme. Idempotent olduğunu kanıtla.
 - [ ] **P3.09 — Watchdog invariant testleri.** Zaman aşımı 10–60 sn dışına ayarlanamaz; kalp atışı kesilince devredilir.
@@ -415,6 +415,8 @@ Append-only. Geçmiş **yeniden yazılmaz**; yanlış kayıt yeni bir satırla d
 
 | 2026-08-04 | kurulum | P3.04–P3.06 | CLAIMED | Kurulum yaşam döngüsü öbeği alındı: kurulum akışı UI, Sistem Ayarları yönlendirmesi, kaldırma akışı. | — | — | — | — |
 | 2026-08-04 | kurulum | P3.04, P3.05 | DONE | **Kurulum penceresi:** ne olacağı, hangi dosyaların nereye yazılacağı ve nasıl geri alınacağı üç bölüm halinde **kurulum düğmesinden önce** gösteriliyor; menü çubuğu paneline giriş eklendi (fansız modelde giriş hiç gösterilmez, kurulu değilken hata değil sessiz teklif — İ4). Onay bekleme durumu algılanıyor, tek düğme Sistem Ayarları'na götürüyor, durum 2 sn'de bir yoklanıp onay gelince kendiliğinden doğrulamaya geçiliyor. **Bulgu 1 (doküman hatası):** `privilege-model.md`'nin P0 yer tutucu tablosu eski nesil kurulum yollarını (`/Library/PrivilegedHelperTools`, `/Library/LaunchDaemons`) varsayıyordu; `SMAppService` bu konumlara **hiçbir şey yazmıyor** — yardımcı kayıtlı ve çalışırken iki dizinde de bize ait giriş olmadığı gösterildi, tablo ampirik gerçekle değiştirildi ("bulunan hata" olarak işaretli). Karar değişmediği için (ADR 0008 zaten SMAppService) yeni ADR gerekmedi. **Görsel kanıt ekran görüntüsüyle değil, uygulamaya eklenen `--render-setup` komutuyla üretildi:** Ekran Kaydı izni İ2 ruhuna aykırı ve başsız oturumda onaylanamaz; `ImageRenderer` altı fazın PNG'sini izinsiz ve deterministik üretiyor, altısı da gözle doğrulandı. **P3.05 kanıt sınırı (dürüst kayıt):** bu oturumda `requiresApproval` canlı tetiklenemedi çünkü BTM önceki onayı hatırlıyor ve yeniden kayıt doğrudan `enabled` oluyor; durum bacağı P3.00'da aynı sarmalayıcıyla gerçek donanımda gözlenmişti, onay UI'ı render ile doğrulandı, yönlendirme API'si (`openSystemSettingsLoginItems`) hatasız çalıştırıldı (Sistem Ayarları zaten açık olduğundan pencereyi kimin açtığı tek başına kanıtlanamaz — API'nin tek işlevi bu paneli açmak). Kurulum akışının otomatik testi test stratejisinde XCUITest katmanına planlı; bu fazın kanıtı gerçek donanım entegrasyonu. | `xcodebuild` App PASS · `make lint` PASS · `make test` 77/77 PASS · `make check` 9/9 PASS · 6 faz PNG render + gözle doğrulama · uygulama canlı çalıştırıldı, hata logu yok, temiz kapandı · `--helper-ping`: imzalar eşleşti, 1 fan | `App/Sources/Helper/HelperSetupModel.swift` `HelperSetupView.swift` `BoreasApp.swift` `MenuBarPanel.swift` `docs/architecture/privilege-model.md` | `requiresApproval` bacağı temiz makinede canlı sınanmalı (M07 topluluk raporlarıyla) | Next: P3.06 |
+
+| 2026-08-04 | kurulum | P3.06 | DONE | **Kaldırma akışı üç yoldan:** kurulum penceresinde Remove düğmesi, `boreas uninstall [--all]`, Sistem Ayarları anahtarı. CLI, `SMAppService` kaydı çağıran sürecin paketine bağlı olduğu için kaldırmayı LaunchServices ile bulduğu uygulamanın bakım giriş noktasına devrediyor; kayıtlı bir şey yokken çalıştırmak hata değil (idempotentlik iki ardışık çalıştırmayla kanıtlandı, ikisi de exit 0). Kullanıcı veri dizini adı çalışma zamanında paketten okunuyor — ürün adı koda gömülmedi (K2). **"Hiçbir dosya kalmadı" beş açıdan kanıtlandı:** `SMAppService` durumu `not registered` · `launchctl print` "Could not find service" · sistem klasörlerinde 0 bize ait giriş · `~/Library/Application Support/Boreas` silinmiş (temsilî fixture dosyası önceden bilerek konmuştu, `--all` gerçekten sildi) · daemon süreci yok. `boreas status`'un bayat "P3'te gelecek" satırı gerçek yardımcı durumuyla değiştirildi (uygulamaya sorarak; ölçülen ek maliyet ~70 ms). **Bulgu 2 (zamanlama):** kaldır → saniye-altı yeniden kur dizisi `register()`'da geçici `Operation not permitted` + `notRegistered` üretiyor; ~8 sn sonra aynı çağrı sorunsuz `enabled`. `privilege-model.md`'ye "bilinen kenar" olarak işlendi; UI'daki Try Again düğmesi bu durumu karşılıyor. **Bulgu 3:** BTM onayı kaldırma sonrasında da hatırlıyor — yeniden kayıt Sistem Ayarları onayı istemeden doğrudan `enabled` oldu. Yardımcı yeniden kuruldu ve makine tabana döndü: ping yeşil, imzalar eşleşiyor, 1 fan görünüyor. | `boreas uninstall --all` exit 0 + beş kanıt komutu · idempotent tekrar exit 0 · geri kurulum `enabled` · `--helper-ping` PASS · `make lint` PASS · `make test` 77/77 · `make check` 9/9 | `CLI/Sources/Uninstall.swift` `CLI/Sources/main.swift` `docs/architecture/privilege-model.md` | Hızlı kaldır-kur kenarı yalnızca elle tetiklenebilir durumda; otomatik yeniden deneme bilinçli eklenmedi (görünür hata + Try Again tercih edildi) | Next: P3.07 |
 
 ### Run Log kayıt şablonu
 
