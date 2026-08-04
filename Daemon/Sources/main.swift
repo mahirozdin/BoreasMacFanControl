@@ -98,17 +98,20 @@ final class ListenerDelegate: NSObject, NSXPCListenerDelegate {
     }
 }
 
+// Exit code 0: released and idle. Exit code 3: the hardware release failed
+// after retries — `launchctl print` shows the last exit status, so this is
+// readable from user space even though root logs are not.
 let delegate = ListenerDelegate(
     service: service,
     onAllClientsGone: {
         logger.notice("last client gone, fans with firmware; exiting until needed again")
-        exit(0)
+        exit(service.lastReleaseSucceeded ? 0 : 3)
     }
 )
 
 service.onWatchdogExpiry = {
     logger.notice("client silent past the watchdog window; exiting until needed again")
-    exit(0)
+    exit(service.lastReleaseSucceeded ? 0 : 3)
 }
 
 let listener = NSXPCListener(machServiceName: BoreasIPC.machServiceName)

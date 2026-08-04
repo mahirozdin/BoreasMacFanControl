@@ -20,6 +20,7 @@ final class FanControlService: NSObject, FanControlProtocol, @unchecked Sendable
     private struct State {
         var governor: SafetyGovernor?
         var isControlling = false
+        var lastReleaseSucceeded = true
     }
 
     private let logger = Logger(subsystem: "com.bubiapps.boreas.fanhelper", category: "service")
@@ -27,6 +28,9 @@ final class FanControlService: NSObject, FanControlProtocol, @unchecked Sendable
 
     /// Created once. Immutable, so the async read path needs no lock at all.
     private let fanReader: LiveFanSource?
+    /// The write path. Nil when the SMC cannot be opened; every apply then
+    /// fails loudly instead of pretending.
+    private let actuator: LiveFanActuator?
     private var watchdog: Watchdog?
 
     /// Called after the watchdog has released control because the client fell
@@ -36,6 +40,7 @@ final class FanControlService: NSObject, FanControlProtocol, @unchecked Sendable
 
     override init() {
         fanReader = try? LiveFanSource()
+        actuator = try? LiveFanActuator()
         super.init()
         // The timeout is derived from the shared heartbeat cadence, not typed
         // here as a number: 5 s beats, released after 3 misses. The policy
@@ -109,14 +114,34 @@ final class FanControlService: NSObject, FanControlProtocol, @unchecked Sendable
             }
         }
 
+        guard let actuator else {
+            return reply(false, "the fan interface is unavailable on this machine")
+        }
+
+        let targets = fanIDs.enumerated().map { index, identifier in
+            FanTarget(fanID: identifier.intValue, rpm: targetRPM[index].intValue)
+        }
+
+        do {
+            try actuator.applyNow(targets)
+        } catch {
+            // A half-applied batch must not survive: hand back whatever was
+            // taken over, then tell the caller the truth.
+            do {
+                try actuator.releaseNow()
+            } catch {
+                logger.fault(
+                    "release after a failed apply also failed: \(String(describing: error), privacy: .public)"
+                )
+            }
+            logger.error("apply failed: \(String(describing: error), privacy: .public)")
+            return reply(false, String(describing: error))
+        }
+
         state.withLock { $0.isControlling = true }
         watchdog?.start()
-
-        // Writing to the SMC lands in P4. The surface, the safety filter and
-        // the watchdog are all in place and exercised; only the final write is
-        // missing, and saying so beats pretending it worked.
-        logger.notice("targets accepted for \(fanIDs.count, privacy: .public) fan(s)")
-        reply(false, "fan writing is not implemented yet")
+        logger.notice("driving \(targets.count, privacy: .public) fan(s)")
+        reply(true, nil)
     }
 
     func releaseToFirmware(reply: @escaping @Sendable (Bool, String?) -> Void) {
@@ -144,8 +169,18 @@ final class FanControlService: NSObject, FanControlProtocol, @unchecked Sendable
         }
     }
 
+    /// Whether the most recent hardware release completed. The exit paths
+    /// turn this into the process exit code — the one unprivileged window
+    /// into a root daemon's last act.
+    var lastReleaseSucceeded: Bool {
+        state.withLock { $0.lastReleaseSucceeded }
+    }
+
     /// Idempotent. Called on release, on watchdog expiry, on sleep, on shutdown
     /// and when the connection drops, so it must never be the thing that fails.
+    ///
+    /// Synchronous on purpose: the exit paths call this and then `exit()`,
+    /// and the hardware hand-back has to be finished by the time they do.
     func performRelease() {
         let wasControlling = state.withLock { current -> Bool in
             let was = current.isControlling
@@ -153,6 +188,23 @@ final class FanControlService: NSObject, FanControlProtocol, @unchecked Sendable
             return was
         }
         watchdog?.stop()
+
+        // The actuator retries internally with backoff. If it still fails the
+        // error is recorded as loudly as a root process can and the saved
+        // state is kept, so a later release can try again — but this path
+        // never throws: it runs where failure has nowhere to go. The outcome
+        // is kept so the exit paths can carry it in the exit code, which is
+        // the one channel user space can read without root.
+        do {
+            try actuator?.releaseNow()
+            state.withLock { $0.lastReleaseSucceeded = true }
+        } catch {
+            state.withLock { $0.lastReleaseSucceeded = false }
+            logger.fault(
+                "hardware release failed after retries: \(String(describing: error), privacy: .public)"
+            )
+        }
+
         if wasControlling {
             logger.notice("fans handed back to firmware")
         }

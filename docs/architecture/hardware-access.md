@@ -38,6 +38,23 @@ Via the `AppleSMC` IOService, with four character keys:
 2. The mode is switched to "automatic"
 3. A verification read; on failure, up to 5 attempts with exponential backoff
 
+**Two facts measured in P4.01 that the sequence depends on:**
+
+- **SMC writes apply asynchronously** (~100 ms on the M4 test machine). The
+  kernel accepts the write immediately, but a readback races the apply and
+  sees the old value. Every write verification therefore waits — up to three
+  reads over 300 ms — before judging, and a retry never rewrites first:
+  rewriting restarts the apply pipeline, and an impatient verify loop defeats
+  itself forever.
+- **Release trusts the hardware, not only its own memory.** The saved
+  original state lives in the helper's process memory; a helper that dies
+  mid-control takes it along, and the next helper would see "nothing to
+  release" while the fan stays forced. The release path therefore also scans
+  every fan the SMC reports and returns any forced mode to automatic —
+  automatic is always safe, it is the firmware taking back its own fan.
+  (The unprivileged write refusal is also measured: the kernel answers
+  `kIOReturnNotPrivileged`, which is the enforcement behind M3.)
+
 **Data types:** SMC keys return typed data. The type information is read together with the key; **the type is never assumed**. Unknown type → the sensor is skipped, a warning is logged.
 
 ## Other data sources

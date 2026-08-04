@@ -18,6 +18,7 @@ final class Watchdog: @unchecked Sendable {
     private let onExpiry: @Sendable () -> Void
     private let logger = Logger(subsystem: "com.bubiapps.boreas.fanhelper", category: "watchdog")
     private let queue = DispatchQueue(label: "com.bubiapps.boreas.fanhelper.watchdog")
+    private static let queueKey = DispatchSpecificKey<Bool>()
 
     private var lastHeartbeat: Date?
     private var timer: (any DispatchSourceTimer)?
@@ -25,12 +26,27 @@ final class Watchdog: @unchecked Sendable {
     init(policy: WatchdogPolicy, onExpiry: @escaping @Sendable () -> Void) {
         self.policy = policy
         self.onExpiry = onExpiry
+        queue.setSpecific(key: Self.queueKey, value: true)
+    }
+
+    /// Runs `body` on the queue, inline when already there.
+    ///
+    /// The expiry callback leads to `performRelease`, which calls `stop()` —
+    /// and the callback itself runs on this queue. A plain `queue.sync` there
+    /// deadlocks on its own queue and takes the whole release down with it.
+    /// That is not hypothetical: the freeze drill left a fan stuck in forced
+    /// mode exactly this way once the write path was real.
+    private func onQueue<T>(_ body: () -> T) -> T {
+        if DispatchQueue.getSpecific(key: Self.queueKey) == true {
+            return body()
+        }
+        return queue.sync(execute: body)
     }
 
     /// Starts watching. Called when control is taken, not at launch: a helper
     /// that is not controlling anything has nothing to hand back.
     func start() {
-        queue.sync {
+        onQueue {
             lastHeartbeat = Date()
             guard timer == nil else { return }
             let source = DispatchSource.makeTimerSource(queue: queue)
@@ -43,7 +59,7 @@ final class Watchdog: @unchecked Sendable {
     }
 
     func stop() {
-        queue.sync {
+        onQueue {
             timer?.cancel()
             timer = nil
             lastHeartbeat = nil
@@ -51,12 +67,12 @@ final class Watchdog: @unchecked Sendable {
     }
 
     func recordHeartbeat() {
-        queue.sync { lastHeartbeat = Date() }
+        onQueue { lastHeartbeat = Date() }
     }
 
     /// For tests and diagnostics.
     var secondsSinceHeartbeat: TimeInterval? {
-        queue.sync {
+        onQueue {
             guard let lastHeartbeat else { return nil }
             return Date().timeIntervalSince(lastHeartbeat)
         }

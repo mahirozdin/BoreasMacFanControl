@@ -53,6 +53,7 @@ public final class SMCConnection: @unchecked Sendable {
 
     private enum Selector: UInt8 {
         case readBytes = 5
+        case writeBytes = 6
         case readKeyInfo = 9
         case readIndex = 8
     }
@@ -214,6 +215,37 @@ public final class SMCConnection: @unchecked Sendable {
         let payload = Array(response[Offset.bytes..<(Offset.bytes + size)])
 
         return SMCValue(key: key, type: Self.decode(key: typeWord), bytes: payload)
+    }
+
+    // MARK: - Writing
+
+    /// Writes raw bytes to one key.
+    ///
+    /// The write primitive lives beside the read primitive so the 80 byte
+    /// wire layout exists in exactly one place — the padding bug that layout
+    /// fixed must not be reintroduced by a second copy. Only the daemon's
+    /// actuator calls this: the kernel refuses SMC writes from an
+    /// unprivileged process, which is the enforcement behind invariant M3
+    /// and is proven by the `--fan-keys` maintenance command.
+    ///
+    /// The payload length must match what the key itself reports; the type
+    /// is read first and never assumed.
+    public func writeValue(key: String, bytes payload: [UInt8]) throws {
+        let encoded = Self.encode(key: key)
+
+        let info = try call(makeRequest(key: encoded, selector: .readKeyInfo))
+        let size = Int(Self.readUInt32(info, at: Offset.keyInfoDataSize))
+        guard size == payload.count else {
+            throw HardwareError.noData(
+                "key \(key) expects \(size) byte(s), refusing to write \(payload.count)")
+        }
+
+        var request = makeRequest(key: encoded, selector: .writeBytes)
+        Self.write(UInt32(size), to: &request, at: Offset.keyInfoDataSize)
+        for (index, byte) in payload.enumerated() {
+            request[Offset.bytes + index] = byte
+        }
+        _ = try call(request)
     }
 }
 
