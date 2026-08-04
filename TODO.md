@@ -185,9 +185,9 @@ R1 (API kırılması), R2 (yeni çip adlandırması), R8 (donanım kapsaması)
 
 ### Alt işler
 
+- [ ] **P3.00 — Development sertifikasıyla ampirik doğrulama.** `SMAppService` daemon kaydının ve XPC imza doğrulamasının ücretsiz hesap Development sertifikasıyla gerçekten çalıştığını **kanıtla** (varsayma). Çalışmıyorsa [ADR 0019](docs/architecture/adr/0019-signing-identity-deferred.md) revize edilir.
 - [ ] **P3.01 — XPC protokolü (`SharedIPC`).** Yalnızca dört metot. `make gate-daemon` yüzeyi doğruluyor.
 - [ ] **P3.02 — Daemon iskeleti + launchd plist.** `SMAppService.daemon` ile kayıt.
-- [ ] **P3.00 — Development sertifikasıyla ampirik doğrulama.** `SMAppService` daemon kaydının ve XPC imza doğrulamasının ücretsiz hesap Development sertifikasıyla gerçekten çalıştığını **kanıtla** (varsayma). Çalışmıyorsa [ADR 0019](docs/architecture/adr/0019-signing-identity-deferred.md) revize edilir.
 - [ ] **P3.03 — Çift yönlü imza doğrulaması.** `SecCodeCheckValidity` + `SecRequirement`. **İmzasız bir istemcinin reddedildiğini testle kanıtla.**
 - [ ] **P3.04 — Kurulum akışı (UI).** Ne olacağı, hangi dosyaların nereye yazılacağı ve nasıl geri alınacağı **kurulumdan önce** gösterilir.
 - [ ] **P3.05 — Sistem Ayarları yönlendirmesi.** Arka plan onayı gerekiyorsa durumu algıla ve doğrudan ilgili panele götür.
