@@ -15,6 +15,18 @@ public actor HelperClient {
         case rejected(String)
     }
 
+    /// What the helper reports about one fan.
+    ///
+    /// A named type rather than a tuple: this crosses a privilege boundary and
+    /// four unlabelled numbers are exactly the kind of thing that gets
+    /// transposed in a refactor.
+    public struct FanSnapshot: Sendable, Hashable {
+        public let id: Int
+        public let minimumRPM: Int
+        public let maximumRPM: Int
+        public let currentRPM: Int
+    }
+
     private let logger = Logger(subsystem: "com.bubiapps.boreas", category: "xpc")
     private var connection: NSXPCConnection?
     private var heartbeatTask: Task<Void, Never>?
@@ -70,9 +82,10 @@ public actor HelperClient {
         let nonce = UInt64.random(in: 1...UInt64.max)
 
         return try await withCheckedThrowingContinuation { continuation in
-            let proxy = connection.remoteObjectProxyWithErrorHandler { error in
-                continuation.resume(throwing: ClientError.rejected(String(describing: error)))
-            } as? any FanControlProtocol
+            let proxy =
+                connection.remoteObjectProxyWithErrorHandler { error in
+                    continuation.resume(throwing: ClientError.rejected(String(describing: error)))
+                } as? any FanControlProtocol
 
             guard let proxy else {
                 return continuation.resume(throwing: ClientError.notConnected)
@@ -84,13 +97,14 @@ public actor HelperClient {
     }
 
     /// Asks the helper what fans it can see. Read only.
-    public func describeFans() async throws -> [(id: Int, minimum: Int, maximum: Int, current: Int)] {
+    public func describeFans() async throws -> [FanSnapshot] {
         let connection = try makeConnection()
 
         return try await withCheckedThrowingContinuation { continuation in
-            let proxy = connection.remoteObjectProxyWithErrorHandler { error in
-                continuation.resume(throwing: ClientError.rejected(String(describing: error)))
-            } as? any FanControlProtocol
+            let proxy =
+                connection.remoteObjectProxyWithErrorHandler { error in
+                    continuation.resume(throwing: ClientError.rejected(String(describing: error)))
+                } as? any FanControlProtocol
 
             guard let proxy else {
                 return continuation.resume(throwing: ClientError.notConnected)
@@ -98,11 +112,11 @@ public actor HelperClient {
             proxy.describeFans { ids, minimums, maximums, currents in
                 let count = min(ids.count, minimums.count, maximums.count, currents.count)
                 let fans = (0..<count).map {
-                    (
+                    FanSnapshot(
                         id: ids[$0].intValue,
-                        minimum: minimums[$0].intValue,
-                        maximum: maximums[$0].intValue,
-                        current: currents[$0].intValue
+                        minimumRPM: minimums[$0].intValue,
+                        maximumRPM: maximums[$0].intValue,
+                        currentRPM: currents[$0].intValue
                     )
                 }
                 continuation.resume(returning: fans)
@@ -114,9 +128,10 @@ public actor HelperClient {
     public func releaseToFirmware() async throws {
         let connection = try makeConnection()
         _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
-            let proxy = connection.remoteObjectProxyWithErrorHandler { error in
-                continuation.resume(throwing: ClientError.rejected(String(describing: error)))
-            } as? any FanControlProtocol
+            let proxy =
+                connection.remoteObjectProxyWithErrorHandler { error in
+                    continuation.resume(throwing: ClientError.rejected(String(describing: error)))
+                } as? any FanControlProtocol
             guard let proxy else {
                 return continuation.resume(throwing: ClientError.notConnected)
             }

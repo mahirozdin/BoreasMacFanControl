@@ -45,25 +45,41 @@ enum HelperCommands {
         }
 
         if arguments.contains("--helper-ping") {
+            // The result is produced inside the task and printed there. An
+            // outer `var` captured by the closure is not sendable, and making
+            // it sendable would only be working around the fact that the value
+            // belongs to the task in the first place.
             let semaphore = DispatchSemaphore(value: 0)
-            nonisolated(unsafe) var outcome = "no answer"
-            Task {
+            // Detached is required, not stylistic: a plain `Task` would inherit
+            // this main actor context and could never run while the semaphore
+            // below blocks the main thread.
+            Task.detached {
+                var lines: [String] = []
                 do {
                     let client = HelperClient()
                     let answered = try await client.ping()
-                    outcome = answered ? "helper answered, signatures matched on both sides" : "nonce mismatch"
+                    lines.append(
+                        answered
+                            ? "helper answered, signatures matched on both sides"
+                            : "nonce mismatch"
+                    )
                     let fans = try await client.describeFans()
-                    outcome += "\nhelper sees \(fans.count) fan(s)"
+                    lines.append("helper sees \(fans.count) fan(s)")
                     for fan in fans {
-                        outcome += "\n  fan \(fan.id): \(fan.current) rpm (\(fan.minimum)-\(fan.maximum))"
+                        lines.append(
+                            "  fan \(fan.id): \(fan.currentRPM) rpm "
+                                + "(\(fan.minimumRPM)-\(fan.maximumRPM))"
+                        )
                     }
                 } catch {
-                    outcome = "failed: \(error)"
+                    lines.append("failed: \(error)")
                 }
+                FileHandle.standardOutput.write(Data((lines.joined(separator: "\n") + "\n").utf8))
                 semaphore.signal()
             }
-            _ = semaphore.wait(timeout: .now() + 20)
-            report(outcome)
+            if semaphore.wait(timeout: .now() + 20) == .timedOut {
+                report("timed out waiting for the helper")
+            }
             return true
         }
 
