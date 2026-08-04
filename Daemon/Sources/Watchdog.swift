@@ -1,3 +1,4 @@
+import Core
 import Foundation
 import OSLog
 
@@ -8,15 +9,12 @@ import OSLog
 /// `kill -9`, a logout. None of those can send a farewell message. Silence is
 /// the signal, and silence is something the helper can observe on its own.
 ///
-/// The timeout is bounded and cannot be switched off. A safety mechanism that
-/// can be disabled by configuration is a configuration option, not a safety
-/// mechanism.
+/// This type owns only the timer. What a tick *means* — the 10–60 s clamp and
+/// the expiry decision — lives in `Core.WatchdogPolicy`, where the invariant
+/// tests of ADR 0009 can actually run.
 final class Watchdog: @unchecked Sendable {
 
-    /// Bounds enforced regardless of what a caller asks for.
-    static let allowedTimeout: ClosedRange<Int> = 10...60
-
-    private let timeout: TimeInterval
+    private let policy: WatchdogPolicy
     private let onExpiry: @Sendable () -> Void
     private let logger = Logger(subsystem: "com.bubiapps.boreas.fanhelper", category: "watchdog")
     private let queue = DispatchQueue(label: "com.bubiapps.boreas.fanhelper.watchdog")
@@ -24,9 +22,8 @@ final class Watchdog: @unchecked Sendable {
     private var lastHeartbeat: Date?
     private var timer: (any DispatchSourceTimer)?
 
-    init(timeoutSeconds: Int, onExpiry: @escaping @Sendable () -> Void) {
-        let clamped = min(Self.allowedTimeout.upperBound, max(Self.allowedTimeout.lowerBound, timeoutSeconds))
-        self.timeout = TimeInterval(clamped)
+    init(policy: WatchdogPolicy, onExpiry: @escaping @Sendable () -> Void) {
+        self.policy = policy
         self.onExpiry = onExpiry
     }
 
@@ -41,7 +38,7 @@ final class Watchdog: @unchecked Sendable {
             source.setEventHandler { [weak self] in self?.tick() }
             source.resume()
             timer = source
-            logger.notice("watchdog armed, timeout \(self.timeout, privacy: .public)s")
+            logger.notice("watchdog armed, timeout \(self.policy.timeout, privacy: .public)s")
         }
     }
 
@@ -67,9 +64,9 @@ final class Watchdog: @unchecked Sendable {
 
     private func tick() {
         guard let last = lastHeartbeat else { return }
-        guard Date().timeIntervalSince(last) > timeout else { return }
+        guard policy.hasExpired(lastHeartbeat: last, now: Date()) else { return }
 
-        logger.error("no heartbeat for \(self.timeout, privacy: .public)s, releasing fans")
+        logger.error("no heartbeat for \(self.policy.timeout, privacy: .public)s, releasing fans")
         timer?.cancel()
         timer = nil
         lastHeartbeat = nil

@@ -96,6 +96,24 @@ The distinguishing safety element of the design → [ADR 0009](adr/0009-watchdog
 - It also hands back **immediately** on: system sleep · system shutdown · the daemon being stopped
 - The timeout is **locked between 10–60 s** and cannot be disabled
 
+Two layers close these scenarios, and they are deliberately redundant:
+
+| Layer | Trigger | Measured on real hardware (P3.07) |
+|---|---|---|
+| Connection invalidation | The client process is gone (`kill -9`, crash, quit) | Release + exit **0.03 s** after `kill -9` |
+| Watchdog expiry | The client is alive but silent (freeze, hang) | Release + exit **14.06 s** after a `SIGSTOP` freeze — within the 15 s window |
+
+The decision half of the watchdog (the 10–60 s clamp and the expiry rule) is
+pure logic in `Core` (`WatchdogPolicy`), where the ADR 0009 invariant tests
+run; the daemon hosts only the timer.
+
+**Lifecycle:** the helper starts on demand and **exits after every release
+with no client left** — last connection gone, watchdog expiry, SIGTERM from
+launchd, all after handing the fans back first. A resident root process
+nobody talks to would be attack surface with no purpose, and the exit makes
+every release path observable from user space as a process lifecycle
+(root daemon log lines are not readable without elevation).
+
 **Design rationale:** A fault in a user space application must under no circumstances leave the hardware unprotected. The party holding control must be responsible for the health check.
 
 ## Daemon security surface

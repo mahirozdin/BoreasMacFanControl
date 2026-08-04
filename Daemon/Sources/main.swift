@@ -1,9 +1,9 @@
 import Foundation
-import IOKit.pwr_mgt
 import OSLog
 import SharedIPC
+import os
 
-/// Privileged helper entry point.
+/// Privileged helper entry point — the composition root.
 ///
 /// Runs as root under launchd. It listens on one Mach service, accepts only
 /// connections whose code signature matches this project's team, and exposes
@@ -12,6 +12,20 @@ import SharedIPC
 /// It reads no configuration, opens no network connection and spawns no
 /// process. Those are not omissions to be filled in later — they are the
 /// reason the privileged surface can be reasoned about at all.
+///
+/// ## Lifecycle
+///
+/// The launchd plist says "starts on demand, stops when idle", and this file
+/// is where that promise is kept. The helper exits — always after releasing
+/// the fans — when:
+///
+/// - the last client connection goes away (quit, crash, `kill -9`), or
+/// - the watchdog expires (a client that is alive but silent), or
+/// - launchd tells it to stop (SIGTERM on unregister or system teardown).
+///
+/// A resident root process that nobody is talking to is attack surface with
+/// no purpose; exiting also makes every one of these paths observable from
+/// the outside as a process lifecycle, without reading root logs.
 let logger = Logger(subsystem: "com.bubiapps.boreas.fanhelper", category: "main")
 
 /// The team the client must belong to: this binary's own team.
@@ -21,9 +35,18 @@ let logger = Logger(subsystem: "com.bubiapps.boreas.fanhelper", category: "main"
 /// settings and the requirement string.
 let teamIdentifier = OwnIdentity.teamIdentifier() ?? ""
 
+let service = FanControlService()
+
 final class ListenerDelegate: NSObject, NSXPCListenerDelegate {
 
-    private let service = FanControlService()
+    private let service: FanControlService
+    private let onAllClientsGone: @Sendable () -> Void
+    private let liveConnections = OSAllocatedUnfairLock(initialState: 0)
+
+    init(service: FanControlService, onAllClientsGone: @escaping @Sendable () -> Void) {
+        self.service = service
+        self.onAllClientsGone = onAllClientsGone
+    }
 
     func listener(
         _ listener: NSXPCListener,
@@ -49,82 +72,55 @@ final class ListenerDelegate: NSObject, NSXPCListenerDelegate {
         //
         // The requirement is pinned to the TEAM, not to a certificate, so the
         // same string holds for development and release builds.
-        // Returns void: the requirement is applied to the connection and the
-        // system refuses any peer that does not satisfy it. There is no error
-        // to inspect, which is the point — the decision is not ours to get
-        // wrong.
         connection.setCodeSigningRequirement(requirement)
 
         connection.exportedInterface = NSXPCInterface(with: (any FanControlProtocol).self)
         connection.exportedObject = service
 
-        connection.invalidationHandler = { [weak service] in
-            // A dropped connection is one of the ways control ends. The
-            // watchdog covers the rest.
-            service?.performRelease()
+        liveConnections.withLock { $0 += 1 }
+        connection.invalidationHandler = { [weak self] in
+            guard let self else { return }
+            // A dropped connection is one of the ways control ends: the
+            // client quit, crashed or was killed. `kill -9` lands here within
+            // milliseconds — the watchdog exists for the client that is still
+            // alive but silent.
+            self.service.performRelease()
+            let remaining = self.liveConnections.withLock { count -> Int in
+                count -= 1
+                return count
+            }
+            if remaining <= 0 { self.onAllClientsGone() }
         }
 
         connection.resume()
         logger.notice("accepted a verified connection")
         return true
     }
-
-    func handleSystemShutdown() {
-        service.performRelease()
-    }
 }
 
-let delegate = ListenerDelegate()
+let delegate = ListenerDelegate(
+    service: service,
+    onAllClientsGone: {
+        logger.notice("last client gone, fans with firmware; exiting until needed again")
+        exit(0)
+    }
+)
+
+service.onWatchdogExpiry = {
+    logger.notice("client silent past the watchdog window; exiting until needed again")
+    exit(0)
+}
+
 let listener = NSXPCListener(machServiceName: BoreasIPC.machServiceName)
 listener.delegate = delegate
 
-// Sleep and shutdown both end control.
-//
-// `NSWorkspace` notifications are deliberately NOT used here: they belong to a
-// logged in user session, and this process is a root daemon that outlives and
-// precedes any session. `IORegisterForSystemPower` is the equivalent that
-// actually reaches a daemon.
-//
-// Neither signal can be relied on to arrive, so the watchdog remains the
-// backstop rather than the fallback.
-var powerConnection: io_connect_t = 0
-var powerNotifier: IONotificationPortRef?
-var powerNotifierObject: io_object_t = 0
-
-// These arrive from `IOMessage.h` as C macros, which Swift cannot import.
-// The values are part of the stable IOKit message numbering.
-enum PowerMessage {
-    static let canSystemSleep: UInt32 = 0xE000_0270
-    static let systemWillSleep: UInt32 = 0xE000_0280
-    static let systemWillPowerOff: UInt32 = 0xE000_0250
-}
-
-let powerCallback: IOServiceInterestCallback = { _, _, messageType, argument in
-    switch messageType {
-    case PowerMessage.systemWillSleep, PowerMessage.systemWillPowerOff:
-        logger.notice("system is going down, releasing fans")
-        delegate.handleSystemShutdown()
-        // Acknowledge so the system is not held up waiting on us.
-        IOAllowPowerChange(powerConnection, Int(bitPattern: argument))
-    case PowerMessage.canSystemSleep:
-        IOAllowPowerChange(powerConnection, Int(bitPattern: argument))
-    default:
-        break
-    }
-}
-
-powerConnection = IORegisterForSystemPower(nil, &powerNotifier, powerCallback, &powerNotifierObject)
-if powerConnection != MACH_PORT_NULL, let powerNotifier {
-    CFRunLoopAddSource(
-        CFRunLoopGetMain(),
-        IONotificationPortGetRunLoopSource(powerNotifier).takeUnretainedValue(),
-        .commonModes
-    )
-} else {
-    // Not fatal: the watchdog still hands the fans back. Worth recording,
-    // because it means one of the two layers is missing.
-    logger.error("could not register for system power notifications; watchdog is the only backstop")
-}
+// Sleep, shutdown and termination all end control before anything else ends
+// this process. The watchdog remains the backstop, not the fallback.
+let restorer = StateRestorer(onRestore: { service.performRelease() })
+restorer.arm(restoreAndExit: {
+    service.performRelease()
+    exit(0)
+})
 
 logger.notice("helper starting")
 listener.resume()

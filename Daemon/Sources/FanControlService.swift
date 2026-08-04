@@ -29,12 +29,25 @@ final class FanControlService: NSObject, FanControlProtocol, @unchecked Sendable
     private let fanReader: LiveFanSource?
     private var watchdog: Watchdog?
 
+    /// Called after the watchdog has released control because the client fell
+    /// silent. Set once by the composition root, before the listener resumes;
+    /// it uses this to exit so launchd can relaunch the helper on demand.
+    var onWatchdogExpiry: (@Sendable () -> Void)?
+
     override init() {
         fanReader = try? LiveFanSource()
         super.init()
-        watchdog = Watchdog(timeoutSeconds: 15) { [weak self] in
+        // The timeout is derived from the shared heartbeat cadence, not typed
+        // here as a number: 5 s beats, released after 3 misses. The policy
+        // clamps the product into the 10-60 s range whatever the constants say.
+        let policy = WatchdogPolicy(
+            heartbeatIntervalSeconds: BoreasIPC.heartbeatIntervalSeconds,
+            missedHeartbeatsBeforeRelease: BoreasIPC.missedHeartbeatsBeforeRelease
+        )
+        watchdog = Watchdog(policy: policy) { [weak self] in
             self?.logger.error("watchdog expired")
             self?.performRelease()
+            self?.onWatchdogExpiry?()
         }
         if fanReader == nil {
             logger.error("fan interface unavailable at launch")

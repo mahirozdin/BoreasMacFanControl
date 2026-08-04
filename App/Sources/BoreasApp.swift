@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import SharedIPC
 import SwiftUI
 
 /// Command line entry points used to exercise the privileged helper without
@@ -55,7 +56,88 @@ enum HelperCommands {
             return true
         }
 
+        if arguments.contains("--pump-heartbeats") {
+            pumpHeartbeats(report: report)
+            return true
+        }
+
+        if arguments.contains("--helper-release") {
+            releaseThreeTimes(report: report)
+            return true
+        }
+
         return false
+    }
+
+    /// Arms the watchdog and streams heartbeats until this process dies.
+    ///
+    /// This is the `kill -9` drill of ADR 0009: run it, kill the process with
+    /// SIGKILL, and watch the helper's log hand the fans back once the
+    /// silence outlives the watchdog window. SIGKILL cannot be caught, so
+    /// nothing here can fake the outcome.
+    private static func pumpHeartbeats(report: (String) -> Void) {
+        let semaphore = DispatchSemaphore(value: 0)
+        Task.detached {
+            do {
+                let client = HelperClient()
+                let fans = try await client.describeFans()
+                guard let fan = fans.first else {
+                    FileHandle.standardOutput.write(Data("no controllable fan\n".utf8))
+                    exit(1)
+                }
+                // Arms the watchdog. The refusal is the documented P4 stub —
+                // fan writing does not exist yet — but control state and the
+                // watchdog are real, which is all this drill needs.
+                let verdict = try await client.requestTargets(
+                    fanIDs: [fan.id], targetRPM: [fan.minimumRPM])
+                let lines = [
+                    "watchdog armed (apply reply: \(verdict.reason ?? "accepted"))",
+                    "pumping a heartbeat every \(BoreasIPC.heartbeatIntervalSeconds)s",
+                    "pid \(ProcessInfo.processInfo.processIdentifier) — kill -9 it to run the drill",
+                ]
+                FileHandle.standardOutput.write(Data((lines.joined(separator: "\n") + "\n").utf8))
+                await client.beginHeartbeats()
+                // Keep `client` — and with it the heartbeat task, which holds
+                // the actor weakly — alive for the whole process lifetime.
+                // Without this the actor deallocates the moment this scope
+                // ends and the pump dies silently.
+                while true {
+                    try await Task.sleep(for: .seconds(3600))
+                }
+            } catch {
+                FileHandle.standardOutput.write(Data("drill setup failed: \(error)\n".utf8))
+                exit(1)
+            }
+        }
+        // Waits forever on purpose: the drill ends when someone kills us.
+        semaphore.wait()
+    }
+
+    /// Calls releaseToFirmware three times in a row.
+    ///
+    /// ADR 0009 requires release to be idempotent — it runs on quit, sleep,
+    /// shutdown and watchdog expiry, so calling it again must never be the
+    /// thing that fails. Three consecutive successes over the real privileged
+    /// path are the evidence.
+    private static func releaseThreeTimes(report: (String) -> Void) {
+        let semaphore = DispatchSemaphore(value: 0)
+        Task.detached {
+            var lines: [String] = []
+            do {
+                let client = HelperClient()
+                for attempt in 1...3 {
+                    try await client.releaseToFirmware()
+                    lines.append("release \(attempt): ok")
+                }
+            } catch {
+                lines.append("failed: \(error)")
+            }
+            FileHandle.standardOutput.write(Data((lines.joined(separator: "\n") + "\n").utf8))
+            semaphore.signal()
+        }
+        if semaphore.wait(timeout: .now() + 20) == .timedOut {
+            report("timed out waiting for the helper")
+        }
     }
 
     private static func pingHelper(report: (String) -> Void) {

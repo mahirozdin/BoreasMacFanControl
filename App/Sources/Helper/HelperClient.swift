@@ -124,6 +124,61 @@ public actor HelperClient {
         }
     }
 
+    /// Requests target speeds. The helper's safety filter validates every
+    /// value; the reply carries the refusal reason when there is one.
+    public func requestTargets(
+        fanIDs: [Int], targetRPM: [Int]
+    ) async throws -> (accepted: Bool, reason: String?) {
+        let connection = try makeConnection()
+        return try await withCheckedThrowingContinuation { continuation in
+            let proxy =
+                connection.remoteObjectProxyWithErrorHandler { error in
+                    continuation.resume(throwing: ClientError.rejected(String(describing: error)))
+                } as? any FanControlProtocol
+
+            guard let proxy else {
+                return continuation.resume(throwing: ClientError.notConnected)
+            }
+            proxy.applyTargets(
+                fanIDs: fanIDs.map { NSNumber(value: $0) },
+                targetRPM: targetRPM.map { NSNumber(value: $0) }
+            ) { accepted, reason in
+                continuation.resume(returning: (accepted, reason))
+            }
+        }
+    }
+
+    /// Starts the heartbeat stream the dead man's switch listens for
+    /// (ADR 0009). One beat every `BoreasIPC.heartbeatIntervalSeconds`;
+    /// the helper hands the fans back after three missed beats.
+    ///
+    /// A failed beat is logged and the loop keeps trying: a transient XPC
+    /// hiccup must not become the thing that silences the heartbeat. If the
+    /// connection actually dies, the invalidation handler cancels the loop.
+    public func beginHeartbeats() {
+        guard heartbeatTask == nil else { return }
+        heartbeatTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                do {
+                    _ = try await self.ping()
+                } catch {
+                    self.logger.error(
+                        "heartbeat failed: \(String(describing: error), privacy: .public)")
+                }
+                try? await Task.sleep(for: .seconds(BoreasIPC.heartbeatIntervalSeconds))
+            }
+        }
+    }
+
+    /// Stops the heartbeat stream. The helper will release the fans once the
+    /// silence outlives the watchdog window — stopping the stream is how the
+    /// application *intentionally* lets go without a farewell message.
+    public func endHeartbeats() {
+        heartbeatTask?.cancel()
+        heartbeatTask = nil
+    }
+
     /// Hands the fans back. Safe to call at any time.
     public func releaseToFirmware() async throws {
         let connection = try makeConnection()
