@@ -1,68 +1,89 @@
-# 0006 — Bağımsız geliştirme politikası
+# 0006 — Independent development policy
 
-<!-- gate-names:policy-doc — Bu dosya yasaklı kalıpları TARİF ettiği için gate-names taramasından muaftır. Bkz. LEGAL.md §5.1 -->
+<!-- gate-names:policy-doc — This file DESCRIBES forbidden patterns and is
+     therefore exempt from the gate-names scan. See LEGAL.md section 5.1 -->
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §2
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint section 2
 
-> Bu, projenin en kritik kararıdır. İhlali ürünü durdurur.
+> This is the project's most important decision. Breaking it stops the project.
 
-## Bağlam
+## Context
 
-Bu kategoride işlevsel olarak benzer ticari ürünler mevcut. Telif hakkı **fikirleri değil ifadeyi** korur — yani "fan hızını sıcaklığa göre ayarlamak" serbestçe uygulanabilir, ama belirli bir arayüz metni, ikon seti veya veri şeması kopyalanamaz.
+Other commercial products solve a functionally similar problem in this
+category. Copyright protects **expression, not ideas, functions or the problem
+being solved** — so "adjust fan speed based on temperature" is free to
+implement, while a particular interface text, icon set or data schema is not.
 
-Projenin hukuki güvenliği, bu ayrımın disiplinli uygulanmasına bağlı. Ayrıca bir git deposu **kalıcı kayıttır**: kötü niyetsiz yazılmış bir satır bile sonradan delil olabilir.
+The project's legal safety depends on applying that distinction with discipline.
+A git repository is also a **permanent record**: a line written with no ill
+intent can still be produced as evidence later.
 
-## Karar
+## Decision
 
-Yedi mutlak yasak (`LEGAL.md` §2'de tam metin):
+Seven absolute prohibitions, stated in full in `LEGAL.md` section 2:
 
-| # | Yasak |
+| # | Prohibition |
 |---|---|
-| Y1 | Üçüncü taraf ticari uygulamayı tersine mühendislikle inceleme, disassemble/decompile |
-| Y2 | Metin, etiket, yardım içeriği, hata mesajı kopyalama **veya çevirme** |
-| Y3 | İkon, renk paleti, pencere düzeni, görsel kimlik taklidi |
-| Y4 | Ayar dosyası şeması, anahtar adı, veri formatı birebir kullanımı |
-| Y5 | **Depoda herhangi bir üçüncü taraf ticari ürün adının geçmesi** |
-| Y6 | Karşılaştırmalı pazarlama |
-| Y7 | Uyumsuz lisanslı kod dahil etme |
+| Y1 | Reverse engineering, disassembling or decompiling a third party commercial application |
+| Y2 | Copying **or translating** text, labels, help content or error messages |
+| Y3 | Imitating icons, colour palettes, window layouts or visual identity |
+| Y4 | Reusing a configuration schema, key names or data format verbatim |
+| Y5 | **Writing any third party commercial product name in the repository** |
+| Y6 | Comparative marketing |
+| Y7 | Including code under an incompatible licence |
 
-Ek olarak: kontrol motoru **kasıtlı olarak farklı bir modelle** tasarlanmıştır ([0010](0010-continuous-curve-model.md)) — özgünlük yapısal hale getirilmiştir, yalnızca beyan edilmemiştir.
+In addition, the control engine is **deliberately built on a different model**
+([ADR 0010](0010-continuous-curve-model.md)) — originality is structural here,
+not merely asserted.
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Option | Why not |
 |---|---|
-| Yalnızca "kopyalamayın" demek | Zorlanamayan kural zamanla ihlal edilir |
-| Rakip adlarını bir listede tutup taramak | **Yasağın kendisini ihlal ederdi** — o adlar depoya girmiş olurdu |
-| Hiç politika yazmamak | Kayıtlı iyi niyet, iddia karşısında en güçlü savunmadır |
+| Simply telling people not to copy | A rule that is not enforced is broken in time |
+| Keeping a list of competitor names and scanning for them | **That would break the rule itself** — those names would be in the repository |
+| Writing no policy at all | Recorded good faith is the strongest defence against a claim |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Kayıtlı, denetlenebilir bağımsız geliştirme süreci
-- ✅ Özgünlük mimari düzeyde — yalnızca metinsel değil
-- ⚠️ Katkıcılar için ek disiplin; PR şablonunda beyan zorunlu
-- ⚠️ Y5 tam otomatik zorlanamıyor (aşağıya bak)
+- Recorded, auditable independent development process
+- Originality at the architecture level, not only in wording
+- Extra discipline for contributors; a declaration is required on every pull request
+- Y5 cannot be fully automated — see below
 
-## Zorlama
+## Enforcement
 
-`make gate-names` üç katman uygular:
+`make gate-names` applies three layers:
 
-| Katman | Ne yakalar |
+| Layer | What it catches |
 |---|---|
-| Karşılaştırmalı pazarlama kalıpları | "alternative to", "better than", "instead of X", Türkçe karşılıkları |
-| Dış alan adı allowlist'i | İzinli listede olmayan her URL insan incelemesi ister — **ad gerektirmez** |
-| Marka sembolü taraması | `™` `®` |
-| Yerel ad listesi (opsiyonel) | `scripts/gates/.forbidden-names.local` — `.gitignore`'da |
+| Comparative marketing patterns | Generic constructions such as "alternative to", "better than", "replacement for" |
+| External domain allowlist | Any URL outside the permitted list requires human review — **needs no product name** |
+| Trademark symbol scan | The registered and trademark signs |
+| Local name list (optional) | `scripts/gates/.forbidden-names.local`, which is in `.gitignore` |
 
-### Eksik katmanın açıkça kaydı
+### The missing layer, recorded explicitly
 
-**Y5 için depoda saklanan bir ad listesi yoktur ve olamaz** — yasaklı adları bir dosyada tutmak, o adları depoya sokmak demektir; yani yasağı ihlal eder.
+**There is no stored list of forbidden names, and there cannot be.** Keeping
+such a list in a file would put those names in the repository, which is exactly
+what Y5 forbids.
 
-Bu, kaçınılmaz ve bilinçli bir sınırlamadır. Kalan boşluk şu iki katmanla kapatılır:
+This is an unavoidable, deliberate limitation. The remaining gap is closed by
+two layers:
 
-1. **PR beyanı** — `.github/PULL_REQUEST_TEMPLATE.md` içindeki üç onay kutusu
-2. **İnsan incelemesi** — kod incelemesinin kontrol listesinde
+1. **The pull request declaration** — three checkboxes in
+   `.github/PULL_REQUEST_TEMPLATE.md`
+2. **Human review** — part of the code review checklist
 
-Alan adı allowlist'i bu boşluğun büyük kısmını ad kullanmadan kapatır: bir üçüncü taraf ürüne yapılan atıf, neredeyse her zaman o ürünün sitesine bir bağlantı da içerir.
+The domain allowlist closes most of the gap without naming anything: a reference
+to a third party product almost always carries a link to that product's site.
+
+### Policy document exemption
+
+Files that describe these prohibitions cannot avoid containing the patterns they
+forbid. They declare their own exemption with a marker comment, the gate skips
+them, and it **reports how many files were skipped on every run** so the
+exemption is never silent. Adding the marker is a deliberate act and is
+questioned in review.

@@ -1,339 +1,358 @@
-# AGENTS.md — Bağlayıcı Çalışma Sözleşmesi
+# AGENTS.md — Binding Working Contract
 
-> Son güncelleme: 2026-07-31 — P0.03
-> Kaynak: blueprint §0, §2, §14, §17.2, §17.3
+> Last updated: 2026-08-04 — ADR 0021
+> Source: blueprint §0, §2, §14, §17.2, §17.3
 
-Bu dosya bu depoda çalışan **her ajan ve her geliştirici için bağlayıcıdır**. Buradaki bir kural ile başka bir dosyadaki ifade çeliştiğinde, §3'teki öncelik sırası uygulanır.
-
----
-
-## 1. Zorunlu okuma sırası
-
-Her oturumda, kod yazmadan önce, bu sırayla:
-
-| # | Dosya | Neden |
-|---|---|---|
-| 1 | `BOOT.md` | Oturum başlangıç protokolü ve sağlık snapshot'ı |
-| 2 | `AGENTS.md` (bu dosya) | Değişmezler ve çalışma disiplini |
-| 3 | `TODO.md` | Sıradaki iş, kabul kriteri, doğrulama komutu |
-| 4 | `ARCHITECTURE.md` | Dokunacağın katmanın MUST/MUST NOT kuralları |
-| 5 | `LEGAL.md` | **Her oturumda.** İhlali projeyi durdurur |
-| 6 | İlgili `docs/` dosyası | `TODO.md`'deki iş hangi dokümanı gösteriyorsa |
-
-Blueprint (`docs/blueprint/`) **referanstır, talimat değildir**. Güncel gerçek `docs/` altındadır.
+This file is **binding on every agent and every developer** working in this
+repository. Where it conflicts with anything else, the precedence order in §3
+applies.
 
 ---
 
-## 2. Değişmezler
+## 1. Required reading order
 
-İhlali kabul edilemez. Her biri bir ADR'ye ve bir kapıya bağlıdır.
+Every session, before writing code, in this order:
 
-### 2.1 Hukuki değişmezler — en yüksek öncelik
-
-| # | Kural | ADR | Kapı |
-|---|---|---|---|
-| **H1** | Depoda, kodda, yorumda, commit mesajında, issue'da, dokümanda **hiçbir üçüncü taraf ticari ürün adı geçmez** | [0006](docs/architecture/adr/0006-independent-development-policy.md) | `make gate-names` |
-| **H2** | Hiçbir ticari yazılım tersine mühendislikle incelenmez, disassemble/decompile edilmez | [0006](docs/architecture/adr/0006-independent-development-policy.md) | İnceleme + PR beyanı |
-| **H3** | Başka bir üründen metin, etiket, ikon, düzen, şema veya veri formatı kopyalanmaz | [0006](docs/architecture/adr/0006-independent-development-policy.md) | İnceleme + PR beyanı |
-| **H4** | Karşılaştırmalı pazarlama yapılmaz ("X alternatifi", "X'ten iyi") | [0006](docs/architecture/adr/0006-independent-development-policy.md) | `make gate-names` |
-| **H5** | Yalnızca Apache-2.0 uyumlu lisanslı kod kullanılır (MIT/BSD/Apache-2.0). GPL/LGPL/AGPL **yasak** | [0005](docs/architecture/adr/0005-apache-2-license.md) | `make gate-deps` |
-
-> H1 neden bu kadar sert: bir rakip adı geçen commit, iyi niyetle yazılmış olsa bile "bilerek kopyalama" iddiasına delil oluşturur. Gerektiğinde jenerik ifade kullan: *"ticari muadiller"*, *"kapalı kaynak alternatifler"*, *"bu kategorideki diğer araçlar"*.
-
-### 2.2 Kimlik değişmezleri
-
-| # | Kural | ADR |
+| # | File | Why |
 |---|---|---|
-| **K1** | Ürün adı **Boreas**. Bundle `com.bubiapps.boreas`, daemon `com.bubiapps.boreas.fanhelper`, CLI `boreas` | [0002](docs/architecture/adr/0002-product-name.md) |
-| **K2** | Ürün adı koda gömülmez; yalnızca `project.yml` değişkenlerinde ve yerelleştirme kataloğunda geçer | [0002](docs/architecture/adr/0002-product-name.md) |
-| **K3** | Ürün adında Apple markası önek olarak kullanılmaz | [0002](docs/architecture/adr/0002-product-name.md) |
+| 1 | `BOOT.md` | Session start protocol and health snapshot |
+| 2 | `AGENTS.md` (this file) | Invariants and working discipline |
+| 3 | `TODO.md` | Next task, acceptance criteria, verification command |
+| 4 | `ARCHITECTURE.md` | MUST / MUST NOT rules for the layer you are touching |
+| 5 | `LEGAL.md` | **Every session.** Breaking it stops the project |
+| 6 | The relevant `docs/` file | Whatever the task in `TODO.md` points at |
 
-### 2.3 Teknoloji değişmezleri
+The blueprint (`docs/blueprint/`) is **reference, not instruction**. The current
+truth lives under `docs/`.
 
-| # | Kural | ADR | Kapı |
+---
+
+## 2. Invariants
+
+Breaking these is not acceptable. Each is tied to an ADR and to a gate.
+
+### 2.1 Legal invariants — highest priority
+
+| # | Rule | ADR | Gate |
 |---|---|---|---|
-| **T1** | Dil **Swift 6.2**, strict concurrency açık. Objective-C yalnızca kaçınılmaz köprülerde | [0001](docs/architecture/adr/0001-native-swift.md) | Derleme |
-| **T2** | Minimum hedef **macOS 14.0**. Daha düşük sürüm API'si varsayılmaz | [0003](docs/architecture/adr/0003-minimum-macos-14.md) | Derleme |
-| **T3** | Mimari **yalnızca arm64**. Intel kod yolu yazılmaz | [0004](docs/architecture/adr/0004-apple-silicon-only.md) | Derleme |
-| **T4** | **Sıfır çalışma zamanı bağımlılığı.** Yalnızca Apple çatıları | [0013](docs/architecture/adr/0013-json-config-zero-deps.md) | `make gate-deps` |
-| **T5** | Proje dosyası `project.yml`'den üretilir; `.xcodeproj` commit edilmez | [0001](docs/architecture/adr/0001-native-swift.md) | `.gitignore` + `make gate-layers` |
+| **H1** | **No third party commercial product name** appears anywhere: code, comments, commit messages, issues, documentation | [0006](docs/architecture/adr/0006-independent-development-policy.md) | `make gate-names` |
+| **H2** | No commercial software is reverse engineered, disassembled or decompiled | [0006](docs/architecture/adr/0006-independent-development-policy.md) | Review + pull request declaration |
+| **H3** | No text, label, icon, layout, schema or data format is copied from another product | [0006](docs/architecture/adr/0006-independent-development-policy.md) | Review + pull request declaration |
+| **H4** | No comparative marketing ("an alternative to X", "better than X") | [0006](docs/architecture/adr/0006-independent-development-policy.md) | `make gate-names` |
+| **H5** | Only Apache-2.0 compatible licences (MIT / BSD / Apache-2.0 / ISC). GPL, LGPL and AGPL are **forbidden** | [0005](docs/architecture/adr/0005-apache-2-license.md) | `make gate-deps` |
+| **H6** | **The repository is written in English** — documents, comments, commits, issues | [0021](docs/architecture/adr/0021-english-only-repository.md) | `make gate-language` |
 
-### 2.4 Mimari değişmezler
+> Why H1 is this strict: a commit that mentions a competitor, however
+> innocently, becomes evidence for a claim of deliberate copying. Intent does
+> not matter; the record is permanent and git history is not erased. Use
+> generic wording instead: *"commercial equivalents"*, *"closed source
+> alternatives"*, *"other tools in this category"*.
 
-| # | Kural | ADR | Kapı |
+### 2.2 Identity invariants
+
+| # | Rule | ADR |
+|---|---|---|
+| **K1** | The product is **Boreas**. Bundle `com.bubiapps.boreas`, helper `com.bubiapps.boreas.fanhelper`, CLI `boreas` | [0002](docs/architecture/adr/0002-product-name.md) |
+| **K2** | The product name is never embedded in code; it appears only in `project.yml` variables and the localisation catalogue | [0002](docs/architecture/adr/0002-product-name.md) |
+| **K3** | An Apple trademark is never used as a prefix in the product name | [0002](docs/architecture/adr/0002-product-name.md) |
+
+### 2.3 Technology invariants
+
+| # | Rule | ADR | Gate |
 |---|---|---|---|
-| **M1** | `Packages/Core` **IOKit, SwiftUI, AppKit veya herhangi bir donanım API'sine bağlanmaz.** Yalnızca Foundation | [0012](docs/architecture/adr/0012-core-layer-purity.md) | `make gate-layers` |
-| **M2** | Tüm donanım erişimi protokol arkasındadır; her protokolün `Live` + `Mock` uygulaması vardır | [0011](docs/architecture/adr/0011-hardware-abstraction.md) | `make gate-layers` |
-| **M3** | Sıcaklık okuma **ayrıcalık gerektirmez**. Daemon yalnızca fan yazımı için vardır | [0007](docs/architecture/adr/0007-privilege-split.md) | İnceleme |
-| **M4** | Daemon dosya yolu, komut, betik veya rastgele veri **kabul etmez**. XPC yüzeyi §14.2'deki dört metotla sınırlıdır | [0008](docs/architecture/adr/0008-smappservice-xpc.md) | `make gate-daemon` |
-| **M5** | Daemon yapılandırma **okumaz**. Root tarafında ayrıştırılan kullanıcı verisi yoktur | [0007](docs/architecture/adr/0007-privilege-split.md) | `make gate-daemon` |
-| **M6** | Daemon'un ağ erişimi **yoktur** | [0007](docs/architecture/adr/0007-privilege-split.md) | `make gate-daemon` |
+| **T1** | **Swift 6.2**, strict concurrency on. Objective-C only where a bridge is unavoidable | [0001](docs/architecture/adr/0001-native-swift.md) | Build |
+| **T2** | Minimum target **macOS 14.0**. Never assume an older API | [0003](docs/architecture/adr/0003-minimum-macos-14.md) | Build |
+| **T3** | **arm64 only**. No Intel code path | [0004](docs/architecture/adr/0004-apple-silicon-only.md) | Build |
+| **T4** | **Zero runtime dependencies.** Apple frameworks only | [0013](docs/architecture/adr/0013-json-config-zero-deps.md) | `make gate-deps` |
+| **T5** | The Xcode project is generated from `project.yml`; `.xcodeproj` is never committed | [0001](docs/architecture/adr/0001-native-swift.md) | `.gitignore` + `make gate-layers` |
 
-### 2.5 Güvenlik değişmezleri
+### 2.4 Architecture invariants
 
-| # | Kural | ADR | Kapı |
+| # | Rule | ADR | Gate |
 |---|---|---|---|
-| **G1** | Güvenlik zinciri katmanları **yalnızca yukarı düzeltir**. Hiçbir katman fan hızını düşüremez | [0010](docs/architecture/adr/0010-continuous-curve-model.md) | Invariant testi |
-| **G2** | K2 (termal durum) ve K3 (panik eşiği) **kapatılamaz**. Kullanıcı panik eşiğini düşürebilir, yükseltemez | [0009](docs/architecture/adr/0009-watchdog-dead-man-switch.md) | Invariant testi |
-| **G3** | Watchdog zaman aşımı **10–60 sn aralığında kilitlidir**, devre dışı bırakılamaz | [0009](docs/architecture/adr/0009-watchdog-dead-man-switch.md) | Invariant testi |
-| **G4** | Uygulama sonlandığında, çöktüğünde, uyku veya kapanışta fanlar **koşulsuz** firmware'e devredilir | [0009](docs/architecture/adr/0009-watchdog-dead-man-switch.md) | Invariant + duman testi |
-| **G5** | XPC bağlantısı **çift yönlü** kod imzası doğrulaması yapar | [0008](docs/architecture/adr/0008-smappservice-xpc.md) | Invariant testi |
-| **G6** | Hiçbir yapılandırma hatası uygulamayı çökertmez; son geçerli hale dönülür ve fanlar firmware'de kalır | [0013](docs/architecture/adr/0013-json-config-zero-deps.md) | Birim testi |
+| **M1** | `Packages/Core` **never imports IOKit, SwiftUI, AppKit or any hardware API.** Foundation only | [0012](docs/architecture/adr/0012-core-layer-purity.md) | `make gate-layers` |
+| **M2** | All hardware access sits behind a protocol; every protocol has a `Live` and a `Mock` implementation | [0011](docs/architecture/adr/0011-hardware-abstraction.md) | `make gate-layers` |
+| **M3** | Reading temperatures **requires no privileges**. The helper exists only to write fan speeds | [0007](docs/architecture/adr/0007-privilege-split.md) | Review |
+| **M4** | The helper accepts no file path, command, script or arbitrary data. The XPC surface is exactly four methods | [0008](docs/architecture/adr/0008-smappservice-xpc.md) | `make gate-daemon` |
+| **M5** | The helper **reads no configuration**. Nothing user supplied is parsed as root | [0007](docs/architecture/adr/0007-privilege-split.md) | `make gate-daemon` |
+| **M6** | The helper has **no network access** | [0007](docs/architecture/adr/0007-privilege-split.md) | `make gate-daemon` |
 
-### 2.6 Gizlilik değişmezleri
+### 2.5 Safety invariants
 
-| # | Kural | ADR | Kapı |
+| # | Rule | ADR | Gate |
 |---|---|---|---|
-| **P1** | **Sıfır telemetri.** Analitik SDK'sı, çökme raporlama SDK'sı, reklam kimliği yoktur | [0014](docs/architecture/adr/0014-zero-telemetry.md) | `make gate-privacy` |
-| **P2** | Varsayılan durumda uygulama **hiçbir ağ bağlantısı kurmaz** | [0014](docs/architecture/adr/0014-zero-telemetry.md) | `make gate-privacy` |
-| **P3** | Log satırları kişisel veri içermez: kullanıcı adı, dosya yolu, ağ bilgisi loglanmaz | [0014](docs/architecture/adr/0014-zero-telemetry.md) | İnceleme + birim testi |
+| **G1** | Safety chain layers **only raise**. No layer may lower a fan speed | [0010](docs/architecture/adr/0010-continuous-curve-model.md) | Invariant test |
+| **G2** | K2 (thermal state) and K3 (panic threshold) **cannot be switched off**. The panic threshold may be lowered, never raised | [0009](docs/architecture/adr/0009-watchdog-dead-man-switch.md) | Invariant test |
+| **G3** | The watchdog timeout is **locked to 10–60 seconds** and cannot be disabled | [0009](docs/architecture/adr/0009-watchdog-dead-man-switch.md) | Invariant test |
+| **G4** | On quit, crash, sleep or shutdown the fans are handed back to firmware **unconditionally** | [0009](docs/architecture/adr/0009-watchdog-dead-man-switch.md) | Invariant + smoke test |
+| **G5** | The XPC connection verifies code signatures in **both directions** | [0008](docs/architecture/adr/0008-smappservice-xpc.md) | Invariant test |
+| **G6** | No configuration error crashes the application; it falls back to the last valid state and the fans stay with the firmware | [0013](docs/architecture/adr/0013-json-config-zero-deps.md) | Unit test |
 
-### 2.7 İzin değişmezleri
+### 2.6 Privacy invariants
 
-| # | Kural |
+| # | Rule | ADR | Gate |
+|---|---|---|---|
+| **P1** | **Zero telemetry.** No analytics SDK, no crash reporting SDK, no advertising identifier | [0014](docs/architecture/adr/0014-zero-telemetry.md) | `make gate-privacy` |
+| **P2** | By default the application makes **no network connection at all** | [0014](docs/architecture/adr/0014-zero-telemetry.md) | `make gate-privacy` |
+| **P3** | Log lines contain no personal data: no user name, no file path, no network information | [0014](docs/architecture/adr/0014-zero-telemetry.md) | Review + unit test |
+
+### 2.7 Permission invariants
+
+| # | Rule |
 |---|---|
-| **İ1** | SIP devre dışı bırakma, kernel extension, DriverKit sürücüsü, Recovery Mode adımı **istenmez** |
-| **İ2** | Tam Disk Erişimi, Erişilebilirlik, Ekran Kaydı, kamera/mikrofon/konum izni **istenmez** |
-| **İ3** | Yönetici kimlik doğrulaması **yalnızca bir kez**, yalnızca daemon kurulumunda istenir |
-| **İ4** | Daemon kurulmadığında uygulama **tam işlevli izleme aracıdır**, hata göstermez |
+| **İ1** | Never ask for SIP to be disabled, a kernel extension, a DriverKit driver or a Recovery Mode step |
+| **İ2** | Never ask for Full Disk Access, Accessibility, Screen Recording, camera, microphone or location |
+| **İ3** | Administrator authentication is requested **once**, and only to install the helper |
+| **İ4** | Without the helper the application is a **fully working monitor** and shows no error |
 
-### 2.8 Yerelleştirme değişmezleri
+### 2.8 Localisation invariants
 
-| # | Kural | Kapı |
+| # | Rule | Gate |
 |---|---|---|
-| **Y1** | Kullanıcıya görünen hiçbir metin kodda sabit yazılmaz; `String(localized:)` zorunlu | `make gate-i18n` |
-| **Y2** | Her dize için `comment` alanı doldurulur — çevirmen bağlamsız çeviremez | `make gate-i18n` |
-| **Y3** | Sabit piksel **genişlikli veya yükseklikli** metin kabı yoktur | Pseudo-locale testi |
-| **Y4** | Eksik çeviri kaynak dile (`en`) düşer, asla boş görünmez | Birim testi |
+| **Y1** | No user facing string is hard coded; `String(localized:)` is required | `make gate-i18n` |
+| **Y2** | Every string carries a `comment` — a translator cannot work without context | `make gate-i18n` |
+| **Y3** | No text container has a fixed pixel width or height | Pseudo-locale test |
+| **Y4** | A missing translation falls back to the source language, never to blank | Unit test |
 
 ---
 
-## 3. Kaynakların önceliği
+## 3. Source precedence
 
-Çelişki durumunda yukarıdan aşağı:
+When sources conflict, from the top:
 
-1. **Kullanıcının bu oturumdaki açık talimatı**
-2. **Hukuki değişmezler (§2.1)** — kullanıcı talebi bile bunları geçersiz kılmaz; çelişki varsa dur ve sor
-3. **Güvenlik değişmezleri (§2.5)**
-4. **ADR'ler** (`docs/architecture/adr/`)
-5. **TODO.md** — sıradaki iş ve kabul kriteri
-6. **Bu dosya**
-7. `docs/` ağacı
-8. `docs/blueprint/` — yalnızca tarihsel referans
+1. **The user's explicit instruction in this session**
+2. **Legal invariants (§2.1)** — not overridden even by a user request; if there
+   is a conflict, stop and ask
+3. **Safety invariants (§2.5)**
+4. **ADRs** (`docs/architecture/adr/`)
+5. **`TODO.md`** — the current task and its acceptance criteria
+6. **This file**
+7. The `docs/` tree
+8. `docs/blueprint/` — historical reference only
 
 ---
 
-## 4. "Sıradaki işi yap" algoritması
+## 4. Choosing the next task
 
-**Seçim modele bırakılmaz — makineye sorulur:**
+**The choice is not left to judgement — it is asked of a machine:**
 
 ```bash
 make next
 ```
 
-Bu komut `TODO.md`'yi ayrıştırır ve **manuel işe bağlı her işi atlayarak** sıradaki yapılabilir atomik işi döndürür. Faz sınırı tanımaz: bir fazın kalan işleri bloke ise sonraki fazın bloke olmayan işine geçer.
+This parses `TODO.md` and returns the next actionable task, **skipping anything
+blocked on a manual task**. It ignores phase boundaries: if the rest of a phase
+is blocked it moves to the next phase's unblocked work.
 
-| Çıkış kodu | Anlamı | Ne yapılır |
+| Exit code | Meaning | What to do |
 |---|---|---|
-| `0` | Yapılabilir iş var | O işi yap |
-| `1` | Yapılabilir iş yok | Çıktı hangi manuel işlerin beklendiğini söyler. **Dur ve proje sahibine bildir** |
-| `2` | Ayrıştırma hatası | `TODO.md` biçimi bozulmuş; önce onu düzelt |
+| `0` | There is work | Do it |
+| `1` | Nothing actionable | The output names the manual tasks being waited on. **Stop and tell the project owner** |
+| `2` | Parse error | `TODO.md` formatting is broken; fix that first |
 
-### Sözleşme
+### The contract
 
-`make next`'in doğru çalışması `TODO.md`'nin şu biçimi korumasına bağlıdır:
+`make next` only works while `TODO.md` keeps this shape:
 
-| Öğe | Biçim |
+| Element | Format |
 |---|---|
-| Atomik iş | `- [ ] **P<n>.<nn> — Başlık.** açıklama` |
-| Manuel blokaj | Satır sonunda `⛔ M03` (birden fazla: `⛔ M03 M04`) |
-| Faz bağımlılığı | Faz bloğunda `- **Bağımlılık:** P1, P2` |
-| Manuel iş durumu | Manuel işler tablosunda son sütun; `OPEN` dışındaki her değer çözülmüş sayılır |
+| Atomic task | `- [ ] **P<n>.<nn> — Title.** description` |
+| Manual blocker | `⛔ M03` at the end of the line (several: `⛔ M03 M04`) |
+| Phase dependency | `- **Bağımlılık:** P1, P2` inside the phase block |
+| Manual task status | Last column of the manual tasks table; anything other than `OPEN` counts as resolved |
 
-**Yeni iş eklerken bu biçime uy.** Bir iş manuel bir şeye bağlıysa `⛔` işaretini koy — koymazsan ajan o işe girer ve yarıda kalır.
+**Follow this shape when adding work.** If a task depends on something manual,
+mark it with `⛔` — without that marker an agent will start it and stall.
 
-### Sonrasında
+### Afterwards
 
-1. Seçilen işi yap. `TODO.md`'deki iş metnindeki kısıtlara uy.
-2. Doğrulama komutlarını **çalıştır**, çıktıyı gör.
-3. §8 Definition of Done listesini geç.
-4. Oturumu kapat (§9): checkbox + durum özeti + Run Log — **aynı değişiklikte**.
+1. Do the task, honouring the constraints in its description.
+2. **Run** the verification commands and read the output.
+3. Pass the Definition of Done in §8.
+4. Close the session (§9): checkbox, status summary and run log, **in the same
+   change**.
 
-**Tek oturumda birden fazla iş yapılabilir**, ama her biri kendi Run Log kaydını alır ve her birinden sonra `make next` yeniden çalıştırılır.
+**More than one task per session is fine**, but each gets its own run log entry,
+and `make next` is run again after each.
 
 ---
 
-## 5. Durum ve Run Log disiplini
+## 5. Status and run log discipline
 
-### Faz durumları
+### Phase status
 
-| Durum | Anlamı |
+| Status | Meaning |
 |---|---|
-| `NOT_STARTED` | Hiçbir alt iş başlamadı |
-| `IN_PROGRESS` | En az bir alt iş bitti, hepsi bitmedi |
-| `BLOCKED` | Kalan tüm işler dış bağımlılık bekliyor |
-| `DONE` | Tüm alt işler bitti **ve** kabul kriterleri kanıtlandı |
+| `NOT_STARTED` | No sub-task has begun |
+| `IN_PROGRESS` | At least one sub-task is done, not all |
+| `BLOCKED` | Every remaining task waits on something external |
+| `DONE` | All sub-tasks complete **and** acceptance criteria evidenced |
 
-### Run Log kuralı
+### Run log rule
 
-| Durum | Ne zaman yazılır |
+| Value | When |
 |---|---|
-| `PASS` | Komut çalıştırıldı, geçti |
-| `FAIL` | Komut çalıştırıldı, kaldı — iş `DONE` yapılamaz |
-| `NOT RUN` | **Komut çalıştırılamadı + nedeni.** İş `DONE` yapılamaz |
+| `PASS` | The command ran and succeeded |
+| `FAIL` | The command ran and failed — the task cannot be `DONE` |
+| `NOT RUN` | **The command could not be run, plus the reason.** The task cannot be `DONE` |
 
-> "Yazdım, çalışıyordur" yasaktır. Doğrulanmamış iş bitmemiştir.
+> "I wrote it, it probably works" is forbidden. Unverified work is unfinished
+> work.
 
 ---
 
-## 6. Kod kuralları
+## 6. Code rules
 
-### 6.1 Genel
+### 6.1 General
 
-- `swift-format` ile biçimlendirme, `SwiftLint` ile denetim — ikisi de CI'da bloklayıcı
-- Tüm genel API'ler için dokümantasyon yorumu zorunlu
-- **Kod, yorum ve commit mesajları İngilizce.** Proje yönetim dokümanları Türkçe
-- Türkçe karakter kod tanımlayıcılarında kullanılmaz
-- Sihirli sayı yasak — adlandırılmış sabit veya yapılandırma alanı
+- Formatting by `swift-format`, rules by `SwiftLint` — both blocking in CI
+- Documentation comments required on all public API
+- **Code, comments, commit messages and documentation are English** (H6)
+- No magic numbers — named constants or configuration fields
 
 ### 6.2 `Packages/Core`
 
-- **`import IOKit`, `import SwiftUI`, `import AppKit` YASAK** (M1)
-- Zorla açma (`!`) yasak — lint kuralı ile denetlenir
-- Tüm tipler `Sendable`
-- Motor fonksiyonları **saf**: aynı girdi → aynı çıktı, yan etki yok
-- Her genel fonksiyonun birim testi olmalı
+- **`import IOKit`, `import SwiftUI`, `import AppKit` are forbidden** (M1)
+- Force unwrapping (`!`) is forbidden — enforced by lint
+- All types are `Sendable`
+- Engine functions are **pure**: same input, same output, no side effects
+- Every public function has a unit test
 
 ### 6.3 `Packages/HardwareKit`
 
-- Her protokolün en az `Live` ve `Mock` uygulaması olmalı (M2)
-- `Live` uygulamaları **asla** doğrudan kullanılmaz; enjekte edilir
-- Donanım hatası **fırlatılır**, yutulmaz; çağıran zarif düşüş uygular
-- Bilinmeyen sensör/anahtar → atla + uyarı logla, **çökme yok**
+- Every protocol has at least a `Live` and a `Mock` implementation (M2)
+- `Live` implementations are **never** used directly; they are injected
+- Hardware errors are **thrown, not swallowed**; the caller degrades gracefully
+- An unknown sensor or key is skipped with a warning — **never a crash**
 
 ### 6.4 `Daemon`
 
-- XPC yüzeyi §2.4 M4'teki dört metotla sınırlı — **yeni metot eklemek ADR gerektirir**
-- Her gelen komut `SafetyGovernor`'dan geçer
-- Gelen hiçbir veri dosya yolu veya komut olarak yorumlanmaz
-- Ağ API'si import edilmez (M6)
+- The XPC surface is the four methods in §2.4 M4 — **adding one requires an ADR**
+- Every incoming command passes through the safety filter
+- Nothing received is interpreted as a file path or a command
+- No network API is imported (M6)
 
 ### 6.5 `App`
 
-- Donanım erişen kod **asla** `@MainActor` üzerinde çalışmaz
-- Tüm kullanıcı metinleri `String(localized:)` (Y1)
-- Renk tek başına bilgi taşımaz — sayı veya etiketle desteklenir
-- Sabit boyutlu metin kabı yok (Y3)
+- Code that touches hardware **never** runs on `@MainActor`
+- All user text goes through `String(localized:)` (Y1)
+- Colour alone never carries meaning — always paired with a number or label
+- No fixed size text container (Y3)
 
 ---
 
-## 7. Doküman güncelleme protokolü
+## 7. Documentation update protocol
 
-Bir değişiklik yaptığında **hangi dosyaları güncelleyeceğin yazılıdır**:
+When you change something, **which files to update is written down**:
 
-| Değişiklik tipi | Güncellenecek dosyalar |
+| Change type | Files to update |
 |---|---|
-| Yeni mimari/teknoloji kararı | Yeni ADR + `ARCHITECTURE.md` ADR tablosu + `docs/architecture/adr/README.md` indeksi |
-| Blueprint'ten sapma | **ADR zorunlu** + ilgili `docs/` dosyası + `docs/reference/blueprint-map.md` |
-| Yeni değişmez | `AGENTS.md` §2 + ADR + **kapı script'i** + `BOOT.md` snapshot |
-| Yeni kapı | `Makefile` + `scripts/gates/` + `BOOT.md` + ilgili ADR `Zorlama` bölümü |
-| Yeni faz/iş | `TODO.md` faz bloğu + durum özeti |
-| Yeni risk | `docs/reference/risks.md` |
-| Yeni manuel iş | `TODO.md` manuel işler tablosu |
-| Kontrol motoru davranışı | `docs/product/control-model.md` + invariant testi |
-| Yapılandırma şeması | `docs/architecture/configuration.md` + `schema/config.schema.json` + göç testi |
-| Yeni komut/script | `Makefile` + `docs/development/setup.md` + `README.md` komut tablosu |
-| Yeni kullanıcı metni | Yerelleştirme kataloğu (5 dil) + `comment` alanı |
+| New architecture or technology decision | New ADR + `ARCHITECTURE.md` table + `docs/architecture/adr/README.md` index |
+| Deviation from the blueprint | **ADR required** + the relevant `docs/` file + `docs/reference/blueprint-map.md` |
+| New invariant | `AGENTS.md` §2 + ADR + **a gate script** + `BOOT.md` snapshot |
+| New gate | `Makefile` + `scripts/gates/` + `BOOT.md` + the ADR's Enforcement section |
+| New phase or task | `TODO.md` phase block + status summary |
+| New risk | `docs/reference/risks.md` |
+| New manual task | `TODO.md` manual tasks table |
+| Control engine behaviour | `docs/product/control-model.md` + invariant test |
+| Configuration schema | `docs/architecture/configuration.md` + `schema/config.schema.json` + migration test |
+| New command or script | `Makefile` + `docs/development/setup.md` + `README.md` command table |
+| New user facing string | Localisation catalogue (five languages) + `comment` field |
 
-**Kural:** Aynı olgu iki dosyaya yazılmaz. İkinci yer birinciye link verir.
+**Rule:** the same fact is never written in two files. The second place links to
+the first.
 
-**Kural:** Kod yazıldıktan sonra dokümanda kod kopyası tutulmaz — kaynağa işaret edilir.
+**Rule:** once code exists, documentation points at the source rather than
+copying it.
 
 ---
 
 ## 8. Definition of Done
 
-Bir atomik iş, aşağıdakilerin **hepsi** doğruysa `DONE`:
+A task is `DONE` only when **all** of these hold:
 
-- [ ] İş metnindeki her şey yapıldı
-- [ ] Kabul kriteri **kanıtla** karşılandı (test çıktısı, komut çıktısı, ekran görüntüsü)
-- [ ] `make check` geçti (veya `NOT RUN` + neden Run Log'da)
-- [ ] Yeni davranış için test yazıldı; değişmez etkileniyorsa invariant testi
-- [ ] §7'deki protokole göre dokümanlar güncellendi
-- [ ] Yeni değişmez eklendiyse kapısı da eklendi **ve kasıtlı ihlalle kanıtlandı**
-- [ ] `make gate-names` geçti (H1 — her işte)
-- [ ] Checkbox `[x]`, durum özeti ve Run Log **aynı değişiklikte** güncellendi
-
----
-
-## 9. Oturum kapanışı
-
-Üçü birden, aynı değişiklikte:
-
-1. `TODO.md` içinde checkbox `[x]`
-2. `TODO.md` durum özeti tablosu (faz durumu + sıradaki iş)
-3. `TODO.md` Run Log kaydı + `Next: P<n>.<nn>`
-
-Üçünden biri eksikse sistem bir sonraki oturumda yalan söyler.
+- [ ] Everything the task description asks for is done
+- [ ] The acceptance criterion is met **with evidence** — test output, command
+      output, a screenshot
+- [ ] `make check` passes (or `NOT RUN` plus the reason is in the run log)
+- [ ] Tests cover the new behaviour; an invariant test if an invariant is involved
+- [ ] Documentation updated per §7
+- [ ] If a gate was added, **a deliberate violation was shown to trip it**
+- [ ] `make gate-names` passes (H1 — every task)
+- [ ] Checkbox, status summary and run log updated **in the same change**
 
 ---
 
-## 10. Dış yetki
+## 9. Closing a session
 
-### Ajanın yapamayacakları — `TODO.md` manuel işler tablosuna yazılır
+Three things, in the same change:
 
-- Marka tescil araması ve hukuki onay
-- Apple Developer hesabı işlemleri, sertifika üretimi, App Store Connect API anahtarı
-- GitHub deposu oluşturma, gizli değer (secret) tanımlama
-- Homebrew cask gönderimi
-- Sahip olunmayan donanımda test
-- Çeviri kalite onayı (anadili konuşuru gerektiren)
+1. `TODO.md` checkbox `[x]`
+2. `TODO.md` status summary table (phase status and next task)
+3. `TODO.md` run log entry plus `Next: P<n>.<nn>`
 
-### Ajanın yapması gerekenler — manuel işe **yazılmaz**
-
-- Yerel araç kurulumu (`brew install xcodegen swiftlint swift-format`)
-- Bozuk yerel kurulum onarımı
-- `xcodegen generate` çalıştırma
-- Script yazma, kapı kurma, test yazma
-- Doküman güncelleme
-
-Ayırt edici soru: *"proje sahibinin bir konsola girmesi veya bir karar vermesi gerekiyor mu?"*
+If any of the three is missing, the system lies to the next session.
 
 ---
 
-## 10.1 Proje sahibinin çalışma tercihleri
+## 10. External authority
 
-Bunlar bir kereye mahsus talimat değil, **kalıcı tercihlerdir**.
+### Not yours to do — record in the `TODO.md` manual tasks table
 
-| Tercih | Uygulama |
+- Trademark searches and legal approval
+- Apple Developer account operations, certificate generation, App Store Connect keys
+- Creating the GitHub repository, defining secrets
+- Homebrew cask submission
+- Testing on hardware you do not have
+- Translation quality approval that needs a native speaker
+
+### Yours to do — **not** manual tasks
+
+- Installing local tools (`brew install xcodegen swiftlint xcbeautify`)
+- Repairing a broken local installation
+- Running `xcodegen generate`
+- Writing scripts, gates and tests
+- Updating documentation
+
+The distinguishing question: *does the project owner need to sign into a console
+or make a decision?*
+
+## 10.1 The project owner's working preferences
+
+These are standing preferences, not one-off instructions.
+
+| Preference | How it applies |
 |---|---|
-| **Kararlar tek tek sorulur** | Birden fazla açık karar varsa hepsini tek seferde toplu sorma. Sırayla, her birinin sonucunu bir öncekine göre değerlendirerek sor |
-| Öneri şart | Her seçenek setinde bir öneri ve gerekçesi bulunmalı |
-| Kısıt geldiğinde geri it | Bir istek maliyet/fayda dengesi bozuyorsa uygulamadan önce gerekçeyle belirt (ör. 5 dilde dokümantasyon talebi arayüz/doküman ayrımına çevrildi) |
+| **Ask about decisions one at a time** | When several decisions are open, do not batch them into one question. Ask in sequence, weighing each answer against the previous one |
+| A recommendation is required | Every set of options comes with a recommendation and its reasoning |
+| Push back when a constraint costs more than it returns | If a request breaks the cost/benefit balance, say so with reasons before implementing it |
 
 ---
 
-## 11. Repo hijyeni
+## 11. Repository hygiene
 
-- Arama için `rg` (ripgrep) tercih edilir; `grep -r` yavaş ve gürültülü
-- **Yasak git işlemleri:** `push --force` (paylaşılan dala), `rebase` (yayınlanmış commit'e), `reset --hard` (commit edilmemiş iş varken), geçmiş yeniden yazma
-- Commit mesajları **Conventional Commits**: `feat:` `fix:` `docs:` `refactor:` `test:` `chore:`
-- Bir commit bir işi kapatır; karışık commit yasak
-- `.xcodeproj` commit edilmez (T5)
+- Prefer `rg` (ripgrep) for searching; `grep -r` is slow and noisy
+- **Forbidden git operations:** `push --force` to a shared branch, `rebase` of
+  published commits, `reset --hard` with uncommitted work, rewriting history
+- Commit messages follow **Conventional Commits**: `feat:` `fix:` `docs:`
+  `refactor:` `test:` `chore:`
+- One commit closes one task; mixed commits are not acceptable
+- `.xcodeproj` is never committed (T5)
 
 ---
 
-## 12. Yasak kestirmeler
+## 12. Forbidden shortcuts
 
-| Anti-pattern | Neden yasak |
+| Anti-pattern | Why it is forbidden |
 |---|---|
-| Doğrulama çalıştırmadan `[x]` işaretlemek | Sistem bir sonraki oturumda yalan söyler |
-| Kapı yazıp ihlalle kanıtlamamak | Çalıştığı kanıtlanmamış kapı, kapı değildir |
-| Blueprint'i "düzeltmek" | Dondurulmuştur; sapma ADR ile kaydedilir |
-| Değişmezi ADR'siz değiştirmek | Kararın gerekçesi kaybolur |
-| `Core` içine "geçici olarak" IOKit import etmek | Test edilebilirlik çöker; geçici hiçbir zaman geçici olmaz |
-| Donanım hatasını `try?` ile yutmak | Sessiz başarısızlık, teşhis edilemez hata raporu |
-| Kullanıcı metnini kodda sabit yazmak | 5 dil kırılır |
-| Rakip ürün adını "sadece not olarak" yazmak | **H1 ihlali — mutlak yasak** |
-| Blokaj yüzünden çalışmayı durdurmak | Bloke iş atlanır, bağımsız işe geçilir |
-| Doküman güncellemeden kod yazmak | Drift başlar |
+| Ticking a checkbox without running the verification | The system lies to the next session |
+| Adding a gate without proving it with a violation | A gate never shown to fail is not a gate |
+| "Fixing" the blueprint | It is frozen; deviations are recorded as ADRs |
+| Changing an invariant without an ADR | The reasoning behind the decision is lost |
+| Importing IOKit into `Core` "just for now" | Testability collapses, and nothing temporary ever is |
+| Swallowing a hardware error with `try?` | Silent failure, undiagnosable bug reports |
+| Hard coding a user facing string | Five languages break |
+| Writing a competitor's name "just as a note" | **H1 violation — absolutely forbidden** |
+| Stopping work because something is blocked | Skip the blocked task, take the next independent one |
+| Writing code without updating documentation | Drift starts |
+| Writing anything in the repository in another language | **H6 violation** — see [ADR 0021](docs/architecture/adr/0021-english-only-repository.md) |

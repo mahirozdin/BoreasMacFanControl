@@ -1,11 +1,11 @@
-# BOOT.md — Oturum Başlangıç Protokolü
+# BOOT.md — Session Start Protocol
 
-> Son güncelleme: 2026-07-31 — P0.04
-> Her oturum buradan başlar. Adımları atlama.
+> Last updated: 2026-08-04 — ADR 0021
+> Every session starts here. Do not skip steps.
 
 ---
 
-## 1. Başlangıç kontrolü
+## 1. Where am I
 
 ```bash
 pwd
@@ -14,7 +14,7 @@ git branch --show-current
 git log --oneline -3
 ```
 
-**Beklenen kök göstergeleri** — bunlar yoksa yanlış dizindesin:
+**Expected markers** — if these are missing you are in the wrong directory:
 
 ```bash
 ls BLUEPRINT.md AGENTS.md TODO.md ARCHITECTURE.md LEGAL.md docs/blueprint/
@@ -22,144 +22,151 @@ ls BLUEPRINT.md AGENTS.md TODO.md ARCHITECTURE.md LEGAL.md docs/blueprint/
 
 ---
 
-## 2. Zorunlu bağlam yükleme
+## 2. Load the required context
 
-Bu sırayla oku:
+Read, in this order:
 
-1. `AGENTS.md` — değişmezler ve çalışma disiplini
-2. `TODO.md` — durum özeti + sıradaki iş
-3. `ARCHITECTURE.md` — dokunacağın katmanın MUST/MUST NOT kuralları
-4. `LEGAL.md` — **her oturumda**
-5. `TODO.md`'deki işin gösterdiği `docs/` dosyası
+1. `AGENTS.md` — invariants and working discipline
+2. `TODO.md` — status summary and next task
+3. `ARCHITECTURE.md` — MUST / MUST NOT rules for the layer you will touch
+4. `LEGAL.md` — **every session**
+5. Whatever `docs/` file the task points at
 
 ---
 
-## 3. Sağlık snapshot'ı
+## 3. Health snapshot
 
-Hepsini çalıştır. **Kırmızı olan varsa önce onu düzelt**, yeni iş alma.
+Run all of it. **If anything is red, fix that before taking new work.**
 
-### 3.1 Kapılar
+### 3.1 Gates
 
 ```bash
 make check
-make next     # sıradaki yapılabilir iş
+make next
 ```
 
-Tek tek çalıştırmak gerekirse:
+Individually, when needed:
 
 ```bash
-make gate-names       # H1 — üçüncü taraf ürün adı / karşılaştırmalı pazarlama
-make blueprint-check  # dondurulmuş kaynak dokunulmamış mı
-make docs-check       # kırık link, matris hedefleri, ADR senkronu
-make gate-layers      # Core katman saflığı (kaynak yoksa atlanır)
-make gate-deps        # bağımlılık lisansı ve sıfır-bağımlılık kuralı
-make gate-privacy     # telemetri / ağ izi
-make gate-i18n        # sabit yazılmış kullanıcı metni
-make gate-daemon      # daemon XPC yüzeyi sınırları
+make gate-names       # H1 — third party product names, comparative marketing
+make gate-language    # H6 — the repository is written in English
+make blueprint-check  # the frozen source is untouched
+make docs-check       # broken links, traceability targets, ADR index
+make gate-layers      # Core purity, Live/Mock coverage
+make gate-deps        # zero dependencies, licence compatibility
+make gate-privacy     # telemetry and network traces
+make gate-i18n        # hard coded user strings
+make gate-daemon      # privileged surface limits
+make gate-coverage    # Core line coverage at or above 85 percent
 ```
 
-### 3.2 İş durumu taraması
+### 3.2 Work status
 
 ```bash
-# Aktif faz ve sıradaki iş
+# Phase table
 grep -nE '^\| P[0-9]+ ' TODO.md
 
-# Bloke işler
+# Blocked work
 grep -nE 'BLOCKED' TODO.md
 
-# Açık manuel işler
+# Open manual tasks
 grep -nE '^\| M[0-9]+ .*OPEN' TODO.md
 ```
 
-### 3.3 Riskli tracked dosya taraması
+### 3.3 Risky tracked files
 
 ```bash
-# Gizli değer veya imzalama materyali depoya girmiş mi
+# Has a secret or signing material been committed
 git ls-files | grep -iE '\.(p12|mobileprovision|provisionprofile|p8)$|^\.env$' \
-  && echo "!!! GIZLI DEGER DEPODA — DERHAL KALDIR" || echo "OK: gizli materyal yok"
+  && echo "SECRET IN REPOSITORY - REMOVE IT NOW" || echo "OK: no signing material"
 
-# Üretilen proje dosyası commit edilmiş mi (T5)
+# Has the generated project been committed (T5)
 git ls-files | grep -E '\.xcodeproj/' \
-  && echo "!!! .xcodeproj commit edilmis — T5 ihlali" || echo "OK: .xcodeproj temiz"
+  && echo ".xcodeproj committed - T5 violation" || echo "OK: .xcodeproj clean"
 ```
 
-> **Not:** Değişmez taramaları yalnızca kaynak uzantılarını tarar. Dokümanlar yasağın kendi metnini içerir ve daraltılmamış tarama yanlış pozitif üretir.
+> **Note:** invariant scans look only at source files. Documentation contains
+> the text of the prohibitions themselves, and an unrestricted scan produces
+> false positives.
 
 ---
 
-## 4. Sıradaki işi seç
+## 4. Pick the next task
 
 ```bash
 make next
 ```
 
-Seçim **deterministiktir** — model yorumuna bırakılmaz. Manuel işe bağlı her iş otomatik atlanır, faz sınırı tanınmaz.
+The choice is **deterministic** — it is not left to judgement. Anything blocked
+on a manual task is skipped automatically, across phase boundaries.
 
-- Çıkış `0` → iş var, yap
-- Çıkış `1` → yapılabilir iş yok; çıktı hangi manuel işlerin beklendiğini söyler, **proje sahibine bildir**
-- Çıkış `2` → `TODO.md` biçimi bozulmuş, önce onu düzelt
+- Exit `0` → there is work, do it
+- Exit `1` → nothing actionable; the output names the manual tasks being waited
+  on. **Tell the project owner**
+- Exit `2` → `TODO.md` formatting is broken; fix that first
 
-Ayrıntı ve biçim sözleşmesi: `AGENTS.md` §4.
-
----
-
-## 5. İşi yap
-
-- `TODO.md`'deki iş metnindeki kısıtlara uy
-- Kabul kriterini karşılayacak **kanıtı** üret
-- Yeni değişmez eklediysen **kapısını da ekle ve kasıtlı ihlalle kanıtla**
+Details and the format contract: `AGENTS.md` section 4.
 
 ---
 
-## 6. Oturumu kapat
+## 5. Do the work
 
-Üçü birden, **aynı değişiklikte**:
+- Honour the constraints in the task description
+- Produce the **evidence** the acceptance criterion asks for
+- If you add an invariant, **add its gate and prove it with a deliberate
+  violation**
+
+---
+
+## 6. Close the session
+
+Three things, in the same change:
 
 1. `TODO.md` checkbox `[x]`
-2. `TODO.md` durum özeti tablosu
-3. `TODO.md` Run Log kaydı + `Next: P<n>.<nn>`
+2. `TODO.md` status summary table
+3. `TODO.md` run log entry plus `Next: P<n>.<nn>`
 
-Sonra commit:
+Then commit:
 
 ```bash
 git add -A
-git commit -m "<tip>: <özet> (P<n>.<nn>)"
+git commit -m "<type>: <summary> (P<n>.<nn>)"
 ```
 
 ---
 
-## 7. Hangi soruya hangi dosya cevap verir
+## 7. Which file answers which question
 
-| Soru | Dosya |
+| Question | File |
 |---|---|
-| Ne yapmalıyım? | `TODO.md` |
-| Neyi yapmamalıyım? | `AGENTS.md` §2, §12 |
-| Bu karar neden böyle? | `docs/architecture/adr/` |
-| Hukuki sınır nedir? | `LEGAL.md` |
-| Katman kuralları neler? | `ARCHITECTURE.md` |
-| Kontrol motoru nasıl çalışır? | `docs/product/control-model.md` |
-| Donanıma nasıl erişilir? | `docs/architecture/hardware-access.md` |
-| Ayrıcalık modeli nedir? | `docs/architecture/privilege-model.md` |
-| Yapılandırma şeması nedir? | `docs/architecture/configuration.md` |
-| Nasıl test edilir? | `docs/development/testing.md` |
-| Nasıl derlenir/imzalanır? | `docs/release/build-and-sign.md` |
-| Blueprint'in şu bölümü nereye gitti? | `docs/reference/blueprint-map.md` |
-| Hangi riskler takip ediliyor? | `docs/reference/risks.md` |
-| Bu terim ne demek? | `docs/reference/glossary.md` |
-| Hangi kararlar kesinleşti? | `docs/reference/decisions.md` |
-| Başlangıçta ne planlanmıştı? | `docs/blueprint/` (referans) |
+| What should I do? | `TODO.md` |
+| What must I not do? | `AGENTS.md` sections 2 and 12 |
+| Why was this decided this way? | `docs/architecture/adr/` |
+| What are the legal boundaries? | `LEGAL.md` |
+| What are the layer rules? | `ARCHITECTURE.md` |
+| How does the control engine work? | `docs/product/control-model.md` |
+| How is hardware accessed? | `docs/architecture/hardware-access.md` |
+| What is the privilege model? | `docs/architecture/privilege-model.md` |
+| What is the configuration schema? | `docs/architecture/configuration.md` |
+| How is it tested? | `docs/development/testing.md` |
+| How is it built and signed? | `docs/release/build-and-sign.md` |
+| Where did a blueprint section go? | `docs/reference/blueprint-map.md` |
+| Which risks are tracked? | `docs/reference/risks.md` |
+| What does this term mean? | `docs/reference/glossary.md` |
+| Which decisions are settled? | `docs/reference/decisions.md` |
+| What was originally planned? | `docs/blueprint/` (reference only) |
 
 ---
 
-## 8. Oturumun ilk mesajı şablonu
+## 8. First message of the session
 
 ```
-BOOT tamam.
-- Dizin: <pwd> · Dal: <branch> · Son commit: <hash> <özet>
-- Kapılar: make check → <PASS / FAIL: hangisi>
-- Aktif faz: P<n> (<durum>) — <tema>
-- Sıradaki iş: P<n>.<nn> — <başlık>
-- Bloke: <varsa manuel iş numaraları, yoksa "yok">
+BOOT complete.
+- Directory: <pwd> - Branch: <branch> - Last commit: <hash> <summary>
+- Gates: make check -> <PASS / FAIL: which one>
+- Active phase: P<n> (<status>) - <theme>
+- Next task: P<n>.<nn> - <title>
+- Blocked: <manual task numbers, or "none">
 
-Başlıyorum.
+Starting.
 ```
