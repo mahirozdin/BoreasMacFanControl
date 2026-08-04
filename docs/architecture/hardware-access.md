@@ -69,7 +69,9 @@ Her birinin **üç** uygulaması: `Live` (gerçek) · `Mock` (deterministik) · 
 
 Ham adlar iki katmandan geçer: **normalleştirme** (önek/sonek temizliği, kısaltma açma) → **sınıflandırma** (desen tabanlı grup ataması).
 
-Grup taksonomisi: `compute.performance` · `compute.efficiency` · `graphics` · `memory` · `storage` · `power` · `battery` · `chassis` · `airflow` · `wireless` · `uncategorized`
+Grup taksonomisi: **`compute`** · `compute.performance` · `compute.efficiency` · `graphics` · `memory` · `storage` · `power` · `battery` · `chassis` · `airflow` · `wireless` · `uncategorized`
+
+> **`compute`**, blueprint taksonomisine sonradan eklendi. Apple Silicon die sensörlerinin çoğu (`PMU tdie<n>`) hangi kümede olduğunu söylemiyor; küme uydurmak yerine atfedilemeyen die sıcaklıkları bu grupta toplanıyor. Gerekçe ve alternatifler: [ADR 0020](adr/0020-compute-die-sensor-group.md).
 
 **Kural:** Eşleşmeyen sensör **asla gizlenmez.** `uncategorized` altında gösterilir ve kullanıcı tek tıkla rapor oluşturabilir. Bu, yeni çip nesillerine adaptasyonu topluluk eliyle hızlandırır (R2 azaltımı).
 

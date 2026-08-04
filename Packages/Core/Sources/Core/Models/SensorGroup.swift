@@ -8,6 +8,14 @@ import Foundation
 /// ``SensorGroup/uncategorized`` and is still shown to the user — hiding it
 /// would remove the only signal that support for new hardware is incomplete.
 public enum SensorGroup: String, Sendable, Hashable, CaseIterable, Codable {
+    /// Die temperatures that cannot be attributed to a specific cluster.
+    ///
+    /// Apple Silicon reports most of its die sensors as `PMU tdie<n>`, with
+    /// nothing to say which cluster each one sits in. Filing them as
+    /// performance would be inventing information; filing them under `power`
+    /// (which is what reports them) left fan curves bound to nothing. See
+    /// ADR 0020.
+    case compute
     case computePerformance = "compute.performance"
     case computeEfficiency = "compute.efficiency"
     case graphics

@@ -1,63 +1,52 @@
 import Core
 import Foundation
 
-/// Reads temperatures from the SMC.
+/// The sensor backend the application uses.
 ///
-/// Key discovery is done at runtime by walking the SMC namespace and keeping
-/// anything that decodes to a plausible temperature. No per-model key table
-/// exists on purpose: those need a release for every new Mac, and this project
-/// is developed on a single machine (see the hardware coverage note in
-/// `docs/development/testing.md`).
-public struct LiveSensorSource: SensorSource {
+/// Concrete wiring only: it prefers ``HIDSensorSource``, because that is the
+/// only backend reporting readable names, and falls back to
+/// ``SMCSensorSource``. The degradation behaviour itself lives in
+/// ``FallbackSensorSource`` so it can be tested against mocks.
+///
+/// ## Why a fallback exists
+///
+/// Both backends are undocumented, but they are **different mechanisms**, so a
+/// single macOS release breaking both is unlikely. Depending on one would mean
+/// a point release could turn the application into a window showing nothing
+/// (risk R1). Fan control is unaffected either way: it never depended on
+/// sensor reads.
+public actor LiveSensorSource: SensorSource {
 
-    public let identifier = "smc"
+    public nonisolated let identifier = "live"
 
-    private let connection: SMCConnection
-    private let overrides: [String: SensorOverride]
+    private let composite: FallbackSensorSource
 
+    /// - Throws: only when neither backend can even be constructed, which
+    ///   means this Mac exposes no temperature interface at all.
     public init(overrides: [String: SensorOverride] = [:]) throws {
-        self.connection = try SMCConnection()
-        self.overrides = overrides
+        let smc = try SMCSensorSource(overrides: overrides)
+
+        if HIDSensorSource.isAvailable, let hid = try? HIDSensorSource(overrides: overrides) {
+            composite = FallbackSensorSource(identifier: "live", preferred: hid, fallback: smc)
+        } else {
+            // No HID interface on this system. The SMC still answers, so the
+            // application runs with hardware keys instead of names rather than
+            // failing outright.
+            composite = FallbackSensorSource(identifier: "live", preferred: smc, fallback: smc)
+        }
     }
 
     public func snapshot() async throws -> [SensorReading] {
-        let keys = try temperatureKeys()
-        guard !keys.isEmpty else {
-            throw HardwareError.noData("no temperature keys found in the SMC namespace")
-        }
-
-        var readings: [SensorReading] = []
-        readings.reserveCapacity(keys.count)
-
-        for key in keys {
-            guard
-                let value = try? connection.readValue(key: key),
-                let celsius = value.numericValue
-            else { continue }
-
-            let reading = SensorClassifier.makeReading(
-                rawName: key,
-                celsius: celsius,
-                overrides: overrides
-            )
-            // A parked cluster reports values far outside anything physical.
-            // Those are dropped here rather than being handed to a fan curve.
-            guard reading.isPlausible else { continue }
-            readings.append(reading)
-        }
-
-        return readings.sorted { $0.displayName < $1.displayName }
+        try await composite.snapshot()
     }
 
-    /// Temperature keys start with `T`. The namespace also holds fan, voltage
-    /// and current keys, which are read elsewhere or not at all.
-    private func temperatureKeys() throws -> [String] {
-        let count = try connection.keyCount()
-        var result: [String] = []
-        for index in 0..<count {
-            guard let key = try? connection.key(at: index) else { continue }
-            if key.hasPrefix("T") { result.append(key) }
-        }
-        return result
+    /// Which backend answered last.
+    public var activeBackend: FallbackSensorSource.Backend {
+        get async { await composite.activeBackend }
+    }
+
+    /// Non-nil when readings are coming from a degraded path.
+    public var degradedReason: String? {
+        get async { await composite.degradedReason }
     }
 }

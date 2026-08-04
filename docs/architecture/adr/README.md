@@ -30,6 +30,7 @@ Format: Michael Nygard — `Bağlam` / `Karar` / `Alternatifler` / `Sonuçlar` /
 | [0017](0017-distribution-channels.md) | Dağıtım kanalları; App Store dışlandı | Kabul | Yayın |
 | [0018](0018-undocumented-sensor-api.md) | Dokümante edilmemiş sensör API'si kabulü | Kabul | Risk |
 | [0019](0019-signing-identity-deferred.md) | İmzalama kimliği P8'e ertelendi | Kabul | Yayın |
+| [0020](0020-compute-die-sensor-group.md) | Küme atfedilemeyen çekirdek sensörleri için `compute` grubu | Kabul | Donanım |
 
 ## Yeni ADR yazarken
 

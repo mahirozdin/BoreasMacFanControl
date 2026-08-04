@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import Core
@@ -59,5 +60,41 @@ struct DutyTests {
         #expect(Duty(0.555).percent == 56)
         #expect(Duty(0).percent == 0)
         #expect(Duty(1).percent == 100)
+    }
+}
+
+@Suite("Fan state")
+struct FanStateTests {
+
+    @Test("current duty reflects where the speed sits in the range")
+    func currentDuty() {
+        let fan = FanState(id: 0, name: "Fan 1", currentRPM: 3000, minimumRPM: 1000, maximumRPM: 5000)
+        #expect(fan.currentDuty.percent == 50)
+    }
+
+    @Test("a parked fan is identified as such rather than as running slowly")
+    func parked() {
+        let fan = FanState(
+            id: 0, name: "Fan 1", currentRPM: 0,
+            minimumRPM: 1200, maximumRPM: 4800, isPoweredOff: true
+        )
+        #expect(fan.isPoweredOff)
+        #expect(fan.currentDuty == Duty.minimum)
+    }
+
+    @Test("fan state round trips through Codable")
+    func codable() throws {
+        let original = FanState(
+            id: 1, name: "Right Side", currentRPM: 2100, minimumRPM: 2000, maximumRPM: 5400)
+        let decoded = try JSONDecoder().decode(FanState.self, from: JSONEncoder().encode(original))
+        #expect(decoded == original)
+    }
+
+    @Test("a reading round trips through Codable")
+    func readingCodable() throws {
+        let original = SensorClassifier.makeReading(rawName: "PMU tdie1", celsius: 44.5)
+        let decoded = try JSONDecoder().decode(SensorReading.self, from: JSONEncoder().encode(original))
+        #expect(decoded == original)
+        #expect(decoded.group == .compute)
     }
 }

@@ -29,7 +29,7 @@ struct SensorClassifierTests {
             ("GPU MTR Temp Sensor1", SensorGroup.graphics),
             ("gas gauge battery", SensorGroup.battery),
             ("NAND CH0 temp", SensorGroup.storage),
-            ("PMGR SOC Die Temp", SensorGroup.power),
+            ("PMGR SOC voltage rail", SensorGroup.power),
             ("LPDDR bank 2", SensorGroup.memory),
             ("Wi-Fi module", SensorGroup.wireless),
             ("Fin Stack Proximity", SensorGroup.airflow),
@@ -151,5 +151,51 @@ struct SMCKeyHeuristicTests {
     func keysAreNotExpanded() {
         #expect(SensorClassifier.normalize(rawName: "TpMz") == "TpMz")
         #expect(SensorClassifier.normalize(rawName: "Tg0D") == "Tg0D")
+    }
+}
+
+@Suite("Die sensors that name no cluster (ADR 0020)")
+struct ComputeGroupTests {
+
+    @Test(
+        "die and device sensors are compute, not power",
+        arguments: ["PMU tdie7", "PMU2 tdie1", "PMU tdev3", "PMU2 tdev5", "SOC die temp"]
+    )
+    func dieSensorsAreCompute(raw: String) {
+        #expect(
+            SensorClassifier.group(rawName: raw) == .compute,
+            "the main cooling signal must not be filed as a power rail"
+        )
+    }
+
+    @Test("calibration keys stay out of the compute group")
+    func calibrationIsNotCompute() {
+        #expect(SensorClassifier.group(rawName: "PMU tcal") == .power)
+        #expect(SensorClassifier.group(rawName: "PMU2 tcal") == .power)
+    }
+
+    @Test("genuine power rails are still power")
+    func realPowerRails() {
+        #expect(SensorClassifier.group(rawName: "PMGR SOC voltage") == .power)
+        #expect(SensorClassifier.group(rawName: "VRM proximity") == .power)
+    }
+
+    @Test("a sensor that does name its cluster keeps the finer group")
+    func explicitClusterWins() {
+        #expect(SensorClassifier.group(rawName: "pACC MTR Temp Sensor1") == .computePerformance)
+        #expect(SensorClassifier.group(rawName: "eACC MTR Temp Sensor1") == .computeEfficiency)
+    }
+
+    @Test("rule order is load bearing: tdie must be tested before pmu")
+    func ruleOrderIsProtected() {
+        // Both needles are present. If the generic pmu rule ran first this
+        // would come back as .power and every fan curve on this hardware
+        // would silently bind to nothing.
+        #expect(SensorClassifier.group(rawName: "PMU tdie1") == .compute)
+    }
+
+    @Test("compute is offered as a fan curve input")
+    func computeIsACurveInput() {
+        #expect(SensorGroup.curveInputCandidates.contains(.compute))
     }
 }

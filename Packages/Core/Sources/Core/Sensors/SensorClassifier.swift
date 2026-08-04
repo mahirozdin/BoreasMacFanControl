@@ -157,6 +157,13 @@ public enum SensorClassifier: Sendable {
     /// specific entries come first — `efficiency` has to be tested before the
     /// generic `cpu`, or every efficiency cluster would be filed as performance.
     private static let rules: [(needles: [String], group: SensorGroup)] = [
+        // Calibration is not a temperature anything should cool by, and it
+        // has to be excluded before the die rules below claim it.
+        (["tcal"], .power),
+        // Die and device sensors: silicon temperature with no cluster given.
+        // Must come before the generic pmu rule, which would otherwise file
+        // the main cooling signal as a power rail. See ADR 0020.
+        (["tdie", "tdev", "die temp"], .compute),
         (["eacc", "efficiency", "ecpu", "e-core"], .computeEfficiency),
         (["pacc", "performance", "pcpu", "p-core"], .computePerformance),
         (["gpu", "graphics"], .graphics),

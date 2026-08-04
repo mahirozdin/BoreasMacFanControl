@@ -3,7 +3,7 @@
 - **Plan sürümü:** 1.0
 - **Baseline tarihi:** 2026-07-31
 - **Kaynak blueprint:** v1.1 (dondurulmuş: `docs/blueprint/boreas-blueprint-v1.1.md`)
-- **Genel durum:** P0, P1 tamam; P2 yarılandı. Gerçek donanımda 174 sensör ve fan okunuyor, 48 test geçiyor. Sıradaki: P2.04 (HID sensör kaynağı — okunabilir sensör adları için).
+- **Genel durum:** P0, P1, P2 tamamlandı. **Çalışan bir izleme aracı var:** menü çubuğu uygulaması gerçek donanımdan adlandırılmış sensörleri ve fanı okuyor, daemon olmadan. 69 test, 9 kapı, Core kapsamı %99,4. Sıradaki: P3.00.
 
 ---
 
@@ -24,8 +24,8 @@
 |---|---|---|---|
 | P0 | `DONE` | Doküman sistemi ve kapılar | (tamamlandı) |
 | P1 | `DONE` | Depo iskeleti ve araç zinciri | (tamamlandı) |
-| P2 | `IN_PROGRESS` | Donanım okuma + Mock/Replay | **P2.04 — HID sensör kaynağı** |
-| P3 | `NOT_STARTED` | Ayrıcalık katmanı ve daemon | P3.01 |
+| P2 | `DONE` | Donanım okuma + Mock/Replay | (tamamlandı) |
+| P3 | `NOT_STARTED` | Ayrıcalık katmanı ve daemon | **P3.00 — ampirik imza doğrulaması** |
 | P4 | `NOT_STARTED` | Fan kontrolü ve güvenlik zinciri | P4.01 |
 | P5 | `NOT_STARTED` | Kontrol motoru | P5.01 |
 | P6 | `NOT_STARTED` | Kullanıcı arayüzü | P6.01 |
@@ -141,7 +141,7 @@ R7 (tükenmişlik) — P1 mekanik ve kısa tutulmalı.
 ## P2 — Donanım okuma + Mock/Replay
 
 - **ID:** P2
-- **Durum:** `IN_PROGRESS`
+- **Durum:** `DONE`
 - **Bağımlılık:** P1
 - **Amaç:** Ayrıcalıksız izleme çalışsın; **soyutlama katmanı ilk günden yerinde olsun**.
 
@@ -152,13 +152,13 @@ R7 (tükenmişlik) — P1 mekanik ve kısa tutulmalı.
 - [x] **P2.01 — Protokoller.** `SensorSource`, `FanSource`, `PowerSource` (**`FanActuator` P4.01'e taşındı** — yazma yolu, `Live` uygulaması daemon'a bağlı) — `SharedIPC`/`HardwareKit` içinde. Model tipleri `Core`'da, hepsi `Sendable`.
 - [x] **P2.02 — `MockSensorSource` + `MockFanSource`.** Senaryo dosyasından beslenen deterministik sahte donanım. Aynı senaryonun aynı çıktıyı verdiğini testle kanıtla.
 - [x] **P2.03 — `ReplaySensorSource`.** JSONL log'unu yeniden oynatır. Kaydedilmiş bir oturumun birebir yeniden üretildiğini kanıtla.
-- [ ] **P2.04 — `LiveSensorSource`.** HID sensör servisleri üzerinden sıcaklık okuma. Gerçek donanımda sensör listesi ve makul değerler alındığını kanıtla.
+- [x] **P2.04 — `LiveSensorSource`.** HID sensör servisleri üzerinden sıcaklık okuma. Gerçek donanımda sensör listesi ve makul değerler alındığını kanıtla.
 - [x] **P2.05 — `SMCSensorSource` (yedek kaynak).** Birincil başarısız olduğunda devreye girer. Birincili zorla bozup yedeğe düştüğünü testle kanıtla.
 - [x] **P2.06 — `LiveFanSource`.** Fan sayısı, anlık/min/max RPM okuma. Ayrıcalık **gerektirmediğini** kanıtla.
 - [x] **P2.07 — Sensör adı normalleştirme ve gruplama.** Desen tabanlı sınıflandırma; eşleşmeyen sensör `uncategorized`'a düşer ve **gizlenmez**.
-- [ ] **P2.08 — Zarif düşüş.** Her iki kaynak da başarısızken uygulama izleme moduna düşer, **çökmez**. Testle kanıtla.
-- [ ] **P2.09 — Menü çubuğu iskeleti.** `MenuBarExtra`, tek sıcaklık + fan RPM. İlk görsel çıktı.
-- [ ] **P2.10 — `Core` kapsam kapısı.** CI'da `Core` kapsamı ≥ %85 bloklayıcı hale getir; eşiğin **gerçekten uygulandığını** kasıtlı düşük kapsamla kanıtla.
+- [x] **P2.08 — Zarif düşüş.** Her iki kaynak da başarısızken uygulama izleme moduna düşer, **çökmez**. Testle kanıtla.
+- [x] **P2.09 — Menü çubuğu iskeleti.** `MenuBarExtra`, tek sıcaklık + fan RPM. İlk görsel çıktı.
+- [x] **P2.10 — `Core` kapsam kapısı.** CI'da `Core` kapsamı ≥ %85 bloklayıcı hale getir; eşiğin **gerçekten uygulandığını** kasıtlı düşük kapsamla kanıtla.
 
 ### Kabul kriterleri
 - Daemon **olmadan** tüm sensörler ve fan hızları okunuyor
@@ -409,6 +409,7 @@ Append-only. Geçmiş **yeniden yazılmaz**; yanlış kayıt yeni bir satırla d
 | 2026-08-03 | kurulum | P1.12 doğrulama | DONE | CI uzakta çalıştırıldı ve **gerçek bir uyumsuzluk yakaladı**: runner'ın varsayılan Xcode'u Swift 6.1 sunuyordu, paketler `swift-tools-version: 6.2` istiyor → 'Could not resolve package dependencies'. Yerelde görünmeyen bir hataydı. İş akışına en yeni `Xcode*.app`'i seçen ve Swift < 6.2 ise **sessizce geçmek yerine açık hata veren** bir adım eklendi. Runner Xcode 26.6.0 / Swift 6.3 seçti. Üç job da yeşil. | GitHub Actions: Gates ✓ · Lint ✓ · Build and test ✓ · 4/4 test · App ve CLI derlemesi ✓ | `.github/workflows/ci.yml` | — | Next: P2.01 |
 | 2026-08-03 | kurulum | P2.07 + Core model tipleri | DONE | Core'a beş model tipi (`SensorGroup`, `SensorReading`, `FanState`, `Duty`, `PowerContext`) ve `SensorClassifier` yazıldı; 21 test geçiyor. **Tasarım kararı — `Duty` bir tip, `Double` değil:** her çağrı yerinin clamp etmeyi hatırlaması gerekseydi, unutan biri donanımın kabul etmediği bir fan komutu üretirdi. Geçersiz değeri tutamayan bir tip bu hata sınıfını test etmek yerine ortadan kaldırıyor. **Test gerçek bir boşluk yakaladı:** `Duty(.infinity)` sıfıra çöküyordu — yanlış yön. Fan kontrolünde iki hata simetrik değil: fazla hava gürültü, az hava ısı. Belirsiz girdi artık YUKARI çözülüyor (`+inf`→1, `NaN`→1, gerekçesi kodda yazılı). Bu, güvenlik zincirinin 'hiçbir katman çıktıyı düşüremez' kuralının tip düzeyindeki karşılığı. **Sınıflandırma sıralaması kritik:** `efficiency` kuralı generic `cpu`'dan ÖNCE denenmezse her verimlilik kümesi performans olarak dosyalanır — test bunu koruyor. Eşleşmeyen sensör `uncategorized`'a düşüyor ve gizlenmiyor; donanım desteğinin eksik olduğunu gösteren tek sinyal bu. | `swift test` 21/21 PASS · `make check` 8/8 · `make lint` PASS | `Packages/Core/Sources/Core/Models/*` `Sensors/SensorClassifier.swift` + testler | — | Next: P2.01 |
 | 2026-08-03 | kurulum | P2.01–P2.03, P2.05–P2.07 | DONE | Donanım katmanı: 3 protokol, 3 Mock, Replay, 3 Live uygulaması (SMC sensör, SMC fan, IOKit güç). 48 test geçiyor. **Gerçek donanımda doğrulandı:** Mac mini M4'te 174 sensör ve 1 fan (1000 rpm, 1000–4900) okunuyor. **En değerli bulgu — mock'un yakalayamayacağı bir hata:** `SMCKeyData_t`'yi Swift struct olarak tanımlamıştım; alan boyutları doğru görünüyordu ama C hizalama dolgusu tutmuyordu ve her çağrı `kIOReturnBadArgument` dönüyordu. Birim testler bunu asla yakalayamazdı — bir mock struct dolgusu konusunda anlaşmazlığa düşemez. 80 baytlık tampona açık offsetlerle yazmaya çevrildi, offset tablosu kodda yazılı. **İkinci bulgu:** SMC anahtarları `TCMz` gibi opak kodlar, okunabilir adlar değil — 174 sensörün 174'ü `uncategorized` düşüyordu. Gerçek donanımdaki önek dağılımı incelenip SMC anahtar sezgileri eklendi (Tp/Te/Tg/Ts/TH…); artık yalnızca 5'i sınıflandırılamıyor. Okunabilir adlar için HID kaynağı (P2.04) hâlâ gerekli. **Üçüncü:** Swift 6 strict concurrency `NSLock`'u async bağlamda reddediyor — durumlu mock'lar `actor`'a çevrildi. **Araç çakışması:** `swift-format` trailing comma ekliyor, SwiftLint yasaklıyordu; `make format` her çalıştığında `make lint` kırılıyordu. Sınır netleştirildi: biçim swift-format'ın, anlam SwiftLint'in işi. **Kapı hatası:** `grep -i` yüzünden `instead of [A-Z]` kalıbındaki büyük harf şartı anlamsızlaşmış, 'instead of returning' bile eşleşiyordu — harf duyarlı kalıplar ayrıldı. Ayrıca kapıların `**/*.swift` glob'u alt dizinleri bulamıyordu, dizin yoluna çevrildi. **Kapsam:** `FanActuator` P4.01'e taşındı (yazma yolu, `Live` uygulaması daemon'a bağlı). | `swift test` 48/48 PASS · `make check` 8/8 · `make lint` PASS · gerçek donanımda `boreas status` ve `boreas sensors` çalıştırıldı | `Packages/Core/Sources/Core/{Models,Sensors}` `Packages/HardwareKit/Sources/HardwareKit/{Protocols,Mock,Replay,Live,SMC}` `CLI/Sources/main.swift` + testler | — | Next: P2.04 |
+| 2026-08-04 | kurulum | P2.04, P2.08–P2.10 + ADR 0020 | DONE | **HID sensör kaynağı** yazıldı — `dlsym` ile çözülen dokümante edilmemiş arayüz; her sembol opsiyonel, çözülemezse SMC'ye düşülüyor. Gerçek donanımda **40 adlandırılmış sensör** (`PMU tdie1`, `NAND CH0 temp`) döndürüyor, SMC yolunun 174 opak anahtarı yerine. **Gerçek donanım bir sınıflandırma hatası ortaya çıkardı:** 40 sensörün 39'u `PMU tdie<n>` biçiminde ve `pmu → power` kuralı hepsini güç grubuna atıyordu. Kullanıcı `compute.performance`'a eğri bağlasa bu makinede **hiçbir sensör eşleşmezdi** — sessizce hiçbir şeye bağlı bir eğri, en kötü başarısızlık türü çünkü fark edilmiyor. Blueprint taksonomisinde bu sensörler için karşılık yoktu; **ADR 0020** ile `compute` grubu eklendi (küme atfedilemeyen die sıcaklıkları). `tdie`/`tdev` kuralları generic `pmu`'dan önce deneniyor ve bu sıralama testle korunuyor. Şimdi 37 sensör `compute`'ta. **Zarif düşüş** `FallbackSensorSource` olarak ayrıldı ki mock'larla test edilebilsin — iki gerçek arka ucu bağlayıp ummak test değil. Tek hata demote etmiyor (3 ardışık gerekiyor), toparlanma anında. 8 test. **Menü çubuğu uygulaması** canlı veriyle çalışıyor: gerçek donanımda başlatıldı, CPU %0,0, Dock simgesi yok, hata log'u yok. Bellek 73,4 MB — hedef 60 MB, ancak bu Debug derlemesi; Release ölçümü P6'da yapılmalı. **Kapsam kapısı** eklendi ve eşiği gerçekten zorladığı kanıtlandı (%99 eşikle kırmızı, %50 ile yeşil). Kapı bir boşluk gösterdi: `PowerContext` Core'daydı ama testi HardwareKit'teydi, kapsamı %0 görünüyordu — Core testleri eklendi, kapsam %95,8 → %99,4. | `swift test` 69/69 PASS · `make check` 9/9 · `make lint` PASS · gerçek donanımda CLI ve uygulama çalıştırıldı · kapsam kapısı iki eşikle kanıtlandı | `HIDSensorSource` `FallbackSensorSource` `LiveSensorSource` `SMCSensorSource` `App/Sources/**` `scripts/gates/check-coverage.sh` ADR 0020 | Bellek hedefi Release'te doğrulanmalı | Next: P3.00 |
 
 ### Run Log kayıt şablonu
 
