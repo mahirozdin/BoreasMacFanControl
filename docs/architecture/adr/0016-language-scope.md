@@ -1,6 +1,6 @@
 # 0016 — Dil kapsamı: 5 dil arayüz, İngilizce dokümantasyon
 
-- **Durum:** Kabul
+- **Durum:** Kabul (kısmen [0021](0021-english-only-repository.md) tarafından güncellendi)
 - **Tarih:** 2026-07-31
 - **Kaynak:** blueprint §9.7, §23 A6
 

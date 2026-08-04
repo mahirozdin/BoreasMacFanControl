@@ -188,6 +188,7 @@ CONTROLLING ──(K3 tetiklendi)──▶ PANIC ──(normale döner)──▶
 | [0018](docs/architecture/adr/0018-undocumented-sensor-api.md) | Dokümante edilmemiş sensör API'si kabulü | Kabul |
 | [0019](docs/architecture/adr/0019-signing-identity-deferred.md) | İmzalama kimliği P8'e ertelendi | Kabul |
 | [0020](docs/architecture/adr/0020-compute-die-sensor-group.md) | `compute` sensör grubu (blueprint taksonomisinden sapma) | Kabul |
+| [0021](docs/architecture/adr/0021-english-only-repository.md) | The repository is written in English | Accepted |
 
 ---
 

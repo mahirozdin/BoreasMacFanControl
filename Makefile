@@ -24,7 +24,7 @@ next: ## Sıradaki yapılabilir atomik işi göster (manuel blokajları atlar)
 	@scripts/next-task.py
 
 .PHONY: check
-check: gate-names blueprint-check docs-check gate-layers gate-deps gate-privacy gate-i18n gate-daemon gate-coverage ## Tüm kapıları çalıştır
+check: gate-names gate-language blueprint-check docs-check gate-layers gate-deps gate-privacy gate-i18n gate-daemon gate-coverage ## Tüm kapıları çalıştır
 	@echo ""
 	@echo "✓ Tüm kapılar tamamlandı."
 
@@ -59,6 +59,10 @@ gate-i18n: ## Y1/Y2 — sabit yazılmış kullanıcı metni
 .PHONY: gate-daemon
 gate-daemon: ## M4/M5/M6 — daemon XPC yüzeyi sınırları
 	@$(GATES)/check-daemon.sh
+
+.PHONY: gate-language
+gate-language: ## The repository is written in English
+	@$(GATES)/check-language.sh
 
 .PHONY: gate-coverage
 gate-coverage: ## Core satır kapsamı >= %85 (bloklayıcı)

@@ -1,52 +1,64 @@
 # CLAUDE.md
 
-> Bu dosya otomatik yüklenir. Kısadır — asıl sözleşme `AGENTS.md`'dedir.
+> Loaded automatically. Kept short — the binding contract is `AGENTS.md`.
 
-## Önce şunu yap
+## Do this first
 
-**`BOOT.md`'yi aç ve protokolü uygula.** Sağlık snapshot'ını çalıştırmadan kod yazma.
+**Open `BOOT.md` and follow the protocol.** Do not write code before running the
+health snapshot.
 
-## Proje tek paragrafta
+## The project in one paragraph
 
-**Boreas** — Apple Silicon Mac'ler için açık kaynak, ücretsiz termal izleme ve fan kontrol uygulaması. Swift 6.2 + SwiftUI, macOS 14.0+, yalnızca arm64, Apache-2.0. Sıcaklık okuma ayrıcalık gerektirmez; fan yazımı için tek seferlik yönetici onayıyla kurulan ayrıcalıklı bir daemon kullanılır. SIP kapatma, kernel extension veya hassas izin **yoktur**.
+**Boreas** — free, open source temperature monitoring and fan control for Apple
+Silicon Macs. Swift 6.2 + SwiftUI, macOS 14.0+, arm64 only, Apache-2.0. Reading
+temperatures needs no privileges; writing fan speeds goes through a privileged
+helper installed with a single administrator prompt. **No SIP changes, no kernel
+extension, no sensitive permissions.**
 
-## En sık ihlal edilen 10 kural
+## The ten rules broken most often
 
-1. **Hiçbir üçüncü taraf ticari ürün adı depoya girmez** — kod, yorum, commit, issue, doküman, hiçbir yerde. Jenerik ifade kullan. *(AGENTS.md §2.1 H1)*
-2. **`Packages/Core` içine IOKit/SwiftUI/AppKit import edilmez.** Geçici bile olsa. *(M1)*
-3. **Doğrulama çalıştırılmadan checkbox işaretlenmez.** Çalıştıramadıysan Run Log'a `NOT RUN` + neden yaz. *(§5)*
-4. **Kapı yazdıysan kasıtlı ihlalle kanıtla.** Çalıştığı gösterilmemiş kapı, kapı değildir. *(§8)*
-5. **Kullanıcıya görünen metin kodda sabit yazılmaz.** `String(localized:)` + `comment` zorunlu. 5 dil var. *(Y1, Y2)*
-6. **Blueprint dondurulmuştur.** `BLUEPRINT.md` ve `docs/blueprint/` düzenlenmez; sapma ADR ile kaydedilir. *(§7)*
-7. **Donanım hatası `try?` ile yutulmaz.** Fırlat, çağıran zarif düşüş uygular. *(§6.3)*
-8. **Güvenlik zinciri yalnızca yukarı düzeltir.** Hiçbir katman fan hızını düşüremez. *(G1)*
-9. **Oturum kapanışı üç parçalıdır:** checkbox + durum özeti + Run Log, aynı değişiklikte. *(§9)*
-10. **Blokaj işi dondurmaz.** Bloke işi atla, bağımsız bir sonraki işe geç. *(§4)*
+1. **The repository is written in English** — documents, comments, commits,
+   issues. *(AGENTS.md §2.1)*
+2. **No third party commercial product name enters the repository.** Use generic
+   wording. *(§2.1 H1)*
+3. **`Packages/Core` never imports IOKit, SwiftUI or AppKit.** Not even
+   temporarily. *(M1)*
+4. **No checkbox without evidence.** If you could not run the verification,
+   write `NOT RUN` and the reason in the run log. *(§5)*
+5. **A gate you add must be proven by a deliberate violation.** A gate never
+   shown to fail is not a gate. *(§8)*
+6. **No user facing string is hard coded.** `String(localized:)` with a
+   `comment`. Five languages depend on it. *(Y1, Y2)*
+7. **The blueprint is frozen.** `BLUEPRINT.md` and `docs/blueprint/` are never
+   edited; deviations are recorded as ADRs. *(§7)*
+8. **Never swallow a hardware error with `try?`.** Throw, and let the caller
+   degrade gracefully. *(§6.3)*
+9. **Safety layers only ever raise fan speed.** None of them may lower it. *(G1)*
+10. **Closing a session has three parts** — checkbox, status summary and run log,
+    in the same change. *(§9)*
 
-## Dokümanlar yaşayan dokümandır
+## Documents are living documents
 
-Kod değiştiğinde `AGENTS.md` §7'deki *değişiklik tipi → güncellenecek dosyalar* tablosuna bak. Doküman güncellemeden iş kapanmaz.
+When code changes, consult the *change type → files to update* table in
+`AGENTS.md` §7. A task is not closed until the documentation is updated.
 
-## Kanıt kuralı
+## Evidence rule
 
-Bir şeyin çalıştığını **iddia etme, göster**. Komutu çalıştır, çıktıyı gör, Run Log'a yaz.
+Do not claim something works — **show it**. Run the command, read the output,
+record it in the run log.
 
-## Dış yetki
+## External authority
 
-Marka/hukuk, Apple hesabı, GitHub secret, sahip olunmayan donanım → `TODO.md` manuel işler tablosu.
-Yerel araç kurulumu, script yazma, test yazma → **senin işin**, manuel işe yazma.
+Trademark and legal matters, Apple account operations, GitHub secrets, hardware
+you do not own → `TODO.md` manual tasks table.
+Installing local tools, writing scripts, writing tests → **your job**, not a
+manual task.
 
-## Sık komutlar
+## Common commands
 
 ```bash
-make check          # tüm kapılar
-make gate-names     # H1 — her işte
-make blueprint-check
-make docs-check
+make next           # the next actionable task
+make check          # every gate
+make gate-names     # H1 — run on every task
+make gate-language  # the repository is English
 ```
-
-## Dil
-
-Kod, yorum, commit mesajı → **İngilizce**.
-Proje yönetim dokümanları (bu dosya, `TODO.md`, `docs/`) → **Türkçe**.
-Ürün dokümantasyonu (`README.md`, `CONTRIBUTING.md`) → **İngilizce**.

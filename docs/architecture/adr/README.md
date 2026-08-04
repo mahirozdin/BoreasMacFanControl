@@ -31,6 +31,7 @@ Format: Michael Nygard — `Bağlam` / `Karar` / `Alternatifler` / `Sonuçlar` /
 | [0018](0018-undocumented-sensor-api.md) | Dokümante edilmemiş sensör API'si kabulü | Kabul | Risk |
 | [0019](0019-signing-identity-deferred.md) | İmzalama kimliği P8'e ertelendi | Kabul | Yayın |
 | [0020](0020-compute-die-sensor-group.md) | Küme atfedilemeyen çekirdek sensörleri için `compute` grubu | Kabul | Donanım |
+| [0021](0021-english-only-repository.md) | The repository is written in English | Accepted | Governance |
 
 ## Yeni ADR yazarken
 
