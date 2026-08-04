@@ -1,0 +1,20 @@
+// Boreas — local signing configuration
+//
+// Copy this file to `Local.xcconfig` and fill in your own values.
+// `Local.xcconfig` is git ignored: a team identifier is account information
+// and does not belong in a public repository.
+//
+//   cp Local.xcconfig.example Local.xcconfig
+//   security find-identity -v -p codesigning     # find your team id
+//   make generate
+//
+// Without this file the project builds unsigned, which is enough for the
+// packages and the command line tool. The privileged helper needs a real
+// team identifier, because the XPC connection identifies its peer by it.
+
+// Ten character team identifier, shown in parentheses by find-identity.
+DEVELOPMENT_TEAM =
+
+// "Apple Development" for local work.
+// "Developer ID Application" only for distribution builds.
+CODE_SIGN_IDENTITY = Apple Development

@@ -95,17 +95,26 @@ test: ## Tüm testleri çalıştır
 		fi; \
 	done
 
+# NOT: buradaki '|| echo ✓' bir SAHTE KAPI idi — swift format gerçek ihlaller
+# bulup çıkarken mesaj "taranacak kaynak yok" diyor ve kapı yeşil görünüyordu.
+# Var olan dizinler açıkça toplanıyor ve çıkış kodu artık yutulmuyor.
+FORMAT_DIRS := $(shell for d in Packages App Daemon CLI Widget; do [ -d "$$d" ] && echo "$$d"; done)
+
 .PHONY: lint
 lint: ## SwiftLint + swift format denetimi (yazmaz)
 	@command -v swiftlint >/dev/null 2>&1 || { echo "✗ swiftlint yok — brew bundle"; exit 1; }
 	@swiftlint lint --quiet --strict && echo "  ✓ swiftlint"
-	@swift format lint --recursive --strict Packages App Daemon CLI 2>/dev/null \
-		&& echo "  ✓ swift format" || echo "  ✓ swift format (taranacak kaynak yok)"
+	@if [ -n "$(FORMAT_DIRS)" ]; then \
+		swift format lint --recursive --strict $(FORMAT_DIRS) && echo "  ✓ swift format"; \
+	else \
+		echo "  ○ swift format: taranacak dizin yok"; \
+	fi
 
 .PHONY: format
 format: ## swift format ile biçimlendir (dosyaları DEĞİŞTİRİR)
-	@swift format --in-place --recursive Packages App Daemon CLI 2>/dev/null || true
-	@echo "  ✓ biçimlendirildi"
+	@if [ -n "$(FORMAT_DIRS)" ]; then \
+		swift format --in-place --recursive $(FORMAT_DIRS) && echo "  ✓ biçimlendirildi"; \
+	fi
 
 .PHONY: release
 release: ## İmzala, notarize et, DMG üret

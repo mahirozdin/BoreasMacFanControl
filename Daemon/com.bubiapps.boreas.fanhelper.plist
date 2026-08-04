@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.bubiapps.boreas.fanhelper</string>
+
+    <!-- SMAppService uygulama paketinin içindeki bu yolu çalıştırır. -->
+    <key>BundleProgram</key>
+    <string>Contents/Library/LaunchDaemons/com.bubiapps.boreas.fanhelper</string>
+
+    <!-- Tek Mach servisi. Yüzey bu kadar. -->
+    <key>MachServices</key>
+    <dict>
+        <key>com.bubiapps.boreas.fanhelper</key>
+        <true/>
+    </dict>
+
+    <!-- İstek üzerine başlar, boştayken durur. Sürekli çalışan bir root
+         süreci, ihtiyaç duyulduğunda başlayan birinden daha geniş bir
+         saldırı yüzeyidir. -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>AssociatedBundleIdentifiers</key>
+    <array>
+        <string>com.bubiapps.boreas</string>
+    </array>
+</dict>
+</plist>

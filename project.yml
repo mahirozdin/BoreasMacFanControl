@@ -15,6 +15,10 @@ options:
   createIntermediateGroups: true
   generateEmptyDirectories: false
 
+configFiles:
+  Debug: Local.xcconfig
+  Release: Local.xcconfig
+
 settings:
   base:
     PRODUCT_NAME: Boreas
@@ -49,10 +53,24 @@ targets:
       - path: App/Sources
       - path: App/Resources
         optional: true
+      # launchd tanımı ikilinin yanında durmak zorunda.
+      - path: Daemon/com.bubiapps.boreas.fanhelper.plist
+        buildPhase:
+          copyFiles:
+            destination: wrapper
+            subpath: Contents/Library/LaunchDaemons
     dependencies:
       - package: Core
       - package: HardwareKit
       - package: SharedIPC
+      - target: BoreasFanHelper
+        embed: true
+        codeSign: true
+        copy:
+          # SMAppService, hem launchd plist'ini hem ikiliyi uygulama
+          # paketinin İÇİNDE bu yolda arar.
+          destination: wrapper
+          subpath: Contents/Library/LaunchDaemons
     info:
       path: App/Info.plist
       properties:
@@ -67,9 +85,10 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas
-        CODE_SIGN_STYLE: Automatic
-        # İmzalama kimliği P8'e ertelendi — ADR 0019.
-        # Geliştirme sırasında Xcode otomatik seçer.
+        CODE_SIGN_STYLE: Manual
+        # DEVELOPMENT_TEAM ve CODE_SIGN_IDENTITY Local.xcconfig'ten gelir.
+        # Dosya yoksa imzasız derlenir — paketler ve CLI için yeterli,
+        # ayrıcalıklı yardımcı için değil (ADR 0019).
 
   # ------------------------------------------------------------------ cli
   boreas:
@@ -87,9 +106,32 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas.cli
 
   # ------------------------------------------------------------------ daemon
-  # Ayrıcalıklı yardımcı hedefi P3.02'de eklenir. Şimdi eklenmiyor çünkü
-  # gate-daemon, daemon kaynağı varsa XPC imza doğrulaması arar (değişmez G5)
-  # ve boş bir iskelet o kapıyı haklı olarak kırar.
+  BoreasFanHelper:
+    type: tool
+    platform: macOS
+    sources:
+      - path: Daemon/Sources
+    dependencies:
+      - package: Core
+      - package: HardwareKit
+      - package: SharedIPC
+    info:
+      path: Daemon/Info.plist
+      properties:
+        CFBundleIdentifier: com.bubiapps.boreas.fanhelper
+        CFBundleName: BoreasFanHelper
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+    settings:
+      base:
+        PRODUCT_NAME: com.bubiapps.boreas.fanhelper
+        PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas.fanhelper
+        CODE_SIGN_STYLE: Manual
+        SKIP_INSTALL: YES
+        # Bir komut satırı aracının imza kimliği bunu izler. Ayarlanmazsa
+        # uygulamanınkini miras alıyor ve XPC gereksinimi eşleşmiyor.
+        PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas.fanhelper
+        CREATE_INFOPLIST_SECTION_IN_BINARY: YES
 
 schemes:
   Boreas:
@@ -107,3 +149,7 @@ schemes:
       targets: { boreas: all }
     run:
       config: Debug
+
+  BoreasFanHelper:
+    build:
+      targets: { BoreasFanHelper: all }

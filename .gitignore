@@ -43,3 +43,6 @@ tmp/
 
 # Kapı script'lerinin geçici çıktıları
 .gate-tmp/
+
+# Yerel imzalama yapılandırması — takım kimliği hesap bilgisidir, depoya girmez
+Local.xcconfig
