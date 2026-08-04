@@ -100,10 +100,10 @@ Breaking these is not acceptable. Each is tied to an ADR and to a gate.
 
 | # | Rule |
 |---|---|
-| **İ1** | Never ask for SIP to be disabled, a kernel extension, a DriverKit driver or a Recovery Mode step |
-| **İ2** | Never ask for Full Disk Access, Accessibility, Screen Recording, camera, microphone or location |
-| **İ3** | Administrator authentication is requested **once**, and only to install the helper |
-| **İ4** | Without the helper the application is a **fully working monitor** and shows no error |
+| **I1** | Never ask for SIP to be disabled, a kernel extension, a DriverKit driver or a Recovery Mode step |
+| **I2** | Never ask for Full Disk Access, Accessibility, Screen Recording, camera, microphone or location |
+| **I3** | Administrator authentication is requested **once**, and only to install the helper |
+| **I4** | Without the helper the application is a **fully working monitor** and shows no error |
 
 ### 2.8 Localisation invariants
 
@@ -158,7 +158,7 @@ is blocked it moves to the next phase's unblocked work.
 |---|---|
 | Atomic task | `- [ ] **P<n>.<nn> — Title.** description` |
 | Manual blocker | `⛔ M03` at the end of the line (several: `⛔ M03 M04`) |
-| Phase dependency | `- **Bağımlılık:** P1, P2` inside the phase block |
+| Phase dependency | `- **Depends on:** P1, P2` inside the phase block |
 | Manual task status | Last column of the manual tasks table; anything other than `OPEN` counts as resolved |
 
 **Follow this shape when adding work.** If a task depends on something manual,

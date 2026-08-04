@@ -1,54 +1,54 @@
-# Bildirimler ve Otomasyon
+# Notifications and Automation
 
-> Son güncelleme: 2026-07-31 — P0.27
-> Kaynak: blueprint §12 · Karar: [ADR 0015](../architecture/adr/0015-automation-hooks-not-email.md)
+> Last updated: 2026-07-31 — P0.27
+> Source: blueprint §12 · Decision: [ADR 0015](../architecture/adr/0015-automation-hooks-not-email.md)
 
-## Bildirim tetikleyicileri
+## Notification triggers
 
-| Tetikleyici | Varsayılan |
+| Trigger | Default |
 |---|---|
-| Sensör grubu eşiği aştı | Kapalı (kullanıcı eşiği belirler) |
-| Termal durum `serious` veya üstü | Açık |
-| Panik katmanı (K3) devreye girdi | Açık |
-| Fan anomalisi tespit edildi | Açık |
-| Daemon bağlantısı koptu / watchdog devreye girdi | Açık |
-| Profil değişti | Kapalı |
-| Pil sağlığı bozuldu | Açık |
+| Sensor group crossed a threshold | Off (the user sets the threshold) |
+| Thermal state `serious` or above | On |
+| Panic layer (K3) engaged | On |
+| Fan anomaly detected | On |
+| Daemon connection lost / watchdog engaged | On |
+| Profile changed | Off |
+| Battery health degraded | On |
 
-## Gürültü kontrolü
+## Noise control
 
-Bu kategoride en sık yapılan hata, eşik çevresinde salınan bir sensörün kullanıcıyı bildirime boğmasıdır. Dört mekanizma:
+The most common mistake in this category is a sensor oscillating around a threshold drowning the user in notifications. Four mechanisms:
 
-1. **Bastırma penceresi** — aynı türden bildirim varsayılan 15 dakika içinde tekrarlanmaz (1–120 dk ayarlanabilir)
-2. **Oturum başına bir kez** — donanım sağlığı bildirimleri (pil, fan anomalisi) uygulama açılışı başına yalnızca bir kez
-3. **Toplama** — aynı anda birden fazla eşik aşılırsa tek bildirimde birleştirilir
-4. **Sessiz saatler** — ayrı zaman aralığı tanımlanabilir; macOS Odak modlarına da saygı duyulur
+1. **Suppression window** — a notification of the same type does not repeat within a default of 15 minutes (configurable 1–120 min)
+2. **Once per session** — hardware health notifications (battery, fan anomaly) only once per application launch
+3. **Coalescing** — if several thresholds are crossed at the same time, they merge into a single notification
+4. **Quiet hours** — a separate time window can be defined; macOS Focus modes are respected as well
 
-## Otomasyon kancaları
+## Automation hooks
 
-E-posta/SMTP istemcisi **yazılmaz** ([ADR 0015](../architecture/adr/0015-automation-hooks-not-email.md)). Yerine iki genel mekanizma:
+An email/SMTP client is **not written** ([ADR 0015](../architecture/adr/0015-automation-hooks-not-email.md)). Instead, two generic mechanisms:
 
 **① Webhook**
 ```json
 { "type": "webhook", "url": "https://…", "method": "POST", "template": "…" }
 ```
-Kullanıcı kendi entegrasyonunu kurar: Slack, Discord, ntfy, Home Assistant.
+The user builds their own integration: a chat service webhook, ntfy, Home Assistant.
 
-**② Kabuk komutu**
+**② Shell command**
 ```json
 { "type": "command", "path": "~/bin/on-hot.sh", "arguments": ["${sensor}", "${celsius}"] }
 ```
 
-### Güvenlik önlemleri
+### Safety measures
 
-| Önlem | Neden |
+| Measure | Why |
 |---|---|
-| Komut kancası **varsayılan kapalı** | Ayrıcalık yükseltme riski |
-| Açılırken **açık uyarı** gösterilir | Kullanıcı ne kabul ettiğini bilmeli |
-| Komut **kullanıcı ayrıcalıklarıyla** çalışır | **Asla daemon içinde değil** — `make gate-daemon` bunu zorlar |
-| Zaman aşımı ve eşzamanlılık sınırı | Kaçak süreç birikmesini önler |
-| Ağ yalnızca `App/Sources/Automation/` altında | `make gate-privacy` bunu zorlar |
+| The command hook is **off by default** | Privilege escalation risk |
+| An **explicit warning** is shown when enabling it | The user must know what they are accepting |
+| The command runs **with user privileges** | **Never inside the daemon** — `make gate-daemon` enforces this |
+| Timeout and concurrency limit | Prevents runaway process build-up |
+| Network only under `App/Sources/Automation/` | `make gate-privacy` enforces this |
 
-## E-posta isteyen kullanıcı için
+## For the user who wants email
 
-Dokümantasyonda hazır bir betik örneği verilir (sistemin `mail` komutunu kullanan). Bu, kimlik bilgisi saklama sorumluluğunu tamamen kullanıcıya bırakır ve uygulamanın saldırı yüzeyini büyütmez.
+The documentation provides a ready-made script example (using the system's `mail` command). This leaves the responsibility for credential storage entirely with the user and does not grow the application's attack surface.

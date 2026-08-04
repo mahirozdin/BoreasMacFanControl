@@ -7,7 +7,7 @@ import OSLog
 ///
 /// Reading needs no privileges, so this runs whether or not the privileged
 /// helper is installed. A machine with no helper is a fully working monitor,
-/// which is the behaviour invariant İ4 requires.
+/// which is the behaviour invariant I4 requires.
 @MainActor
 @Observable
 public final class MonitorModel {

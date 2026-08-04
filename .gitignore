@@ -4,7 +4,7 @@
 .Spotlight-V100
 .Trashes
 
-# Xcode — üretilen proje dosyası (XcodeGen ile project.yml'den üretilir)
+# Xcode — the generated project file (produced from project.yml via XcodeGen)
 *.xcodeproj/
 *.xcworkspace/
 !*.xcworkspace/contents.xcworkspacedata
@@ -19,14 +19,14 @@ build/
 .swiftpm/
 Package.resolved
 
-# Derleme çıktıları ve dağıtım artifact'leri
+# Build outputs and distribution artifacts
 *.app
 *.dmg
 *.zip
 *.pkg
 dist/
 
-# İmzalama ve gizli değerler — ASLA commit edilmez
+# Signing and secrets — NEVER committed
 *.p12
 *.mobileprovision
 *.provisionprofile
@@ -35,14 +35,15 @@ dist/
 AuthKey_*.p8
 ExportOptions.plist
 
-# Yerel geliştirme
+# Local development
 .vscode/
 *.log
 tmp/
 .cache/
 
-# Kapı script'lerinin geçici çıktıları
+# Temporary gate script output
 .gate-tmp/
 
-# Yerel imzalama yapılandırması — takım kimliği hesap bilgisidir, depoya girmez
+# Local signing configuration — the team identifier is account information
+# and never enters the repository
 Local.xcconfig

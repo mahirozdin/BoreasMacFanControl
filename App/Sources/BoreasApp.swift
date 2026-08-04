@@ -99,7 +99,7 @@ enum HelperCommands {
     /// Renders the setup window in every phase to PNG files.
     ///
     /// Screenshots would need the screen recording permission, which this
-    /// project promises never to ask for (invariant İ2). Rendering the view
+    /// project promises never to ask for (invariant I2). Rendering the view
     /// directly produces the same evidence without any permission, and it is
     /// deterministic, which a screenshot never is.
     private static func renderSetupEvidence(into directory: URL) {
@@ -152,7 +152,7 @@ enum HelperCommands {
 ///
 /// Boreas runs as an `LSUIElement` app: no Dock icon, no window on launch.
 /// Reading temperatures needs no privileges, so the monitor starts immediately
-/// whether or not the privileged helper is ever installed (invariant İ4).
+/// whether or not the privileged helper is ever installed (invariant I4).
 @main
 struct BoreasApp: App {
 

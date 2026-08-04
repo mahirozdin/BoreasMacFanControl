@@ -1,32 +1,32 @@
-# 0003 — Minimum hedef macOS 14.0 Sonoma
+# 0003 — Minimum target macOS 14.0 Sonoma
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §3.2, §23 A2
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §3.2, §23 A2
 
-## Bağlam
+## Context
 
-Ayrıcalıklı daemon kaydı için `SMAppService` gerekiyor (macOS 13.0+). Modern SwiftUI için `@Observable` (14.0+) ve kararlı `MenuBarExtra` isteniyor. Daha düşük hedef daha geniş erişim demek ama sürüm dallanması ve bakım yükü getiriyor.
+Registering the privileged helper requires `SMAppService` (macOS 13.0+). Modern SwiftUI calls for `@Observable` (14.0+) and a stable `MenuBarExtra`. A lower target means wider reach, but brings version branching and maintenance burden.
 
-## Karar
+## Decision
 
 **Minimum macOS 14.0 Sonoma.**
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Candidate | Why rejected |
 |---|---|
-| **macOS 13.0 Ventura** | `@Observable` yok → `ObservableObject` + Combine (daha çok kod, daha çok hata yüzeyi). `SMAppService`'in 13.0'daki kayıt sorunları için geçici çözüm gerekir. İki sürümde test yükü. Tahmini kazanç ~%3 erişim; maliyet kalıcı |
-| **macOS 15.0 Sequoia** | Daha sade kod ama gereksiz yere M1/M2 kullanıcılarının bir kısmını dışarıda bırakır; açık kaynak benimsenmesini yavaşlatır |
+| **macOS 13.0 Ventura** | No `@Observable` → `ObservableObject` + Combine (more code, more error surface). `SMAppService`'s registration problems on 13.0 would need workarounds. A testing burden across two versions. Estimated gain: ~3% reach; the cost is permanent |
+| **macOS 15.0 Sequoia** | Cleaner code, but needlessly leaves out part of the M1/M2 user base; slows open source adoption |
 
-## Sonuçlar
+## Consequences
 
-- ✅ `SMAppService` olgun sürümü, `@Observable`, kararlı `MenuBarExtra`, olgun Swift Charts, tam String Catalog desteği
-- ✅ Tek kod yolu — sürüm dallanması yok
-- ⚠️ macOS 13'te kalan kullanıcılar dışarıda (Apple Silicon tabanının tahmini ~%5'i)
+- ✅ The mature `SMAppService`, `@Observable`, a stable `MenuBarExtra`, mature Swift Charts, full String Catalog support
+- ✅ A single code path — no version branching
+- ⚠️ Users still on macOS 13 are left out (an estimated ~5% of the Apple Silicon base)
 
-## Zorlama
+## Enforcement
 
 - `project.yml` → `DEPLOYMENT_TARGET: 14.0`
-- Derleme, daha düşük sürüm API'si varsayımını yakalar
-- CI `macos-latest` üzerinde derler
+- The build catches any assumption of an older version's API
+- CI builds on `macos-latest`

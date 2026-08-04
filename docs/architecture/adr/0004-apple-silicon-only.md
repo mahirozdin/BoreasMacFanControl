@@ -1,33 +1,33 @@
-# 0004 — Yalnızca Apple Silicon (arm64)
+# 0004 — Apple Silicon only (arm64)
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §8.4
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §8.4
 
-## Bağlam
+## Context
 
-Intel ve Apple Silicon Mac'ler farklı SMC semantiği, farklı sensör topolojisi ve farklı throttling davranışına sahip. Intel desteği kod tabanını ikiye, test yüzeyini üçe katlıyor.
+Intel and Apple Silicon Macs have different SMC semantics, different sensor topologies and different throttling behaviour. Intel support doubles the code base and triples the test surface.
 
-## Karar
+## Decision
 
-**Yalnızca arm64.** Intel kod yolu yazılmaz. Universal binary üretilmez.
+**arm64 only.** No Intel code path is written. No universal binary is produced.
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Candidate | Why rejected |
 |---|---|
-| Universal binary (Intel + arm64) | İki ayrı SMC erişim katmanı, iki ayrı sensör haritalama stratejisi, iki ayrı throttling davranışı. Tek geliştiricili bir projede sürdürülemez |
-| Önce Intel, sonra Apple Silicon | Geliştirme donanımı Apple Silicon; Intel'de doğrulanamayan kod yazmak anlamsız |
+| Universal binary (Intel + arm64) | Two separate SMC access layers, two separate sensor mapping strategies, two separate throttling behaviours. Unsustainable in a single developer project |
+| Intel first, Apple Silicon later | The development hardware is Apple Silicon; writing code that cannot be verified on Intel is pointless |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Tek sensör keşif stratejisi, tek SMC katmanı
-- ✅ Test yüzeyi yönetilebilir
-- ⚠️ Intel Mac kullanıcıları hedef kitle dışında — README'de açıkça yazılır
-- ⚠️ Karar geri alınırsa `HardwareKit` içinde ikinci bir `Live` uygulaması gerekir; protokol soyutlaması bunu mümkün kılıyor ([0011](0011-hardware-abstraction.md))
+- ✅ A single sensor discovery strategy, a single SMC layer
+- ✅ A manageable test surface
+- ⚠️ Intel Mac users are outside the target audience — stated explicitly in the README
+- ⚠️ Reversing the decision would require a second `Live` implementation inside `HardwareKit`; the protocol abstraction makes that possible ([0011](0011-hardware-abstraction.md))
 
-## Zorlama
+## Enforcement
 
 - `project.yml` → `ARCHS: arm64`
-- README "Gereksinimler" bölümü
-- CI arm64 koşucuda derler
+- The README "Requirements" section
+- CI builds on an arm64 runner

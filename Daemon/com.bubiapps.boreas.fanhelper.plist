@@ -5,20 +5,20 @@
     <key>Label</key>
     <string>com.bubiapps.boreas.fanhelper</string>
 
-    <!-- SMAppService uygulama paketinin içindeki bu yolu çalıştırır. -->
+    <!-- SMAppService executes this path inside the application bundle. -->
     <key>BundleProgram</key>
     <string>Contents/Library/LaunchDaemons/com.bubiapps.boreas.fanhelper</string>
 
-    <!-- Tek Mach servisi. Yüzey bu kadar. -->
+    <!-- A single Mach service. That is the whole surface. -->
     <key>MachServices</key>
     <dict>
         <key>com.bubiapps.boreas.fanhelper</key>
         <true/>
     </dict>
 
-    <!-- İstek üzerine başlar, boştayken durur. Sürekli çalışan bir root
-         süreci, ihtiyaç duyulduğunda başlayan birinden daha geniş bir
-         saldırı yüzeyidir. -->
+    <!-- Starts on demand, stops when idle. A permanently running root
+         process is a wider attack surface than one that starts when it is
+         needed. -->
     <key>RunAtLoad</key>
     <false/>
 

@@ -1,63 +1,63 @@
-# Zephyr — komut yüzeyi
-# Kaynak: blueprint §16.1
-# Tüm kapılar scripts/gates/ altındadır ve doğrudan çalıştırılabilir.
+# Boreas — command surface
+# Source: blueprint §16.1
+# All gates live under scripts/gates/ and can be run directly.
 
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
 GATES := scripts/gates
 
-# ---------------------------------------------------------------- yardım
+# ---------------------------------------------------------------- help
 
 .PHONY: help
-help: ## Bu listeyi göster
-	@echo "Zephyr — kullanılabilir hedefler:"
+help: ## Show this list
+	@echo "Boreas — available targets:"
 	@echo ""
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 
-# ---------------------------------------------------------------- kapılar
+# ---------------------------------------------------------------- gates
 
 .PHONY: next
-next: ## Sıradaki yapılabilir atomik işi göster (manuel blokajları atlar)
+next: ## Show the next actionable atomic task (skips manual blockers)
 	@scripts/next-task.py
 
 .PHONY: check
-check: gate-names gate-language blueprint-check docs-check gate-layers gate-deps gate-privacy gate-i18n gate-daemon gate-coverage ## Tüm kapıları çalıştır
+check: gate-names gate-language blueprint-check docs-check gate-layers gate-deps gate-privacy gate-i18n gate-daemon gate-coverage ## Run every gate
 	@echo ""
-	@echo "✓ Tüm kapılar tamamlandı."
+	@echo "✓ All gates completed."
 
 .PHONY: gate-names
-gate-names: ## H1/Y5/Y6 — üçüncü taraf ürün adı ve karşılaştırmalı pazarlama taraması
+gate-names: ## H1/Y5/Y6 — third party product name and comparative marketing scan
 	@$(GATES)/check-names.sh
 
 .PHONY: blueprint-check
-blueprint-check: ## Dondurulmuş blueprint kopyası dokunulmamış mı
+blueprint-check: ## Is the frozen blueprint copy untouched
 	@$(GATES)/check-blueprint.sh
 
 .PHONY: docs-check
-docs-check: ## Kırık link, izlenebilirlik matrisi hedefleri, ADR senkronu
+docs-check: ## Broken links, traceability matrix targets, ADR sync
 	@$(GATES)/check-docs.sh
 
 .PHONY: gate-layers
-gate-layers: ## M1/M2 — Core katman saflığı ve Mock kapsamı
+gate-layers: ## M1/M2 — Core layer purity and Mock coverage
 	@$(GATES)/check-layers.sh
 
 .PHONY: gate-deps
-gate-deps: ## T4/H5 — sıfır bağımlılık kuralı ve lisans uyumu
+gate-deps: ## T4/H5 — zero dependency rule and licence compatibility
 	@$(GATES)/check-deps.sh
 
 .PHONY: gate-privacy
-gate-privacy: ## P1/P2 — telemetri SDK'sı ve beklenmeyen ağ kullanımı
+gate-privacy: ## P1/P2 — telemetry SDKs and unexpected network use
 	@$(GATES)/check-privacy.sh
 
 .PHONY: gate-i18n
-gate-i18n: ## Y1/Y2 — sabit yazılmış kullanıcı metni
+gate-i18n: ## Y1/Y2 — hard coded user facing text
 	@$(GATES)/check-i18n.sh
 
 .PHONY: gate-daemon
-gate-daemon: ## M4/M5/M6 — daemon XPC yüzeyi sınırları
+gate-daemon: ## M4/M5/M6 — daemon XPC surface limits
 	@$(GATES)/check-daemon.sh
 
 .PHONY: gate-language
@@ -65,33 +65,30 @@ gate-language: ## The repository is written in English
 	@$(GATES)/check-language.sh
 
 .PHONY: gate-coverage
-gate-coverage: ## Core satır kapsamı >= %85 (bloklayıcı)
+gate-coverage: ## Core line coverage >= 85% (blocking)
 	@$(GATES)/check-coverage.sh
 
-# ---------------------------------------------------------------- geliştirme
-# Not: aşağıdaki hedefler P1'de (depo iskeleti) etkinleşir.
-
 .PHONY: bootstrap
-bootstrap: ## Yerel geliştirme ortamını kur ve doğrula
+bootstrap: ## Set up and verify the local development environment
 	@scripts/bootstrap.sh
 
 .PHONY: generate
-generate: ## project.yml'den Xcode projesini üret
+generate: ## Generate the Xcode project from project.yml
 	@command -v xcodegen >/dev/null 2>&1 \
-		|| { echo "✗ xcodegen yok. 'brew install xcodegen' çalıştır."; exit 1; }
+		|| { echo "✗ xcodegen missing. Run 'brew install xcodegen'."; exit 1; }
 	@xcodegen generate
 
 PACKAGES := Core SharedIPC HardwareKit
 
 .PHONY: build
-build: ## Tüm SPM paketlerini derle
+build: ## Build all SPM packages
 	@for p in $(PACKAGES); do \
 		printf '  %-12s ' "$$p"; \
 		( cd Packages/$$p && swift build 2>&1 | tail -1 ) || exit 1; \
 	done
 
 .PHONY: test
-test: ## Tüm testleri çalıştır
+test: ## Run all tests
 	@for p in $(PACKAGES); do \
 		if [ -d "Packages/$$p/Tests" ]; then \
 			printf '  %-12s ' "$$p"; \
@@ -99,32 +96,33 @@ test: ## Tüm testleri çalıştır
 		fi; \
 	done
 
-# NOT: buradaki '|| echo ✓' bir SAHTE KAPI idi — swift format gerçek ihlaller
-# bulup çıkarken mesaj "taranacak kaynak yok" diyor ve kapı yeşil görünüyordu.
-# Var olan dizinler açıkça toplanıyor ve çıkış kodu artık yutulmuyor.
+# NOTE: the '|| echo ✓' that used to sit here was a FAKE GATE — swift format
+# found real violations and exited while the message said "nothing to scan"
+# and the gate looked green. Existing directories are collected explicitly
+# and the exit code is no longer swallowed.
 FORMAT_DIRS := $(shell for d in Packages App Daemon CLI Widget; do [ -d "$$d" ] && echo "$$d"; done)
 
 .PHONY: lint
-lint: ## SwiftLint + swift format denetimi (yazmaz)
-	@command -v swiftlint >/dev/null 2>&1 || { echo "✗ swiftlint yok — brew bundle"; exit 1; }
+lint: ## SwiftLint + swift format check (writes nothing)
+	@command -v swiftlint >/dev/null 2>&1 || { echo "✗ swiftlint missing — brew bundle"; exit 1; }
 	@swiftlint lint --quiet --strict && echo "  ✓ swiftlint"
 	@if [ -n "$(FORMAT_DIRS)" ]; then \
 		swift format lint --recursive --strict $(FORMAT_DIRS) && echo "  ✓ swift format"; \
 	else \
-		echo "  ○ swift format: taranacak dizin yok"; \
+		echo "  ○ swift format: no directories to scan"; \
 	fi
 
 .PHONY: format
-format: ## swift format ile biçimlendir (dosyaları DEĞİŞTİRİR)
+format: ## Format with swift format (MODIFIES files)
 	@if [ -n "$(FORMAT_DIRS)" ]; then \
-		swift format --in-place --recursive $(FORMAT_DIRS) && echo "  ✓ biçimlendirildi"; \
+		swift format --in-place --recursive $(FORMAT_DIRS) && echo "  ✓ formatted"; \
 	fi
 
 .PHONY: release
-release: ## İmzala, notarize et, DMG üret
-	@echo "P8'de etkinleşecek (bkz. TODO.md)"
+release: ## Sign, notarize, build the DMG
+	@echo "Activates in P8 (see TODO.md)"
 
 .PHONY: clean
-clean: ## Derleme çıktılarını temizle
+clean: ## Remove build outputs
 	@rm -rf .build build dist DerivedData .gate-tmp
-	@echo "✓ Temizlendi."
+	@echo "✓ Cleaned."

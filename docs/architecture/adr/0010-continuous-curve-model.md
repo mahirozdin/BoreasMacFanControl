@@ -1,71 +1,71 @@
-# 0010 — Sürekli eğri kontrol modeli
+# 0010 — Continuous curve control model
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §7
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §7
 
-> Ürünün mühendislik kalbi ve özgünlüğünün yapısal temeli.
+> The engineering heart of the product and the structural foundation of its originality.
 
-## Bağlam
+## Context
 
-Fan davranışını tanımlamanın iki yaygın yolu var: (a) ayrık kural listesi — "sıcaklık X'i geçerse hızı Y yap", (b) sürekli transfer fonksiyonu — sıcaklığı görev oranına eşleyen bir eğri.
+There are two common ways to define fan behaviour: (a) a discrete rule list — "if the temperature passes X, set the speed to Y"; (b) a continuous transfer function — a curve that maps temperature to a duty ratio.
 
-Ayrık kural listesinin iki sorunu var: eşiklerde fan hızı **sıçrar** (kulak bu ani değişimi sabit yüksek sesten daha rahatsız edici bulur) ve eşik çevresinde **salınım** üretir.
+A discrete rule list has two problems: at the thresholds the fan speed **jumps** (the ear finds this sudden change more annoying than a constant loud noise) and it produces **oscillation** around the threshold.
 
-## Karar
+## Decision
 
-**Parçalı doğrusal, sürekli transfer fonksiyonu.**
+**A piecewise linear, continuous transfer function.**
 
 ```
-Girdi: sıcaklık (°C)  →  Çıktı: görev oranı (0.0 – 1.0)
-Kontrol noktaları: [(35, 0.00), (50, 0.20), (65, 0.45), (78, 0.75), (88, 1.00)]
-Noktalar arası: doğrusal enterpolasyon
+Input: temperature (°C)  →  Output: duty ratio (0.0 – 1.0)
+Control points: [(35, 0.00), (50, 0.20), (65, 0.45), (78, 0.75), (88, 1.00)]
+Between points: linear interpolation
 rpm = fanMin + (fanMax − fanMin) × duty
 ```
 
-Kısıtlar: sıcaklığa göre artan sıralı, görev oranı azalmayan, en az 2 en fazla 16 nokta.
+Constraints: sorted ascending by temperature, duty ratio non-decreasing, at least 2 and at most 16 points.
 
-Üç aşamalı işleme zinciri — her aşama **farklı** bir problemi çözer:
+A three-stage processing chain — each stage solves a **different** problem:
 
-| Aşama | Parametre | Varsayılan | Çözdüğü problem |
+| Stage | Parameter | Default | Problem it solves |
 |---|---|---|---|
-| Girdi yumuşatma | EWMA `α` | 0.30 | Sensör gürültüsü, anlık tepe |
-| Histerezis | `H` (°C) | 3.0 | Eşik çevresi salınım |
-| Çıktı hız sınırı | `maxRise` / `maxFall` | 600 / 150 RPM/sn | Duyulabilir ani ses değişimi |
+| Input smoothing | EWMA `α` | 0.30 | Sensor noise, momentary spikes |
+| Hysteresis | `H` (°C) | 3.0 | Oscillation around the threshold |
+| Output rate limit | `maxRise` / `maxFall` | 600 / 150 RPM/s | Audible sudden noise change |
 
-**Histerezis çift eğri ile:** düşen yönde eğri `H` kadar sola kaydırılır; motor yöne göre eğri seçer ve seçilen eğride kilitli kalır.
+**Hysteresis via a dual curve:** in the falling direction the curve is shifted left by `H`; the engine selects the curve by direction and stays locked to the selected curve.
 
-**Hız sınırı asimetriktir:** yükselme hızlı (güvenlik), düşme yavaş (akustik konfor + termal kararlılık). Tek bir "geçiş süresi" parametresi bu asimetriyi ifade edemez.
+**The rate limit is asymmetric:** rise is fast (safety), fall is slow (acoustic comfort + thermal stability). A single "transition time" parameter cannot express this asymmetry.
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Option | Why not |
 |---|---|
-| Ayrık kural listesi | Basamaklı çıktı → akustik olarak rahatsız edici, eşiklerde salınım |
-| Tam PID kontrolcü | Fan sistemleri için aşırı; ayar parametreleri kullanıcıya açıklanamaz; integral windup riski |
-| Tek "rampa süresi" parametresi | Yükselme/düşme asimetrisini ifade edemez |
+| Discrete rule list | Stepped output → acoustically annoying, oscillation at the thresholds |
+| Full PID controller | Overkill for fan systems; the tuning parameters cannot be explained to the user; risk of integral windup |
+| A single "ramp time" parameter | Cannot express the rise/fall asymmetry |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Sürekli, öngörülebilir, akustik olarak konforlu çıktı
-- ✅ Ayrı bir "zaman gecikmesi" ayarına gerek yok — histerezis + hız sınırı yeterli
-- ✅ Kullanıcıya sunulan parametreler anlamlı ("fan ne kadar hızlı tepki versin?")
-- ✅ Özgünlük yapısal — yalnızca beyan edilmiş değil ([0006](0006-independent-development-policy.md))
-- ⚠️ Eğri editörü ayrık listeye göre daha karmaşık bir arayüz gerektirir
+- ✅ Continuous, predictable, acoustically comfortable output
+- ✅ No separate "time delay" setting is needed — hysteresis + the rate limit are enough
+- ✅ The parameters exposed to the user are meaningful ("how fast should the fan react?")
+- ✅ Originality is structural — not merely declared ([0006](0006-independent-development-policy.md))
+- ⚠️ The curve editor requires a more complex interface than a discrete list would
 
-## Zorlama
+## Enforcement
 
-Invariant testleri (silinemez):
+Invariant tests (cannot be deleted):
 
 ```
-test("monoton artan eğri monoton artan çıktı üretir")
-test("çıktı her zaman [fanMin, fanMax] aralığındadır")
-test("hiçbir güvenlik katmanı çıktıyı düşüremez")
-test("eğri noktaları monotonluk kısıtını ihlal edemez")
-test("hız sınırı asimetriktir: rise ve fall bağımsız uygulanır")
+test("a monotonically increasing curve produces monotonically increasing output")
+test("the output is always within the [fanMin, fanMax] range")
+test("no safety layer can lower the output")
+test("curve points cannot violate the monotonicity constraint")
+test("the rate limit is asymmetric: rise and fall are applied independently")
 ```
 
-Karşılaştırma testi (ADR'yi kodda yaşatır):
+A comparison test (keeps the ADR alive in the code):
 ```
-test("ayrık basamaklı model uygulansaydı eşikte sıçrama olurdu")
+test("if the discrete stepped model had been applied there would be a jump at the threshold")
 ```

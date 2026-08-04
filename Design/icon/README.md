@@ -1,77 +1,77 @@
-# Boreas — Uygulama Simgesi
+# Boreas — Application Icon
 
-> Son güncelleme: 2026-08-03 — M08
-> Kaynak: blueprint §9.1 · Karar: [ADR 0002](../../docs/architecture/adr/0002-product-name.md)
+> Last updated: 2026-08-03 — M08
+> Source: blueprint §9.1 · Decision: [ADR 0002](../../docs/architecture/adr/0002-product-name.md)
 
-## Dosyalar
+## Files
 
-| Dosya | Rol |
+| File | Role |
 |---|---|
-| `boreas-background.svg` | Arka katman — tam kanvas gradyan dolgu |
-| `boreas-foreground.svg` | Ön katman — dört kanat + göbek, saydam zemin |
-| `preview.html` | Boyut ölçeği, Dock bağlamı, karanlık tema önizlemesi |
-| `render/*.png` | Referans render'lar (kaynak değil — kaynak SVG'lerdir) |
+| `boreas-background.svg` | Back layer — full-canvas gradient fill |
+| `boreas-foreground.svg` | Front layer — four blades + hub, transparent background |
+| `preview.html` | Size scale, Dock context, dark theme preview |
+| `render/*.png` | Reference renders (not the source — the SVGs are the source) |
 
-## Tasarım
+## Design
 
-Dört geniş, süpürülmüş kanat ve belirgin bir göbek. Soğuk mavi gradyan (kuzey rüzgârı).
+Four wide, swept blades and a prominent hub. A cold blue gradient (the north wind).
 
-**Neden bu biçim:**
+**Why this shape:**
 
-- **Kanatlar geniş.** İnce şeritler "örümcek" veya "X" gibi okunuyor. Dış yayın geniş bir açı taraması (70°) şeklin ilk bakışta fan olarak okunmasını sağlıyor.
-- **Dört kanat.** Kare kanvasta 4 katlı simetri 3 katlıdan daha oturuyor; üç kanat pinwheel veya geri dönüşüm işaretiyle karışabiliyor.
-- **30° süpürme.** Dönme hissi hareket bulanıklığı olmadan veriliyor — Liquid Glass render'ı bulanıklıkla çakışırdı.
-- **Göbek, kanat köklerini yutuyor.** Kök yayı r=130, göbek diski r=145; kanat ve göbek tek siluet oluşturuyor.
+- **The blades are wide.** Thin strips read as a "spider" or an "X". The wide angular span of the outer arc (70°) makes the shape read as a fan at first glance.
+- **Four blades.** On a square canvas, 4-fold symmetry sits more naturally than 3-fold; three blades can be confused with a pinwheel or a recycling symbol.
+- **30° sweep.** The sense of rotation is conveyed without motion blur — the Liquid Glass render would clash with blur.
+- **The hub swallows the blade roots.** The root arc is r=130, the hub disc r=145; blade and hub form a single silhouette.
 
-## Teknik spesifikasyon
+## Technical specification
 
-| Parametre | Değer |
+| Parameter | Value |
 |---|---|
-| Kanvas | 1024 × 1024 |
-| Merkez | (512, 512) |
-| Göbek diski | r = 145 |
-| Kanat kök yayı | r = 130, 26° tarama |
-| Kanat dış yayı | r = 385, 70° tarama |
-| Süpürme | dış yay merkezi kök merkezinden +30° |
-| Dış sınır | r = 385 → kanvas içinde 127 px boşluk |
-| Kanat sayısı | 4, `rotate(n × 90)` |
+| Canvas | 1024 × 1024 |
+| Centre | (512, 512) |
+| Hub disc | r = 145 |
+| Blade root arc | r = 130, 26° span |
+| Blade outer arc | r = 385, 70° span |
+| Sweep | outer arc centre +30° from the root centre |
+| Outer bound | r = 385 → 127 px of margin inside the canvas |
+| Blade count | 4, `rotate(n × 90)` |
 
-## Uyulan Liquid Glass kuralları
+## Liquid Glass rules followed
 
-- ❌ **Platform maskesi yok** — yuvarlatılmış dikdörtgeni sistem uyguluyor
-- ❌ **Gömülü gölge yok** — derinliği sistem render ediyor
-- ❌ **Specular highlight yok** — ışığı sistem render ediyor
-- ❌ **Ön katmanda gradyan yok** — tek düz dolgu, böylece dört görünüm varyantı (default / dark / clear / tinted) temiz türüyor
-- ✅ **Ön katman saydam zeminli**
-- ✅ **Metin yok** — outline'a çevrilecek bir şey yok
-- ✅ **Yuvarlatılmış köşeler** — ışık keskin köşelerde kötü kırılıyor
+- ❌ **No platform mask** — the system applies the rounded rectangle
+- ❌ **No baked-in shadow** — the system renders depth
+- ❌ **No specular highlight** — the system renders light
+- ❌ **No gradient on the front layer** — a single flat fill, so the four appearance variants (default / dark / clear / tinted) derive cleanly
+- ✅ **The front layer has a transparent background**
+- ✅ **No text** — nothing to convert to outlines
+- ✅ **Rounded corners** — light refracts badly at sharp corners
 
-## Icon Composer ile derleme
+## Building with Icon Composer
 
-Icon Composer, Xcode 26 ile birlikte geliyor (`/Applications/Xcode.app` içinde).
+Icon Composer ships with Xcode 26 (inside `/Applications/Xcode.app`).
 
-1. Icon Composer'ı aç, yeni belge oluştur.
-2. `boreas-background.svg` dosyasını **arka katman** olarak içe aktar.
-3. `boreas-foreground.svg` dosyasını **ön katman** olarak içe aktar.
-4. Ön katmanda Liquid Glass materyalini etkinleştir; specular ve gölge ayarlarını sistem varsayılanlarında bırak.
-5. Dört görünüm varyantını (default, dark, clear, tinted) önizle.
-6. `Boreas.icon` olarak dışa aktar ve uygulama hedefine ekle.
+1. Open Icon Composer and create a new document.
+2. Import `boreas-background.svg` as the **back layer**.
+3. Import `boreas-foreground.svg` as the **front layer**.
+4. Enable the Liquid Glass material on the front layer; leave the specular and shadow settings at the system defaults.
+5. Preview the four appearance variants (default, dark, clear, tinted).
+6. Export as `Boreas.icon` and add it to the application target.
 
-> **Not:** `.icon` dosyası bu dizinde tutulmaz; P6'da uygulama hedefi oluşturulduğunda `App/Resources/` altına eklenir. Bu dizin **kaynak** varlıkları barındırır.
+> **Note:** the `.icon` file is not kept in this directory; it is added under `App/Resources/` when the application target is created in P6. This directory holds the **source** assets.
 
-## Render'lar hakkında
+## About the renders
 
-`render/` altındaki PNG'ler ImageMagick ile üretilmiş **referans** görsellerdir. ImageMagick SVG gradyanlarını render etmediği için arka plan ayrıca üretilip birleştirilmiştir. Gerçek görünüm için `preview.html` (WebKit) veya Icon Composer önizlemesi esas alınmalıdır.
+The PNGs under `render/` are **reference** images produced with ImageMagick. Because ImageMagick does not render SVG gradients, the background was produced separately and composited in. For the true appearance, rely on `preview.html` (WebKit) or the Icon Composer preview.
 
-## Üretim yöntemi ve provenans
+## Production method and provenance
 
-Bu simge **elle yazılmış SVG geometrisidir** — üretken görsel yapay zekâ kullanılmamıştır.
+This icon is **hand-written SVG geometry** — no generative image AI was used.
 
-Gerekçe: üretken modellerle üretilen görsellerin telif kökeni belirsizdir. Projenin hukuki duruşu ([`LEGAL.md`](../../LEGAL.md)) her varlığın kökeninin net olmasını gerektiriyor. Parametrik olarak tanımlanmış, yorumlarında her sayının gerekçesi yazılı bir vektör dosyası bu gereksinimi tartışmasız karşılıyor.
+Rationale: the copyright origin of images produced with generative models is unclear. The project's legal stance ([`LEGAL.md`](../../LEGAL.md)) requires the origin of every asset to be clear. A parametrically defined vector file, with the reasoning for every number written in its comments, meets that requirement beyond dispute.
 
-Tasarım süreci: beş dar kanat varyantı üretildi ve elendi (hepsi "X" veya girdap gibi okunuyordu), ardından geniş kanat geometrisiyle beş varyant daha denendi. Tam çözünürlükte rasterleştirme, önizleme boyutunda görünmeyen bir birleşme boşluğunu ortaya çıkardı ve düzeltildi.
+Design process: five narrow-blade variants were produced and rejected (they all read as an "X" or a vortex), then five more variants were tried with the wide-blade geometry. Rasterizing at full resolution revealed a junction gap invisible at preview size, and it was fixed.
 
-## Yeniden üretme
+## Reproducing
 
 ```bash
 cd Design/icon

@@ -1,73 +1,73 @@
-# Sistem Mimarisi
+# System Architecture
 
-> Son güncelleme: 2026-07-31 — P0.18
-> Kaynak: blueprint §4 · Bağlayıcı invariantlar: `ARCHITECTURE.md`
+> Last updated: 2026-07-31 — P0.18
+> Source: blueprint §4 · Binding invariants: `ARCHITECTURE.md`
 
-## Bileşenler
+## Components
 
 ```
-KULLANICI ALANI (yetkisiz)                    KÖK ALANI (root)
+USER SPACE (unprivileged)                     ROOT SPACE (root)
 ┌────────────────────────────────┐  NSXPC   ┌──────────────────────┐
 │ Boreas.app                     │◀────────▶│ FanDaemon            │
-│  ├─ UI (SwiftUI)               │  çift    │  ├─ XPCListener      │
-│  ├─ ControlEngine              │  yönlü   │  ├─ SMCWriter        │
-│  ├─ SensorReader ──────────────┼──┐ imza  │  ├─ SafetyGovernor   │
-│  ├─ ConfigStore                │  │ doğr. │  ├─ Watchdog         │
-│  ├─ Telemetry (yerel)          │  │       │  └─ StateRestorer    │
-│  └─ DaemonClient (kalp atışı)  │  │       └──────────┬───────────┘
+│  ├─ UI (SwiftUI)               │ signature│  ├─ XPCListener      │
+│  ├─ ControlEngine              │ verified │  ├─ SMCWriter        │
+│  ├─ SensorReader ──────────────┼──┐ both  │  ├─ SafetyGovernor   │
+│  ├─ ConfigStore                │  │ ways  │  ├─ Watchdog         │
+│  ├─ Telemetry (local)          │  │       │  └─ StateRestorer    │
+│  └─ DaemonClient (heartbeat)   │  │       └──────────┬───────────┘
 └────────────────────────────────┘  │                  │ IOKit
 ┌────────────────────────────────┐  │                  ▼
 │ boreas (CLI)                   │  └──────────▶ ┌──────────────┐
-└────────────────────────────────┘   ayrıcalıksız│  DONANIM     │
-                                      okuma      └──────────────┘
+└────────────────────────────────┘   unprivileged│  HARDWARE    │
+                                      reading    └──────────────┘
 ```
 
-## Mimarinin kilit noktası
+## The key point of the architecture
 
-**Sıcaklık okumak hiçbir ayrıcalık gerektirmez. Yalnızca fan yazmak gerektirir.**
+**Reading temperatures requires no privilege at all. Only writing fans does.**
 
-Bu bulgu mimarinin tamamını belirler → [ADR 0007](adr/0007-privilege-split.md)
+This finding shapes the entire architecture → [ADR 0007](adr/0007-privilege-split.md)
 
-Sonuçları:
-- Kullanıcı daemon'u **hiç kurmasa bile** uygulama tam işlevli izleme aracıdır
-- Yönetici şifresi yalnızca bir kez, yalnızca fan kontrolü istendiğinde
-- Ayrıcalıklı yüzey birkaç yüz satırla sınırlı: daemon yalnızca "şu fana şu hedefi yaz" ve "firmware'e dön" bilir
-- Eğri değerlendirmesi, profil mantığı, yapılandırma okuma — **hiçbiri root tarafında değil**
+Its consequences:
+- Even if the user **never installs** the daemon, the application is a fully functional monitoring tool
+- The administrator password only once, and only when fan control is requested
+- The privileged surface is limited to a few hundred lines: the daemon only knows "write this target to this fan" and "return to firmware"
+- Curve evaluation, profile logic, configuration reading — **none of it is on the root side**
 
-## Modül bağımlılıkları
+## Module dependencies
 
 ```
 App    ──▶ Core, HardwareKit, SharedIPC
 CLI    ──▶ Core, HardwareKit, SharedIPC
-Daemon ──▶ HardwareKit (yalnızca yazma yüzeyi), SharedIPC
-Core   ──▶ (yalnızca Foundation)
-HardwareKit ──▶ Core (yalnızca model tipleri)
+Daemon ──▶ HardwareKit (write surface only), SharedIPC
+Core   ──▶ (Foundation only)
+HardwareKit ──▶ Core (model types only)
 ```
 
-`Core`'un saflığı `make gate-layers` ile zorlanır → [ADR 0012](adr/0012-core-layer-purity.md)
+`Core`'s purity is enforced by `make gate-layers` → [ADR 0012](adr/0012-core-layer-purity.md)
 
-## Güven sınırları
+## Trust boundaries
 
-| Sınır | Doğrulama |
+| Boundary | Verification |
 |---|---|
-| App → Daemon | `SecCodeCheckValidity` + `SecRequirement`; Team ID ve bundle ID eşleşmezse red |
-| Daemon → App | Uygulama daemon imzasını doğrular |
-| Daemon → Donanım | `SafetyGovernor` tüm yazmaları süzer |
-| Config → Motor | Şema doğrulaması; geçersizse son geçerli hale dönülür |
+| App → Daemon | `SecCodeCheckValidity` + `SecRequirement`; refused if the Team ID and bundle ID do not match |
+| Daemon → App | The application verifies the daemon's signature |
+| Daemon → Hardware | `SafetyGovernor` filters all writes |
+| Config → Engine | Schema validation; if invalid, fall back to the last valid state |
 
-Ayrıntı: [ADR 0008](adr/0008-smappservice-xpc.md)
+Details: [ADR 0008](adr/0008-smappservice-xpc.md)
 
-## Eşzamanlılık modeli
+## Concurrency model
 
-- Sensör okuma: özel `actor SensorPoller`, sabit periyot
-- Kontrol motoru: **saf fonksiyonlar** (`Sendable` girdi → `Sendable` çıktı), yan etkisiz
+- Sensor reading: a dedicated `actor SensorPoller`, fixed period
+- Control engine: **pure functions** (`Sendable` input → `Sendable` output), no side effects
 - UI: `@MainActor`, `@Observable` model
-- XPC: kendi kuyruğu; sonuç daemon'a `async` gönderilir
+- XPC: its own queue; results are sent to the daemon `async`
 
-**Kural:** Donanım erişen hiçbir kod `@MainActor` üzerinde çalışmaz. Arayüz asla donmaz.
+**Rule:** No code that touches hardware runs on `@MainActor`. The interface never freezes.
 
-## Hata senaryoları
+## Failure scenarios
 
-Tam liste: `ARCHITECTURE.md` §9.
+The full list: `ARCHITECTURE.md` §9.
 
-Ortak ilke: **hiçbir donanım hatası uygulamayı çökertmez.** Zarif düşüş uygulanır, kullanıcı dürüstçe bilgilendirilir, fanlar güvenli duruma döner.
+The shared principle: **no hardware error crashes the application.** Graceful degradation is applied, the user is informed honestly, and the fans return to a safe state.

@@ -5,7 +5,7 @@ import SwiftUI
 /// Everything the installation will do is on screen **before** the install
 /// button — which files are involved, where the system records the approval,
 /// and how to take it all back. A user who closes this window without
-/// clicking anything has lost nothing: monitoring keeps working (invariant İ4).
+/// clicking anything has lost nothing: monitoring keeps working (invariant I4).
 struct HelperSetupView: View {
 
     static let windowID = "helper-setup"
@@ -46,7 +46,7 @@ struct HelperSetupView: View {
                         You can skip this entirely. Without the helper, Boreas remains \
                         a fully working temperature monitor.
                         """,
-                    comment: "Reassurance under the setup actions; installing is optional (invariant İ4)"
+                    comment: "Reassurance under the setup actions; installing is optional (invariant I4)"
                 )
             )
             .font(.caption)
@@ -292,7 +292,7 @@ private struct SetupDisclosure: View {
                                 macOS asks an administrator to approve the helper — once. \
                                 Boreas never sees the password.
                                 """,
-                            comment: "Setup bullet: single administrator approval (invariant İ3)"
+                            comment: "Setup bullet: single administrator approval (invariant I3)"
                         )
                     ),
                     (

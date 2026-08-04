@@ -1,47 +1,47 @@
-# 0012 — `Core` katman saflığı
+# 0012 — `Core` layer purity
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §17.2
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §17.2
 
-## Bağlam
+## Context
 
-Kontrol motorunun donanımsız test edilebilmesi [0011](0011-hardware-abstraction.md)'in ön koşulu. Ancak "test edilebilir tasarım" niyeti, ilk "geçici olarak şunu import edeyim" anında çöker. Geçici hiçbir zaman geçici olmaz.
+Being able to test the control engine without hardware is the precondition of [0011](0011-hardware-abstraction.md). But the intention of "testable design" collapses at the first "let me import this temporarily". Nothing temporary ever is.
 
-## Karar
+## Decision
 
-Derleme ve kapı ile zorlanan bağımlılık yönü:
+Dependency direction, enforced by the build and by a gate:
 
 ```
 App    ──▶ Core, HardwareKit, SharedIPC
 CLI    ──▶ Core, HardwareKit, SharedIPC
-Daemon ──▶ HardwareKit (yalnızca yazma yüzeyi), SharedIPC
-Core   ──▶ (yalnızca Foundation)
-HardwareKit ──▶ Core (yalnızca model tipleri)
+Daemon ──▶ HardwareKit (write surface only), SharedIPC
+Core   ──▶ (Foundation only)
+HardwareKit ──▶ Core (model types only)
 ```
 
-**`Packages/Core` şunları import edemez:** IOKit, SwiftUI, AppKit, Cocoa, Carbon, ServiceManagement, UserNotifications, WidgetKit, AppIntents, Charts, Network.
+**`Packages/Core` may not import:** IOKit, SwiftUI, AppKit, Cocoa, Carbon, ServiceManagement, UserNotifications, WidgetKit, AppIntents, Charts, Network.
 
-Ek kurallar: `Core` içinde zorla açma (`!`) yasak; tüm tipler `Sendable`; motor fonksiyonları saf.
+Additional rules: force unwrapping (`!`) is forbidden inside `Core`; all types are `Sendable`; engine functions are pure.
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Option | Why not |
 |---|---|
-| Tek modül, katman ayrımı yok | Test edilebilirlik imkânsız; CI'da hiçbir şey doğrulanamaz |
-| Katman kuralını yalnızca dokümante etmek | Zorlanmayan kural zamanla ihlal edilir |
-| SPM hedef bağımlılığına güvenmek | SPM yanlış import'u yakalar ama hata mesajı açıklayıcı değil; kapı gerekçeyi de söyler |
+| A single module, no layer separation | Testability is impossible; nothing can be verified in CI |
+| Only documenting the layer rule | An unenforced rule gets violated over time |
+| Relying on SPM target dependencies | SPM catches a wrong import, but its error message is unhelpful; the gate also states the reason |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Motor CI'da saniyeler içinde test edilir
-- ✅ Yeni platform/donanım desteği yalnızca `HardwareKit`'i etkiler
-- ⚠️ Bazı yardımcılar iki kez yazılabilir (`Core` ve `App` tarafında) — kabul edilen maliyet
+- ✅ The engine is tested in CI in seconds
+- ✅ New platform/hardware support affects only `HardwareKit`
+- ⚠️ Some utilities may be written twice (on the `Core` and `App` sides) — an accepted cost
 
-## Zorlama
+## Enforcement
 
 `make gate-layers`:
-- `Packages/Core/Sources` altında yasaklı `import` satırı → kırmızı
-- `Core` içinde zorla açma (`!`) → kırmızı
+- A forbidden `import` line under `Packages/Core/Sources` → red
+- Force unwrapping (`!`) inside `Core` → red
 
-Kanıtlandı: `Core` altına `import IOKit` içeren bir dosya konduğunda kapı kırmızıya döndü, dosya kaldırılınca yeşile döndü.
+Proven: when a file containing `import IOKit` was placed under `Core`, the gate turned red; when the file was removed, it turned green again.

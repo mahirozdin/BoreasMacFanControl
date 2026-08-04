@@ -1,58 +1,58 @@
-# Donanım Erişim Katmanı
+# Hardware Access Layer
 
-> Son güncelleme: 2026-07-31 — P0.19
-> Kaynak: blueprint §5 · Kararlar: [ADR 0011](adr/0011-hardware-abstraction.md), [ADR 0018](adr/0018-undocumented-sensor-api.md)
+> Last updated: 2026-07-31 — P0.19
+> Source: blueprint §5 · Decisions: [ADR 0011](adr/0011-hardware-abstraction.md), [ADR 0018](adr/0018-undocumented-sensor-api.md)
 
-## Sıcaklık okuma — ayrıcalıksız
+## Temperature reading — unprivileged
 
-Apple Silicon'da sıcaklık sensörleri HID sensör servisleri olarak sunulur:
+On Apple Silicon, temperature sensors are exposed as HID sensor services:
 
-1. HID olay sistemi istemcisi oluşturulur
-2. Eşleştirme sözlüğü ile sıcaklık sensörü sınıfındaki servisler filtrelenir
-3. Her servisten ürün özelliği okunarak sensörün donanım adı alınır
-4. Her servisten sıcaklık olayı çekilir ve float değer okunur
+1. A HID event system client is created
+2. Services in the temperature sensor class are filtered with a matching dictionary
+3. The product property is read from each service to obtain the sensor's hardware name
+4. The temperature event is pulled from each service and the float value is read
 
-**Karakteristikleri:** root gerektirmez · sensör adları çipe göre değişir, **koda gömülmez, çalışma zamanında keşfedilir** · ham adlar kullanıcı dostu değildir, eşleme katmanı gerekir.
+**Characteristics:** requires no root · sensor names vary by chip and **are not embedded in code but discovered at runtime** · raw names are not user friendly; a mapping layer is required.
 
-⚠️ **Risk (R1):** Bu API resmî olarak dokümante edilmemiştir. Azaltım: `SensorSource` protokolü + SMC üzerinden ikinci kaynak + zarif düşüş. Ayrıntı [ADR 0018](adr/0018-undocumented-sensor-api.md).
+⚠️ **Risk (R1):** This API is not officially documented. Mitigation: the `SensorSource` protocol + a second source via SMC + graceful degradation. Details in [ADR 0018](adr/0018-undocumented-sensor-api.md).
 
-📌 **Notarizasyon:** Dokümante edilmemiş API kullanımı **App Store inceleme** kuralıdır; doğrudan dağıtım + notarizasyon akışını engellemez.
+📌 **Notarisation:** Use of an undocumented API is an **App Store review** rule; it does not block the direct distribution + notarisation flow.
 
-## Fan okuma ve yazma — SMC
+## Fan reading and writing — SMC
 
-`AppleSMC` IOService üzerinden dört karakterlik anahtarlarla:
+Via the `AppleSMC` IOService, with four character keys:
 
-| İhtiyaç | Yön | Ayrıcalık |
+| Need | Direction | Privilege |
 |---|---|---|
-| Fan sayısı, anlık hız, min, max | Oku | Yok |
-| Hedef hız, kontrol modu | **Yaz** | **Root** |
+| Fan count, current speed, min, max | Read | None |
+| Target speed, control mode | **Write** | **Root** |
 
-**Devralma dizisi (daemon içinde):**
-1. Mevcut mod ve hedef okunur, **orijinal durum saklanır**
-2. Mod "zorlamalı"ya alınır
-3. Hedef hız yazılır
-4. Sonraki döngüde gerçek hız okunur, sapma varsa düzeltilir (**kapalı çevrim doğrulama**)
+**Take-over sequence (inside the daemon):**
+1. The current mode and target are read, and **the original state is saved**
+2. The mode is switched to "forced"
+3. The target speed is written
+4. On the next cycle the actual speed is read and any deviation is corrected (**closed loop verification**)
 
-**Devretme dizisi:**
-1. Hedef orijinal değere geri yazılır
-2. Mod "otomatik"e alınır
-3. Doğrulama okuması; başarısızsa üstel geri çekilmeyle en fazla 5 deneme
+**Hand-back sequence:**
+1. The target is written back to its original value
+2. The mode is switched to "automatic"
+3. A verification read; on failure, up to 5 attempts with exponential backoff
 
-**Veri tipleri:** SMC anahtarları tipli veri döndürür. Tip bilgisi anahtarla birlikte okunur; **tip varsayılmaz**. Bilinmeyen tip → sensör atlanır, uyarı loglanır.
+**Data types:** SMC keys return typed data. The type information is read together with the key; **the type is never assumed**. Unknown type → the sensor is skipped, a warning is logged.
 
-## Diğer veri kaynakları
+## Other data sources
 
-| Kaynak | Ayrıcalık | Ne verir |
+| Source | Privilege | What it provides |
 |---|---|---|
-| `ProcessInfo.thermalState` | Yok | **Tamamen resmî API** — güvenlik zinciri K2 katmanının temeli |
-| Güç kaynağı API'si | Yok | Adaptör/pil, şarj yüzdesi |
-| Pil IORegistry düğümü | Yok | Döngü sayısı, kapasite, sıcaklık, durum |
-| Dahili SSD SMART | Yok | Disk sıcaklığı, kullanım ömrü |
-| CPU yükü | Yok | "Neden ısındı?" bağlamı |
-| Ön plandaki uygulama | Yok | Uygulama tetikleyicili profiller |
-| Ekran bağlantısı | Yok | Harici ekran tetikleyicisi |
+| `ProcessInfo.thermalState` | None | **A fully official API** — the foundation of safety chain layer K2 |
+| The power source API | None | Adapter/battery, charge percentage |
+| The battery IORegistry node | None | Cycle count, capacity, temperature, state |
+| Internal SSD SMART | None | Disk temperature, lifetime used |
+| CPU load | None | "Why did it heat up?" context |
+| The frontmost application | None | Application triggered profiles |
+| Display connection | None | The external display trigger |
 
-## Soyutlama ve test edilebilirlik
+## Abstraction and testability
 
 ```
 protocol SensorSource   { func snapshot() async throws -> [SensorReading] }
@@ -61,18 +61,18 @@ protocol FanActuator    { func apply(_:) async throws; func releaseToFirmware() 
 protocol PowerSource    { func current() -> PowerContext }
 ```
 
-Her birinin **üç** uygulaması: `Live` (gerçek) · `Mock` (deterministik) · `Replay` (log'dan yeniden oynatan).
+Each has **three** implementations: `Live` (real) · `Mock` (deterministic) · `Replay` (replays from a log).
 
-**Bu, projenin en değerli mühendislik yatırımıdır** — [ADR 0011](adr/0011-hardware-abstraction.md). `make gate-layers` ile zorlanır.
+**This is the project's most valuable engineering investment** — [ADR 0011](adr/0011-hardware-abstraction.md). Enforced by `make gate-layers`.
 
-## Sensör adlandırma ve gruplama
+## Sensor naming and grouping
 
-Ham adlar iki katmandan geçer: **normalleştirme** (önek/sonek temizliği, kısaltma açma) → **sınıflandırma** (desen tabanlı grup ataması).
+Raw names pass through two layers: **normalisation** (prefix/suffix cleanup, abbreviation expansion) → **classification** (pattern based group assignment).
 
-Grup taksonomisi: **`compute`** · `compute.performance` · `compute.efficiency` · `graphics` · `memory` · `storage` · `power` · `battery` · `chassis` · `airflow` · `wireless` · `uncategorized`
+Group taxonomy: **`compute`** · `compute.performance` · `compute.efficiency` · `graphics` · `memory` · `storage` · `power` · `battery` · `chassis` · `airflow` · `wireless` · `uncategorized`
 
-> **`compute`**, blueprint taksonomisine sonradan eklendi. Apple Silicon die sensörlerinin çoğu (`PMU tdie<n>`) hangi kümede olduğunu söylemiyor; küme uydurmak yerine atfedilemeyen die sıcaklıkları bu grupta toplanıyor. Gerekçe ve alternatifler: [ADR 0020](adr/0020-compute-die-sensor-group.md).
+> **`compute`** was added to the blueprint taxonomy later. Most Apple Silicon die sensors (`PMU tdie<n>`) do not say which cluster they are in; rather than make a cluster up, die temperatures that cannot be attributed are collected in this group. Rationale and alternatives: [ADR 0020](adr/0020-compute-die-sensor-group.md).
 
-**Kural:** Eşleşmeyen sensör **asla gizlenmez.** `uncategorized` altında gösterilir ve kullanıcı tek tıkla rapor oluşturabilir. Bu, yeni çip nesillerine adaptasyonu topluluk eliyle hızlandırır (R2 azaltımı).
+**Rule:** An unmatched sensor is **never hidden.** It is shown under `uncategorized` and the user can generate a report with a single click. This speeds up adaptation to new chip generations through the community (the R2 mitigation).
 
-**Kullanıcı geçersiz kılması:** Yapılandırmadan herhangi bir sensöre özel ad ve grup atanabilir.
+**User override:** Any sensor can be assigned a custom name and group from the configuration.

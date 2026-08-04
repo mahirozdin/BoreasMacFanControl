@@ -1,33 +1,36 @@
 #!/usr/bin/env python3
 """
-Sıradaki yapılabilir atomik işi TODO.md'den deterministik olarak seçer.
+Deterministically selects the next actionable atomic task from TODO.md.
 
-NEDEN BU SCRIPT VAR
-    Seçim algoritması dokümanda düz metin olarak durduğu sürece model yorumuna
-    kalıyor ve bir iş manuel blokaja takıldığında oturum durabiliyor. Bu script
-    seçimi makineye devrediyor: manuel işe bağlı HER iş atlanır ve bir sonraki
-    yapılabilir iş döner — faz sınırı fark etmeksizin.
+WHY THIS SCRIPT EXISTS
+    As long as the selection algorithm lives in a document as prose, it is
+    left to model judgement, and a session can stall the moment a task hits a
+    manual blocker. This script hands the choice to a machine: EVERY task
+    blocked on a manual item is skipped and the next actionable task is
+    returned — phase boundaries notwithstanding.
 
-SÖZLEŞME
-    Atomik iş satırı:   - [ ] **P<n>.<nn> — Başlık.** açıklama
-    Manuel blokaj:      satır sonunda  ⛔ M03  (birden fazla: ⛔ M03 M04)
-    Faz bağımlılığı:    - **Bağımlılık:** P1, P2      (fazın kendi bloğunda)
-    Manuel iş durumu:   | M03 | ... | OPEN |   ->  OPEN dışındaki her şey çözülmüş sayılır
+CONTRACT
+    Atomic task line:   - [ ] **P<n>.<nn> — Title.** description
+    Manual blocker:     at the end of the line  ⛔ M03  (several: ⛔ M03 M04)
+    Phase dependency:   - **Depends on:** P1, P2      (inside the phase block)
+    Manual task status: | M03 | ... | OPEN |   ->  anything except OPEN counts
+                        as resolved
 
-BİR İŞ YAPILABİLİR SAYILIR EĞER
-    1. işaretlenmemişse           - [ ]
-    2. bağlı olduğu manuel işlerin hepsi çözülmüşse (veya hiç bağlı değilse)
-    3. fazının bağımlılıklarındaki tüm işler bitmişse
+A TASK IS ACTIONABLE WHEN
+    1. it is unchecked                  - [ ]
+    2. every manual task it depends on is resolved (or it depends on none)
+    3. every task in the phases it depends on is complete
 
-Çıktı: seçilen iş + gerekçe. Yapılabilir iş yoksa neyin beklendiğini söyler.
-Çıkış kodu: 0 = iş var, 1 = yapılabilir iş yok, 2 = ayrıştırma hatası
+Output: the chosen task plus the reasoning. If nothing is actionable, it says
+what is being waited on.
+Exit code: 0 = there is work, 1 = nothing actionable, 2 = parse error
 """
 import os
 import re
 import sys
 import pathlib
 
-# TODO_PATH ile değiştirilebilir — kapı testleri için gerekli
+# Overridable via TODO_PATH — needed by the gate tests
 TODO = pathlib.Path(
     os.environ.get("TODO_PATH")
     or pathlib.Path(__file__).resolve().parent.parent / "TODO.md"
@@ -35,14 +38,14 @@ TODO = pathlib.Path(
 
 TASK_RE = re.compile(r"^- \[( |x)\] \*\*(P\d+)\.(\d+)\s*—\s*(.+?)\*\*(.*)$")
 PHASE_RE = re.compile(r"^## (P\d+) — (.+)$")
-DEP_RE = re.compile(r"^- \*\*Bağımlılık:\*\*\s*(.*)$")
+DEP_RE = re.compile(r"^- \*\*Depends on:\*\*\s*(.*)$")
 MANUAL_RE = re.compile(r"^\|\s*(M\d+)\s*\|.*\|\s*(.+?)\s*\|\s*$")
 BLOCK_RE = re.compile(r"⛔\s*((?:M\d+[\s,]*)+)")
 
 
 def parse():
     if not TODO.exists():
-        print(f"HATA: {TODO} bulunamadı", file=sys.stderr)
+        print(f"ERROR: {TODO} not found", file=sys.stderr)
         sys.exit(2)
     lines = TODO.read_text(encoding="utf-8").split("\n")
 
@@ -55,7 +58,7 @@ def parse():
     for raw in lines:
         line = raw.rstrip()
 
-        if line.startswith("## ") and "Manuel işler" in line:
+        if line.startswith("## ") and "Manual tasks" in line:
             in_manual = True
             current = None
             continue
@@ -98,7 +101,7 @@ def parse():
 
 
 def manual_open(mid, manual):
-    """Manuel iş hâlâ bekliyor mu? Bilinmeyen id güvenli tarafta 'bekliyor' sayılır."""
+    """Is the manual task still pending? An unknown id counts as pending, on purpose."""
     status = manual.get(mid)
     if status is None:
         return True
@@ -116,7 +119,7 @@ def phase_complete(pid, phases):
 def main():
     manual, phases, order = parse()
     if not phases:
-        print("HATA: TODO.md içinde faz bulunamadı", file=sys.stderr)
+        print("ERROR: no phase found in TODO.md", file=sys.stderr)
         sys.exit(2)
 
     skipped = []
@@ -139,29 +142,29 @@ def main():
                 skipped.append((t["id"], t["title"], open_blockers))
                 continue
 
-            print(f"SIRADAKİ İŞ: {t['id']}")
-            print(f"  Faz    : {pid} — {p['theme']}")
-            print(f"  Başlık : {t['title']}")
+            print(f"NEXT TASK: {t['id']}")
+            print(f"  Phase  : {pid} — {p['theme']}")
+            print(f"  Title  : {t['title']}")
             if skipped:
-                print(f"  Atlandı: {len(skipped)} iş manuel blokaj bekliyor")
+                print(f"  Skipped: {len(skipped)} task(s) waiting on manual work")
                 for sid, stitle, sb in skipped[:5]:
                     print(f"           {sid} ⛔ {' '.join(sb)} — {stitle[:52]}")
             sys.exit(0)
 
-    # Yapılabilir iş kalmadı
-    print("YAPILABİLİR İŞ YOK")
+    # Nothing actionable left
+    print("NOTHING ACTIONABLE")
     if skipped:
-        print(f"\n  {len(skipped)} iş manuel blokaj bekliyor:")
+        print(f"\n  {len(skipped)} task(s) waiting on manual work:")
         for sid, stitle, sb in skipped:
             print(f"    {sid} ⛔ {' '.join(sb)} — {stitle[:60]}")
         need = sorted({b for _, _, bs in skipped for b in bs})
-        print(f"\n  Çözülmesi gereken manuel işler: {', '.join(need)}")
+        print(f"\n  Manual tasks that need resolving: {', '.join(need)}")
     if waiting_on_phase:
-        print("\n  Faz bağımlılığı bekleyenler:")
+        print("\n  Waiting on phase dependencies:")
         for pid, unmet in waiting_on_phase:
             print(f"    {pid} <- {', '.join(unmet)}")
     if not skipped and not waiting_on_phase:
-        print("\n  Tüm işler tamamlanmış görünüyor.")
+        print("\n  Everything appears to be complete.")
     sys.exit(1)
 
 

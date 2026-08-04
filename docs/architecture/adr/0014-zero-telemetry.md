@@ -1,45 +1,45 @@
-# 0014 — Sıfır telemetri
+# 0014 — Zero telemetry
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §1.4, §14.3
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §1.4, §14.3
 
-## Bağlam
+## Context
 
-Uygulama, kullanıcının donanım sensörlerini sürekli okuyan ve arka planda çalışan bir araç. Bu konumdaki bir yazılımın veri toplaması, kullanıcı güveni açısından en hassas nokta.
+The application is a tool that continuously reads the user's hardware sensors and runs in the background. For software in that position, collecting data is the most sensitive point of user trust.
 
-Karşı argüman: telemetri olmadan hangi özelliklerin kullanıldığı bilinemez. Bu kabul edilir — ürün kararları kullanıcı geri bildirimiyle verilir.
+The counterargument: without telemetry there is no way to know which features are used. This is accepted — product decisions are made from user feedback.
 
-## Karar
+## Decision
 
-- **Hiçbir kullanım verisi toplanmaz veya iletilmez**
-- Analitik SDK'sı, çökme raporlama SDK'sı, reklam kimliği **yoktur**
-- **Varsayılan durumda uygulama hiçbir ağ bağlantısı kurmaz**
-- Ağ yalnızca şu iki durumda, yalnızca kullanıcı açtıysa: güncelleme kontrolü, kullanıcının tanımladığı webhook kancası
-- Çökme raporu isteyen kullanıcı, oluşturulan **yerel** dosyayı kendisi issue'ya ekler
-- Log satırları kişisel veri içermez: kullanıcı adı, dosya yolu, ağ bilgisi loglanmaz
+- **No usage data is collected or transmitted**
+- There is **no** analytics SDK, no crash reporting SDK, no advertising identifier
+- **By default the application makes no network connection at all**
+- The network is used in exactly two cases, and only if the user turned them on: the update check, and a webhook the user defined
+- A user who wants to report a crash attaches the generated **local** file to an issue themselves
+- Log lines contain no personal data: no user name, no file path, no network information is logged
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Option | Why not |
 |---|---|
-| Anonim kullanım istatistikleri | "Anonim" iddiası doğrulanamaz; kullanıcının güvenmesi gerekir. Bu kategoride güven en değerli varlık |
-| Opt-in telemetri | Kod tabanında telemetri altyapısı bulunması bile denetim yükü ve risk yaratır |
-| Otomatik çökme raporlama | Çökme raporları bağlam içerir; bağlam kişisel veri sızdırabilir |
+| Anonymous usage statistics | The "anonymous" claim cannot be verified; the user has to take it on trust. In this category trust is the most valuable asset |
+| Opt-in telemetry | Even having telemetry infrastructure in the codebase creates audit burden and risk |
+| Automatic crash reporting | Crash reports carry context; context can leak personal data |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Gizlilik iddiası **kod düzeyinde doğrulanabilir** — pazarlama vaadi değil
-- ✅ GDPR/KVKK yüzeyi yok
-- ✅ Kurumsal ortamda benimseme kolaylaşır
-- ⚠️ Özellik kullanım verisi yok → ürün kararları geri bildirime dayanır
-- ⚠️ Çökme teşhisi kullanıcının aktif katılımını gerektirir
+- ✅ The privacy claim is **verifiable at the code level** — not a marketing promise
+- ✅ No GDPR/KVKK surface
+- ✅ Adoption in corporate environments becomes easier
+- ⚠️ No feature usage data → product decisions rest on feedback
+- ⚠️ Crash diagnosis requires the user's active participation
 
-## Zorlama
+## Enforcement
 
 `make gate-privacy`:
-- Telemetri/analitik SDK adı veya `advertisingIdentifier` izi → kırmızı (P1)
-- `App/Sources/Updates/` ve `App/Sources/Automation/` dışında ağ API'si → kırmızı (P2)
-- Daemon entitlement'ında ağ yetkisi → kırmızı
+- Any telemetry/analytics SDK name or a trace of `advertisingIdentifier` → red (P1)
+- A network API outside `App/Sources/Updates/` and `App/Sources/Automation/` → red (P2)
+- A network entitlement on the daemon → red
 
-Kanıtlandı: `Analytics` referansı içeren bir dosya konduğunda kapı kırmızıya döndü.
+Proven: when a file containing an `Analytics` reference was placed, the gate turned red.

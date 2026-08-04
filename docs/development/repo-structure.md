@@ -1,47 +1,47 @@
-# Depo Yapısı
+# Repository Structure
 
-> Son güncelleme: 2026-07-31 — P0.23
-> Kaynak: blueprint §17, §19 · Karar: [ADR 0012](../architecture/adr/0012-core-layer-purity.md)
+> Last updated: 2026-07-31 — P0.23
+> Source: blueprint §17, §19 · Decision: [ADR 0012](../architecture/adr/0012-core-layer-purity.md)
 
-## Hangi kod nereye
+## Which code goes where
 
-| Dizin | İçerik | Bağımlılık kuralı |
+| Directory | Contents | Dependency rule |
 |---|---|---|
-| `Packages/Core/` | Modeller, kontrol motoru, yapılandırma, telemetri biçimlendirme | **Yalnızca Foundation** |
-| `Packages/HardwareKit/` | IOKit sarmalayıcıları, protokoller, `Live`/`Mock`/`Replay`, sensör keşfi | `Core` (yalnızca model tipleri) |
-| `Packages/SharedIPC/` | XPC protokol tanımları (App + Daemon ortak) | — |
-| `App/` | SwiftUI arayüz, menü çubuğu, eğri editörü, ayarlar, tasarım sistemi | `Core`, `HardwareKit`, `SharedIPC` |
-| `Daemon/` | Ayrıcalıklı yardımcı: XPC dinleyici, SMC yazıcı, güvenlik, watchdog | `HardwareKit` (yazma yüzeyi), `SharedIPC` |
-| `CLI/` | `boreas` komut satırı aracı | `Core`, `HardwareKit`, `SharedIPC` |
-| `Widget/` | WidgetKit (sonraki dalga) | `Core` |
+| `Packages/Core/` | Models, control engine, configuration, telemetry formatting | **Foundation only** |
+| `Packages/HardwareKit/` | IOKit wrappers, protocols, `Live`/`Mock`/`Replay`, sensor discovery | `Core` (model types only) |
+| `Packages/SharedIPC/` | XPC protocol definitions (shared by App + Daemon) | — |
+| `App/` | SwiftUI interface, menu bar, curve editor, settings, design system | `Core`, `HardwareKit`, `SharedIPC` |
+| `Daemon/` | Privileged helper: XPC listener, SMC writer, safety, watchdog | `HardwareKit` (write surface), `SharedIPC` |
+| `CLI/` | The `boreas` command line tool | `Core`, `HardwareKit`, `SharedIPC` |
+| `Widget/` | WidgetKit (next wave) | `Core` |
 | `schema/` | `config.schema.json` | — |
-| `scripts/` | Kapılar (`gates/`), bootstrap, imzalama, DMG, yeniden adlandırma | — |
-| `Tests/` | Altın dosya senaryoları, UI testleri | — |
-| `docs/` | Bu dokümantasyon | — |
+| `scripts/` | Gates (`gates/`), bootstrap, signing, DMG, renaming | — |
+| `Tests/` | Golden file scenarios, UI tests | — |
+| `docs/` | This documentation | — |
 
-## Bağlayıcı kurallar
+## Binding rules
 
-**`Core` asla IOKit'e, SwiftUI'ya veya AppKit'e bağlanmaz.** Bu kural, motorun CI'da donanımsız test edilebilmesinin tek garantisidir ve `make gate-layers` ile zorlanır.
+**`Core` never links against IOKit, SwiftUI or AppKit.** This rule is the sole guarantee that the engine can be tested without hardware in CI, and it is enforced by `make gate-layers`.
 
-**`.xcodeproj` commit edilmez** — `project.yml`'den üretilir (T5).
+**`.xcodeproj` is never committed** — it is generated from `project.yml` (T5).
 
-## Ürün deposu dosyaları
+## Product repository files
 
-Bunlar **iş kalemidir**, `TODO.md`'de takip edilir:
+These are **work items**, tracked in `TODO.md`:
 
-| Dosya | Faz | İçerik |
+| File | Phase | Contents |
 |---|---|---|
-| `LICENSE` | P1 | Apache-2.0 tam metni (kanonik kaynaktan indirilir) |
-| `NOTICE` | P1 | Telif bildirimi, atıflar, teşekkürler |
-| `README.md` + 4 çeviri | P8 | `docs/release/readme-spec.md`'ye göre |
-| `CONTRIBUTING.md` | P1 | Kurulum, stil, PR süreci, **bağımsız geliştirme beyanı** |
+| `LICENSE` | P1 | Full Apache-2.0 text (downloaded from the canonical source) |
+| `NOTICE` | P1 | Copyright notice, attributions, acknowledgements |
+| `README.md` + 4 translations | P8 | Per `docs/release/readme-spec.md` |
+| `CONTRIBUTING.md` | P1 | Setup, style, PR process, **independent development declaration** |
 | `CODE_OF_CONDUCT.md` | P1 | Contributor Covenant 2.1 |
-| `TRANSLATORS.md` | P7 | Dil başına sorumlu katkıcılar |
-| `CHANGELOG.md` | P1 | Keep a Changelog formatı |
-| `.github/PULL_REQUEST_TEMPLATE.md` | P1 | Beyan onay kutuları + test kontrol listesi |
-| `.github/ISSUE_TEMPLATE/` | P1 | Hata, özellik, **bilinmeyen sensör raporu** |
+| `TRANSLATORS.md` | P7 | Responsible contributors per language |
+| `CHANGELOG.md` | P1 | Keep a Changelog format |
+| `.github/PULL_REQUEST_TEMPLATE.md` | P1 | Declaration checkboxes + test checklist |
+| `.github/ISSUE_TEMPLATE/` | P1 | Bug, feature, **unknown sensor report** |
 | `.github/workflows/` | P1 | CI + release |
 
-## Ürün adını değiştirme
+## Renaming the product
 
-`scripts/rename-product.sh` (P1) ürün adını, bundle kimliğini, daemon etiketini ve yerelleştirme dizelerini tek komutla günceller. Ad kod tabanına gömülmez.
+`scripts/rename-product.sh` (P1) updates the product name, bundle identifier, daemon label and localisation strings with a single command. The name is never embedded in the code base.

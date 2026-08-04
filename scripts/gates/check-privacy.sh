@@ -1,75 +1,75 @@
 #!/usr/bin/env bash
 # ============================================================================
-# KAPI: gate-privacy
-# Zorladığı değişmezler: AGENTS.md §2.6 P1 (sıfır telemetri), P2 (ağ yok)
+# GATE: gate-privacy
+# Enforces: AGENTS.md §2.6 P1 (zero telemetry), P2 (no network)
 # ADR: 0014-zero-telemetry.md
 # ============================================================================
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 . scripts/gates/_lib.sh
 
-echo "▶ gate-privacy — telemetri ve ağ izi"
+echo "▶ gate-privacy — telemetry and network traces"
 require_tools git grep xargs
 
 SWIFT=$(tracked '*.swift')
 COUNT=$(printf '%s\n' "$SWIFT" | grep -c . || true)
 
 if [ "$COUNT" -eq 0 ]; then
-  skip "Swift kaynağı yok — P2'de etkinleşecek"
+  skip "no Swift sources — activates in P2"
 else
-  note "taranan Swift dosyası: $COUNT"
+  note "Swift files scanned: $COUNT"
 
   # -------------------------------------------------------------------------
-  # P1 — telemetri / analitik / çökme raporlama SDK izi
+  # P1 — telemetry / analytics / crash reporting SDK traces
   # -------------------------------------------------------------------------
   TELEMETRY='(Analytics|Telemetry|Crashlytics|Mixpanel|Amplitude|Firebase|AppCenter|Bugsnag|advertisingIdentifier|ASIdentifierManager|trackEvent|logEvent)'
   if HITS=$(grep_files "$SWIFT" -nHE "$TELEMETRY"); then
-    fail "telemetri/analitik izi bulundu (P1)"
+    fail "telemetry/analytics trace found (P1)"
     printf '%s\n' "$HITS" | head -10 | sed 's/^/      /'
   else
-    ok "telemetri/analitik izi yok"
+    ok "no telemetry/analytics traces"
   fi
 
   # -------------------------------------------------------------------------
-  # P2 — ağ kullanımı yalnızca izinli modüllerde
+  # P2 — network use only in permitted modules
   # -------------------------------------------------------------------------
   NET='(URLSession|NWConnection|import[[:space:]]+Network)'
   ALLOWED_PATH='(App/Sources/Updates/|App/Sources/Automation/|Tests/)'
   if NETFILES=$(grep_files "$SWIFT" -lE "$NET"); then
     OFFENDERS=$(printf '%s\n' "$NETFILES" | grep -vE "$ALLOWED_PATH" || true)
     if [ -n "$OFFENDERS" ]; then
-      fail "izinli olmayan modülde ağ API'si (P2):"
+      fail "network API in a module that is not permitted (P2):"
       printf '%s\n' "$OFFENDERS" | sed 's/^/      /'
-      note "ağ yalnızca App/Sources/Updates/ ve App/Sources/Automation/ altında"
+      note "network only under App/Sources/Updates/ and App/Sources/Automation/"
     else
-      ok "ağ API'si yalnızca izinli modüllerde"
+      ok "network APIs only in permitted modules"
     fi
   else
-    ok "hiçbir yerde ağ API'si yok"
+    ok "no network API anywhere"
   fi
 
   # -------------------------------------------------------------------------
-  # P3 — log satırlarında kişisel veri riski
+  # P3 — personal data risk in log lines
   # -------------------------------------------------------------------------
   if HITS=$(grep_files "$SWIFT" -nHE '(NSUserName|NSFullUserName)\(\)'); then
-    warn "kullanıcı kimliği API'si — log'a sızmadığını doğrula (P3)"
+    warn "user identity API — verify it never reaches a log (P3)"
     printf '%s\n' "$HITS" | head -5 | sed 's/^/      /'
   else
-    ok "kullanıcı kimliği API'si kullanımı yok"
+    ok "no user identity API use"
   fi
 fi
 
 # ---------------------------------------------------------------------------
-# Daemon entitlement'ında ağ yetkisi olamaz (M6)
+# The daemon entitlements may not include network (M6)
 # ---------------------------------------------------------------------------
 ENTS=$(tracked '*.entitlements')
 if [ -n "$ENTS" ]; then
   DAEMON_ENTS=$(printf '%s\n' "$ENTS" | grep '^Daemon/' || true)
   if [ -n "$DAEMON_ENTS" ]; then
     if grep_files "$DAEMON_ENTS" -lE 'network' >/dev/null; then
-      fail "daemon entitlement'ında ağ yetkisi (M6)"
+      fail "network entitlement on the daemon (M6)"
     else
-      ok "daemon entitlement'ında ağ yetkisi yok"
+      ok "no network entitlement on the daemon"
     fi
   fi
 fi

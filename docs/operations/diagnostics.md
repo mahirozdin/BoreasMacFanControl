@@ -1,33 +1,33 @@
-# Tanılama
+# Diagnostics
 
-> Son güncelleme: 2026-07-31 — P0.28
-> Kaynak: blueprint §13
+> Last updated: 2026-07-31 — P0.28
+> Source: blueprint §13
 
-Donanım sağlığı hakkında **iddialı olmayan, dürüst** bir görünüm sunulur.
+Hardware health is presented as an **honest view that makes no overclaims**.
 
-## Kontroller
+## Checks
 
-| Kontrol | Yöntem | Çıktı |
+| Check | Method | Output |
 |---|---|---|
-| **Fan tepkisi** | Hedef ve gerçek RPM arasındaki sapma zaman içinde izlenir | Komutu izliyor / gecikmeli / yanıt vermiyor |
-| **Fan dengesi** | Çok fanlı modellerde fanlar arası RPM farkı | Dengeli / anormal fark |
-| **Sensör geçerliliği** | Sabit takılan, aralık dışı veya kaybolan sensörler | Sağlıklı / şüpheli okuma |
-| **Termal geçmiş** | Oturum boyunca `serious`/`critical` durumda geçen süre | Süre ve tepe değerler |
-| **Pil sağlığı** | Döngü sayısı, kapasite oranı, sıcaklık | Bilgilendirici özet |
-| **Depolama sağlığı** | NVMe SMART temel alanları | Bilgilendirici özet |
+| **Fan response** | Deviation between target and actual RPM is tracked over time | Tracking the command / lagging / not responding |
+| **Fan balance** | RPM difference between fans on multi-fan models | Balanced / abnormal difference |
+| **Sensor validity** | Sensors stuck at a value, out of range, or disappearing | Healthy / suspect reading |
+| **Thermal history** | Time spent in `serious`/`critical` state during the session | Duration and peak values |
+| **Battery health** | Cycle count, capacity ratio, temperature | Informational summary |
+| **Storage health** | Basic NVMe SMART fields | Informational summary |
 
-## Dürüstlük kuralı
+## Honesty rule
 
-> **Uygulama, kesin olarak bilemeyeceği bir şeyi kesinmiş gibi söylemez.**
+> **The application never states as certain what it cannot know for certain.**
 
-"Fan arızalı" **demez**. Bunun yerine:
+It does **not** say "the fan is faulty". Instead:
 
-> *"Fan komuta beklenen şekilde yanıt vermiyor — sebebi toz birikmesi, kablo bağlantısı veya donanım arızası olabilir."*
+> *"The fan is not responding to commands as expected — the cause may be dust build-up, a cable connection or a hardware fault."*
 
-ve kullanıcıya sonraki adımları önerir.
+and it suggests next steps to the user.
 
-**Gerekçe:** Yanlış pozitif bir "arızalı" etiketi, kullanıcıyı gereksiz servise gönderir. Bu kategoride yanlış teşhisin maliyeti, teşhis koymamanın maliyetinden yüksektir.
+**Rationale:** a false positive "faulty" label sends the user to an unnecessary repair. In this category, the cost of a wrong diagnosis is higher than the cost of making no diagnosis.
 
-## Kapsam sınırı
+## Coverage limit
 
-Pil sağlığı ve çok fanlı denge kontrolleri geliştirme donanımında **doğrulanamaz** (R8). Bunlar Mock ile test edilir ve README'de "topluluk doğrulaması bekleniyor" olarak işaretlenir. → `docs/development/testing.md`
+Battery health and multi-fan balance checks **cannot be verified** on the development hardware (R8). They are tested with Mock and marked "awaiting community verification" in the README. → `docs/development/testing.md`

@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Kapı script'leri için ortak yardımcılar.
+# Shared helpers for the gate scripts.
 #
-# UYUMLULUK NOTU — ÖNEMLİ:
-#   macOS /bin/bash sürümü 3.2.57'dir (lisans nedeniyle Apple güncellemiyor).
-#   Bash 4+ özellikleri KULLANILMAZ: mapfile/readarray, ${x,,}, ${x^^},
-#   ilişkisel diziler (declare -A), ${!x[@]} üzerinde string anahtar.
+# COMPATIBILITY NOTE — IMPORTANT:
+#   The macOS /bin/bash is version 3.2.57 (Apple stopped updating it over
+#   licensing). Bash 4+ features are NOT used: mapfile/readarray, ${x,,},
+#   ${x^^}, associative arrays (declare -A), string keys over ${!x[@]}.
 #
-#   Bu kural gerçek bir hatadan doğdu: kapılar `mapfile` kullanıyordu, komut
-#   bulunamıyordu, tarama hiç çalışmıyordu ve kapı yine de PASS veriyordu.
-#   Klasik "sahte kapı". Aşağıdaki require_bash_features bunu tekrarlanamaz
-#   kılar: eksik bir yetenek varsa kapı sessizce geçmek yerine kırmızıya döner.
+#   The rule was born from a real bug: the gates used `mapfile`, the command
+#   did not exist, the scan never ran and the gate still reported PASS. The
+#   classic "fake gate". require_tools below makes that unrepeatable: if a
+#   capability is missing the gate turns red instead of passing silently.
 # ============================================================================
 
-# Kapı sonucu
+# Gate result
 GATE_FAIL=0
 
 ok()   { printf '  ✓ %s\n' "$*"; }
@@ -23,8 +23,8 @@ note() { printf '    %s\n' "$*"; }
 skip() { printf '  ○ SKIP: %s\n' "$*"; }
 
 # ---------------------------------------------------------------------------
-# Kapının çalışması için gereken dış komutlar mevcut mu.
-# Eksikse kapı PASS veremez — sessiz geçiş yasaktır.
+# Are the external commands the gate needs present?
+# If one is missing the gate must not PASS — silent passes are forbidden.
 # ---------------------------------------------------------------------------
 require_tools() {
   local missing=""
@@ -33,15 +33,15 @@ require_tools() {
     command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
   done
   if [ -n "$missing" ]; then
-    printf '  ✗ gerekli komut eksik:%s\n' "$missing"
-    printf '    Kapı doğrulama yapamaz. Sessiz geçiş yasak.\n'
+    printf '  ✗ required command missing:%s\n' "$missing"
+    printf '    The gate cannot verify anything. Passing silently is forbidden.\n'
     exit 1
   fi
 }
 
 # ---------------------------------------------------------------------------
-# Tracked dosya listesi (newline ayrılmış). İsteğe bağlı hariç tutma regex'i.
-# Bash 3.2 uyumlu: dizi yerine newline ayrılmış string döner.
+# Tracked file list (newline separated). Optional exclusion regex.
+# Bash 3.2 compatible: returns a newline separated string, not an array.
 # ---------------------------------------------------------------------------
 tracked() {
   local pattern="${1:-}"
@@ -60,10 +60,10 @@ tracked() {
 }
 
 # ---------------------------------------------------------------------------
-# Dosya listesi üzerinde grep. Liste boşsa grep ÇALIŞTIRILMAZ
-# (aksi halde stdin'den okur ve asılır / yanlış sonuç verir).
-# Kullanım: grep_files "<dosya listesi>" "<grep bayrakları>" "<desen>"
-# Çıktı: eşleşmeler (varsa). Dönüş: 0 = eşleşme var, 1 = yok.
+# grep over a file list. If the list is empty, grep is NOT run
+# (it would read stdin and hang / return the wrong result).
+# Usage: grep_files "<file list>" "<grep flags>" "<pattern>"
+# Output: the matches (if any). Return: 0 = matches exist, 1 = none.
 # ---------------------------------------------------------------------------
 grep_files() {
   local files="$1"; shift

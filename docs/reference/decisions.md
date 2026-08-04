@@ -1,27 +1,27 @@
-# Karar Kaydı — Açılış Kararları
+# Decision Log — Founding Decisions
 
-> Son güncelleme: 2026-07-31 — P0.11
-> Kaynak: blueprint §23
+> Last updated: 2026-07-31 — P0.11
+> Source: blueprint §23
 
-Projenin açılışında kesinleşen altı karar. Her biri bir ADR'ye bağlıdır.
+The six decisions settled at the project's founding. Each is tied to an ADR.
 
-| # | Karar | Sonuç | ADR |
+| # | Decision | Outcome | ADR |
 |---|---|---|---|
-| **A1** | Ürün adı | **Boreas** · depo `boreas-mac-fan-control` · bundle `com.bubiapps.boreas` · CLI `boreas`. Marka araması proje sahibi tarafından yapıldı, engel bulunmadı (2026-08-03) | [0002](../architecture/adr/0002-product-name.md) |
+| **A1** | Product name | **Boreas** · repository `boreas-mac-fan-control` · bundle `com.bubiapps.boreas` · CLI `boreas`. The trademark search was done by the project owner; no obstacle was found (2026-08-03) | [0002](../architecture/adr/0002-product-name.md) |
 | **A2** | Minimum macOS | **14.0 Sonoma** | [0003](../architecture/adr/0003-minimum-macos-14.md) |
-| **A3** | Depo sahibi | **Kişisel GitHub hesabı.** İleride organizasyona taşınabilir; GitHub eski URL'i yönlendirir. Bundle ID buna bağlı değil | (mimari etkisi yok) |
-| **A4** | Developer ID | **P8'e ertelendi** (2026-08-03 revizyonu). P1–P7 imzalama kimliği gerektirmiyor; karar ve iki yolun sonuçları ADR 0019'da | [0019](../architecture/adr/0019-signing-identity-deferred.md) |
-| **A5** | Test donanımı | **Yalnızca Mac mini (M4, 2024) — `Mac16,10`.** Tek fanlı, pilsiz masaüstü | [0011](../architecture/adr/0011-hardware-abstraction.md) |
-| **A6** | Dil kapsamı | **Arayüz 5 dil** (`en` `tr` `ru` `es` `zh-Hans`) · **dokümantasyon İngilizce**. Çeviriler proje içinde üretilir, kökenleri `TRANSLATORS.md`'de işaretlenir (2026-08-03 eki) | [0016](../architecture/adr/0016-language-scope.md) |
+| **A3** | Repository owner | **Personal GitHub account.** It can move to an organization later; GitHub redirects the old URL. The bundle ID does not depend on it | (no architectural impact) |
+| **A4** | Developer ID | **Deferred to P8** (2026-08-03 revision). P1–P7 require no signing identity; the decision and the consequences of both paths are in ADR 0019 | [0019](../architecture/adr/0019-signing-identity-deferred.md) |
+| **A5** | Test hardware | **Only a Mac mini (M4, 2024) — `Mac16,10`.** A single-fan desktop with no battery | [0011](../architecture/adr/0011-hardware-abstraction.md) |
+| **A6** | Language scope | **Interface in 5 languages** (`en` `tr` `ru` `es` `zh-Hans`) · **documentation in English**. Translations are produced within the project and their origins are marked in `TRANSLATORS.md` (2026-08-03 addendum) | [0016](../architecture/adr/0016-language-scope.md) |
 
-## Kararların birbirini etkilediği noktalar
+## Where the decisions influenced one another
 
-- **A5 → A1'i güçlendirdi.** Tek donanımda test edilen bir projenin dürüst olması gerekir; kapsamı abartmayan bir marka ve README güvenin tek kaynağıdır.
-- **A5 → yol haritasını değiştirdi.** Mock/Replay altyapısı P2'ye çekildi; "iyi olurdu" değil zorunlu.
-- **A6 → arayüz tasarımını bağladı.** Beş dil, sabit boyutlu metin kabı yasağını genişlik eksenine de taşıdı.
-- **A1 → keşfedilebilirliği ayrı katmana taşıdı.** Ayırt edici marka seçilince anahtar kelimeler `docs/release/discoverability.md`'de çözüldü.
-- **A4 → riski kaldırdı.** Sertifika mevcut olduğu için alternatif dağıtım planına gerek kalmadı.
+- **A5 → strengthened A1.** A project tested on a single piece of hardware has to be honest; a brand and a README that do not overstate their scope are the only source of trust.
+- **A5 → changed the roadmap.** The Mock/Replay infrastructure was pulled forward to P2; mandatory, not "nice to have".
+- **A6 → constrained the interface design.** Five languages extended the ban on fixed-size text containers to the width axis as well.
+- **A1 → moved discoverability into its own layer.** With a distinctive brand chosen, the keywords were resolved in `docs/release/discoverability.md`.
+- **A4 → removed the risk.** Because the certificate is available, an alternative distribution plan was no longer needed.
 
-## Sonraki dalgaya bırakılanlar
+## Left for the next wave
 
-Karar bekleyen konular **değil**, bilinçli olarak ertelenmiş konular. Tetikleyicileriyle birlikte `ARCHITECTURE.md` §12'de izlenir.
+These are **not** topics awaiting a decision but topics deliberately deferred. They are tracked, with their triggers, in `ARCHITECTURE.md` §12.

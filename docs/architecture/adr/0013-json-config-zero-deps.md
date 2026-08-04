@@ -1,42 +1,42 @@
-# 0013 — JSON yapılandırma + sıfır çalışma zamanı bağımlılığı
+# 0013 — JSON configuration + zero runtime dependencies
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §10, §3.3
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §10, §3.3
 
-## Bağlam
+## Context
 
-Yapılandırma insan tarafından düzenlenebilir, sürüm kontrolüne alınabilir ve araçlarla işlenebilir olmalı. TOML/YAML daha okunaklı ama **bağımlılık gerektiriyor**. Açık kaynak bir projede her bağımlılık, katkıcı için bir kurulum adımı ve proje için bir güvenlik/lisans yüzeyi.
+Configuration must be human editable, usable under version control and processable by tools. TOML/YAML are more readable but **require a dependency**. In an open source project every dependency is an installation step for the contributor and a security/licence surface for the project.
 
-## Karar
+## Decision
 
-- **Format: JSON.** Codable-native, sıfır bağımlılık, şema doğrulanabilir, araç dostu
-- **Konum:** `~/Library/Application Support/Boreas/config.json`
-- **Şema:** `schema/config.schema.json` — repoda yayınlanır ve sürümlenir
-- **Sürümleme:** `schemaVersion` alanı; eski sürümler otomatik göç ettirilir, göç öncesi yedek alınır
-- **Çalışma zamanı bağımlılığı: sıfır.** Yalnızca Apple çatıları
+- **Format: JSON.** Codable-native, zero dependencies, schema verifiable, tool friendly
+- **Location:** `~/Library/Application Support/Boreas/config.json`
+- **Schema:** `schema/config.schema.json` — published and versioned in the repository
+- **Versioning:** a `schemaVersion` field; old versions are migrated automatically, with a backup taken before migration
+- **Runtime dependencies: zero.** Apple frameworks only
 
-Doğrulama **sıkı**: aralık dışı değer reddedilir. **Geçersiz yapılandırma uygulamayı çökertmez** — son geçerli hale dönülür, hatalı alan kullanıcıya gösterilir, fanlar firmware'de kalır.
+Validation is **strict**: out-of-range values are rejected. **An invalid configuration does not crash the application** — it falls back to the last valid state, the offending field is shown to the user, and the fans stay with the firmware.
 
-Bilinmeyen alanlar **hata değil uyarıdır** (ileri uyumluluk).
+Unknown fields are **a warning, not an error** (forward compatibility).
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Option | Why not |
 |---|---|
-| TOML | Daha okunaklı ama bağımlılık gerektirir; katkıcı deneyimi ve lisans yüzeyi maliyeti |
-| YAML | Aynı sorun + ayrıştırma belirsizlikleri (Norway problem vb.) |
-| `UserDefaults` / plist | İnsan tarafından düzenlenmesi zor, sürüm kontrolüne uygun değil, dotfiles ile taşınamaz |
+| TOML | More readable but requires a dependency; costs contributor experience and licence surface |
+| YAML | The same problem + parsing ambiguities (the Norway problem, etc.) |
+| `UserDefaults` / plist | Hard for a human to edit, unsuited to version control, cannot travel in dotfiles |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Kullanıcı yapılandırmayı dotfiles ile taşıyabilir
-- ✅ MDM ile dağıtım zaten mümkün (kurumsal araç yazmaya gerek yok)
-- ✅ Sıfır bağımlılık → sıfır tedarik zinciri riski
-- ⚠️ JSON'da yorum yok — şema dosyası ve dokümantasyon bunu telafi eder
+- ✅ Users can carry the configuration in their dotfiles
+- ✅ Deployment via MDM is already possible (no need to write an enterprise tool)
+- ✅ Zero dependencies → zero supply chain risk
+- ⚠️ JSON has no comments — the schema file and the documentation compensate
 
-## Zorlama
+## Enforcement
 
-- `make gate-deps` → `Package.swift` içinde `.package(url:` varsa kırmızı (T4)
-- Birim testi: geçersiz yapılandırma → son geçerli hale dönülür, çökme yok (G6)
-- Göç testi: eski şema sürümü veri kaybı olmadan taşınır
+- `make gate-deps` → red if `Package.swift` contains `.package(url:` (T4)
+- Unit test: invalid configuration → falls back to the last valid state, no crash (G6)
+- Migration test: an old schema version is migrated without data loss

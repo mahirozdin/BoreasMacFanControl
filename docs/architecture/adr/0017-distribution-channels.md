@@ -1,44 +1,44 @@
-# 0017 — Dağıtım kanalları; Mac App Store dışlandı
+# 0017 — Distribution channels; Mac App Store excluded
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §16.3, §16.4
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §16.3, §16.4
 
-## Bağlam
+## Context
 
-macOS uygulaması dağıtmanın üç yolu var: Mac App Store, doğrudan dağıtım (imzalı + notarize), paket yöneticisi.
+There are three ways to distribute a macOS application: the Mac App Store, direct distribution (signed + notarized), and a package manager.
 
-Kritik kısıt: **App Store sandbox'ı ayrıcalıklı LaunchDaemon kurulumuna izin vermiyor.** Bu teknik bir imkânsızlık, tercih değil.
+The critical constraint: **the App Store sandbox does not allow installing a privileged LaunchDaemon.** This is a technical impossibility, not a preference.
 
-## Karar
+## Decision
 
-| Kanal | Durum |
+| Channel | Status |
 |---|---|
-| **Homebrew Cask** (`brew install --cask boreas`) | **Birincil** — kurulum ve güncellemenin en kolay yolu |
-| **GitHub Releases** (imzalı, notarize DMG + SHA-256) | **Birincil** |
-| Sparkle ile uygulama içi güncelleme | Ertelendi (v1.1) — Homebrew'un yeterliliği ölçülecek |
-| **Mac App Store** | ❌ **Teknik olarak imkânsız** |
+| **Homebrew Cask** (`brew install --cask boreas`) | **Primary** — the easiest way to install and update |
+| **GitHub Releases** (signed, notarized DMG + SHA-256) | **Primary** |
+| In-app updates via Sparkle | Deferred (v1.1) — whether Homebrew suffices will be measured |
+| **Mac App Store** | ❌ **Technically impossible** |
 
-İmzalama zinciri: Developer ID Application sertifikası ile uygulama + daemon + CLI **ayrı ayrı** imzalanır → Hardened Runtime → `notarytool` → `stapler`. Notarizasyon başarısız olursa **sürüm yayınlanmaz**; CI bu adımda kırılır.
+The signing chain: with the Developer ID Application certificate, the app + the daemon + the CLI are signed **separately** → Hardened Runtime → `notarytool` → `stapler`. If notarization fails, **no release is published**; CI breaks at this step.
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Option | Why not |
 |---|---|
-| App Store | Sandbox ayrıcalıklı daemon'a izin vermiyor — imkânsız |
-| Yalnızca "kaynaktan derle" | Hedef kitleyi geliştiricilerle sınırlar; Developer ID mevcut olduğu için gereksiz |
-| İmzasız DMG | Gatekeeper uyarısı, güvenilmez daemon kaydı, zayıf XPC imza doğrulaması |
+| App Store | The sandbox does not allow a privileged daemon — impossible |
+| "Build from source" only | Limits the audience to developers; unnecessary since a Developer ID is available |
+| An unsigned DMG | Gatekeeper warnings, untrusted daemon registration, weak XPC signature verification |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Tek komutla kurulum ve güncelleme
-- ✅ Gatekeeper uyarısı yok
-- ✅ XPC imza doğrulaması gerçek Team ID ile çalışır
-- ⚠️ App Store keşfedilebilirliği yok → [0002](0002-product-name.md) ve `docs/release/discoverability.md` bunu telafi eder
-- ⚠️ Apple Developer Program üyeliği yıllık maliyet
+- ✅ Install and update with a single command
+- ✅ No Gatekeeper warning
+- ✅ XPC signature verification works with the real Team ID
+- ⚠️ No App Store discoverability → [0002](0002-product-name.md) and `docs/release/discoverability.md` compensate
+- ⚠️ Apple Developer Program membership is a yearly cost
 
-## Zorlama
+## Enforcement
 
-- CI release job'ı: notarizasyon başarısızsa sürüm üretilmez
-- `.gitignore` → `*.p12`, `*.p8`, `*.provisionprofile` asla commit edilmez
-- `BOOT.md` sağlık snapshot'ı → depoda imzalama materyali varsa uyarı
+- The CI release job: if notarization fails, no release is produced
+- `.gitignore` → `*.p12`, `*.p8`, `*.provisionprofile` are never committed
+- The `BOOT.md` health snapshot → warns if signing material is present in the repository

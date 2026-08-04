@@ -1,9 +1,9 @@
-# Derleme, İmzalama ve Dağıtım
+# Build, Signing and Distribution
 
-> Son güncelleme: 2026-07-31 — P0.29
-> Kaynak: blueprint §16 · Karar: [ADR 0017](../architecture/adr/0017-distribution-channels.md)
+> Last updated: 2026-07-31 — P0.29
+> Source: blueprint §16 · Decision: [ADR 0017](../architecture/adr/0017-distribution-channels.md)
 
-## Yerel derleme
+## Local build
 
 ```bash
 make bootstrap
@@ -11,33 +11,33 @@ make generate
 make build
 ```
 
-## İmzalama zinciri
+## Signing chain
 
-1. **Developer ID Application** sertifikası ile imzalama — uygulama, daemon ve CLI **ayrı ayrı**
-2. **Hardened Runtime** açık; entitlement'lar minimumda
-3. `notarytool` ile notarizasyon
-4. `stapler` ile bilet ekleme
+1. Signing with the **Developer ID Application** certificate — the application, the daemon and the CLI **each separately**
+2. **Hardened Runtime** on; entitlements kept to the minimum
+3. Notarization with `notarytool`
+4. Ticket stapling with `stapler`
 
-**Notarizasyon başarısız olursa sürüm yayınlanmaz** — CI bu adımda kırılır.
+**If notarization fails, the release is not published** — CI breaks at this step.
 
-Gizli değerler (sertifika, API anahtarı) GitHub Actions secrets üzerinden gelir. **Anahtarlar repoya asla girmez** — `.gitignore` ve `BOOT.md` sağlık snapshot'ı bunu denetler.
+Secret values (the certificate, the API key) come in through GitHub Actions secrets. **Keys never enter the repository** — `.gitignore` and the `BOOT.md` health snapshot check for this.
 
-## Dağıtım kanalları
+## Distribution channels
 
-| Kanal | Öncelik |
+| Channel | Priority |
 |---|---|
-| **Homebrew Cask** (`brew install --cask boreas`) | Birincil |
-| **GitHub Releases** (imzalı, notarize DMG + SHA-256) | Birincil |
-| Sparkle uygulama içi güncelleme | Ertelendi (`ARCHITECTURE.md` §12) |
-| Mac App Store | ❌ Sandbox ayrıcalıklı daemon'a izin vermiyor |
+| **Homebrew Cask** (`brew install --cask boreas`) | Primary |
+| **GitHub Releases** (signed, notarized DMG + SHA-256) | Primary |
+| Sparkle in-app updates | Deferred (`ARCHITECTURE.md` §12) |
+| Mac App Store | ❌ The sandbox does not allow a privileged daemon |
 
-## Sürümleme
+## Versioning
 
 - **Semantic Versioning** (`MAJOR.MINOR.PATCH`)
-- `CHANGELOG.md` — Keep a Changelog formatı
-- Etiketler: `v1.0.0`
-- **Yapılandırma şeması ayrı sürümlenir**; şema kırılması MAJOR gerektirir
+- `CHANGELOG.md` — Keep a Changelog format
+- Tags: `v1.0.0`
+- **The configuration schema is versioned separately**; a schema break requires MAJOR
 
-## Sürüm kapıları
+## Release gates
 
-`ARCHITECTURE.md` §10'daki tüm kapılar yeşil olmadan sürüm çıkmaz. Özetle: tüm invariant testleri · `Core` kapsamı ≥ %85 · `make check` yeşil · `kill -9` ve uyku duman testleri gerçek donanımda · notarizasyon · 5 dil eksiksiz + pseudo-locale testi · README "test edilen donanım" bölümü dürüst.
+No release ships until every gate in `ARCHITECTURE.md` §10 is green. In short: all invariant tests · `Core` coverage ≥ 85% · `make check` green · the `kill -9` and sleep smoke tests on real hardware · notarization · 5 languages complete + the pseudo-locale test · an honest README "tested hardware" section.

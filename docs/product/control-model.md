@@ -1,98 +1,98 @@
-# Kontrol Modeli — Çekirdek Soyutlama
+# Control Model — The Core Abstraction
 
-> Son güncelleme: 2026-07-31 — P0.15
-> Kaynak: blueprint §7 · Karar: [ADR 0010](../architecture/adr/0010-continuous-curve-model.md)
+> Last updated: 2026-07-31 — P0.15
+> Source: blueprint §7 · Decision: [ADR 0010](../architecture/adr/0010-continuous-curve-model.md)
 
-> **Bu, ürünün çekirdek soyutlamasıdır.** Sistemin geri kalanı buna göre şekillenir.
+> **This is the product's core abstraction.** The rest of the system takes its shape from it.
 
-## Temel model
+## Base model
 
-Fan davranışı **parçalı doğrusal, sürekli bir transfer fonksiyonu** ile tanımlanır:
+Fan behaviour is defined by a **piecewise linear, continuous transfer function**:
 
 ```
-Girdi: sıcaklık (°C)  →  Çıktı: görev oranı (duty, 0.0 – 1.0)
+Input: temperature (°C)  →  Output: duty cycle (duty, 0.0 – 1.0)
 ```
 
-Eğri sıralı kontrol noktalarından oluşur, noktalar arası **doğrusal enterpolasyon** yapılır:
+The curve consists of ordered control points, with **linear interpolation** between points:
 
 ```
 [(35, 0.00), (50, 0.20), (65, 0.45), (78, 0.75), (88, 1.00)]
 ```
 
-**Kısıtlar:** sıcaklığa göre artan sıralı, görev oranı azalmayan, 2–16 nokta. İlk noktanın altında çıktı ilk noktanın değeri; son noktanın üstünde son noktanın değeri.
+**Constraints:** strictly increasing in temperature, non-decreasing in duty, 2–16 points. Below the first point the output is the first point's value; above the last point, the last point's value.
 
-**RPM dönüşümü:**
+**RPM conversion:**
 ```
 rpm = fanMin + (fanMax − fanMin) × duty
 ```
 
-`duty = 0` fanı **durdurmaz**, donanım minimumuna indirir.
+`duty = 0` does **not stop** the fan; it lowers it to the hardware minimum.
 
-## İşleme zinciri
+## Processing chain
 
-Üç aşama, her biri farklı bir problem çözer:
+Three stages, each solving a different problem:
 
-| # | Aşama | Parametre | Varsayılan | Problem |
+| # | Stage | Parameter | Default | Problem |
 |---|---|---|---|---|
-| 1 | Girdi yumuşatma | EWMA `α` | 0.30 | Sensör gürültüsü, anlık tepe |
-| 2 | Histerezis | `H` (°C) | 3.0 | Eşik çevresi salınım |
-| 3 | Çıktı hız sınırı | `maxRise`/`maxFall` | 600/150 RPM/sn | Duyulabilir ani ses değişimi |
+| 1 | Input smoothing | EWMA `α` | 0.30 | Sensor noise, momentary spikes |
+| 2 | Hysteresis | `H` (°C) | 3.0 | Oscillation around a threshold |
+| 3 | Output rate limit | `maxRise`/`maxFall` | 600/150 RPM/s | Audible sudden changes in sound |
 
-**Histerezis — çift eğri:** düşen yönde eğri `H` kadar sola kaydırılır. Motor sıcaklığın yönüne göre eğri seçer ve seçilen eğride **kilitli kalır**, ta ki diğerini kesecek kadar ters hareket olana dek.
+**Hysteresis — dual curve:** in the falling direction the curve is shifted left by `H`. The engine picks a curve based on the direction of the temperature and **stays locked** to the chosen curve until there is enough reverse movement to cross the other one.
 
-**Hız sınırı asimetriktir** ve bu kasıtlıdır: yükselme hızlı olmalı (güvenlik), düşme yavaş (akustik konfor + termal kararlılık). Tek bir "geçiş süresi" parametresi bunu ifade edemez.
+**The rate limit is asymmetric**, and this is deliberate: rising must be fast (safety), falling slow (acoustic comfort + thermal stability). A single "transition time" parameter cannot express this.
 
-## Girdi seçimi
+## Input selection
 
-Her eğri bir **sensör toplayıcıya** bağlanır:
+Each curve is bound to a **sensor aggregator**:
 
 ```
 input: { group: "compute.performance", aggregate: "max", smoothing: 0.30 }
 ```
 
-`max` varsayılandır (güvenlik yanlı). `mean` daha yumuşak davranış, `p95` sapkın sensör etkisini azaltmak için.
+`max` is the default (biased towards safety). `mean` for smoother behaviour, `p95` to reduce the influence of an outlier sensor.
 
-## Profiller ve arbitraj
+## Profiles and arbitration
 
-**Profil** = ad + fan başına eğri seti + yumuşatma parametreleri + tetikleyici + öncelik.
+A **profile** = name + per-fan curve set + smoothing parameters + trigger + priority.
 
-Yerleşik profiller: `Sessiz`, `Dengeli` (varsayılan), `Performans`, `Sistem` (motor devre dışı).
+Built-in profiles: `Quiet`, `Balanced` (default), `Performance`, `System` (engine disabled).
 
-**Tetikleyici türleri:** güç kaynağı · çalışan/ön plandaki uygulama · zaman aralığı · pil seviyesi · harici ekran · termal durum · elle seçim.
+**Trigger types:** power source · running/foreground application · time window · battery level · external display · thermal state · manual selection.
 
-**Arbitraj kuralları:**
-1. Elle seçim her şeyi yener (süreli olabilir)
-2. Aksi halde koşulu sağlanan profiller arasından **en yüksek öncelikli**
-3. Eşitlikte listede önce gelen
-4. Hiçbiri sağlanmazsa varsayılan profil
-5. Geçişler hız sınırlayıcıdan geçer — sıçrama olmaz
+**Arbitration rules:**
+1. Manual selection beats everything (may be time-limited)
+2. Otherwise, among the profiles whose condition holds, the **highest priority** wins
+3. On a tie, the one earlier in the list
+4. If none holds, the default profile
+5. Transitions pass through the rate limiter — no jumps
 
-Bir profil **her fan için ayrı eğri ve ayrı sensör grubu** tanımlayabilir.
+A profile may define **a separate curve and a separate sensor group for each fan**.
 
-## Güvenlik zinciri
+## Safety chain
 
-Motor çıktısı donanıma ulaşmadan beş katmandan geçer. **Her katman yalnızca yukarı düzeltebilir.**
+Engine output passes through five layers before reaching the hardware. **Each layer can only correct upward.**
 
-| Katman | Nerede | Kural | Kapatılabilir |
+| Layer | Where | Rule | Can be disabled |
 |---|---|---|---|
-| K1 Fan tabanı | Motor | Donanım minimumunun altına inilmez | Hayır |
-| K2 Termal durum | Motor | `serious` → taban %55; `critical` → %100 | Hayır |
-| K3 Panik eşiği | Motor | Sensör > `T_panic` → %100, ≥30 sn kilitli | Hayır (yalnızca düşürülebilir) |
-| K4 Daemon guard | Daemon | Sınır dışı komut reddedilir | Hayır |
-| K5 Watchdog | Daemon | Kalp atışı yoksa firmware'e devret | Hayır |
+| K1 Fan floor | Engine | Never below the hardware minimum | No |
+| K2 Thermal state | Engine | `serious` → floor 55%; `critical` → 100% | No |
+| K3 Panic threshold | Engine | Sensor > `T_panic` → 100%, locked ≥30 s | No (can only be lowered) |
+| K4 Daemon guard | Daemon | Out-of-bounds commands are rejected | No |
+| K5 Watchdog | Daemon | No heartbeat → hand back to firmware | No |
 
-K2 resmî `ProcessInfo.thermalState` API'sine dayanır — dokümante edilmemiş API'ye bağımlı **değildir**.
+K2 rests on the official `ProcessInfo.thermalState` API — it does **not** depend on an undocumented API.
 
-## Durum makinesi
+## State machine
 
 ```
-MONITORING ──(kontrol açılır + daemon hazır)──▶ CONTROLLING
-CONTROLLING ──(K3)──▶ PANIC ──(normale döner)──▶ CONTROLLING
-* ──(watchdog / uyku / çıkış / hata)──▶ RELEASING ──▶ MONITORING
+MONITORING ──(control turned on + daemon ready)──▶ CONTROLLING
+CONTROLLING ──(K3)──▶ PANIC ──(returns to normal)──▶ CONTROLLING
+* ──(watchdog / sleep / quit / error)──▶ RELEASING ──▶ MONITORING
 ```
 
-`RELEASING` **idempotenttir**.
+`RELEASING` is **idempotent**.
 
-## Invariantlar
+## Invariants
 
-Bu modelin doğruluğunu koruyan silinemez testler `ARCHITECTURE.md` §7'de listelenir.
+The undeletable tests protecting the correctness of this model are listed in `ARCHITECTURE.md` §7.

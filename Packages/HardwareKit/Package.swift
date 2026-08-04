@@ -1,8 +1,8 @@
 // swift-tools-version: 6.2
 import PackageDescription
 
-// HardwareKit — IOKit sarmalayıcıları ve donanım protokolleri.
-// Her protokolün Live + Mock uygulaması olmak zorundadır (değişmez M2).
+// HardwareKit — IOKit wrappers and the hardware protocols.
+// Every protocol must have a Live + Mock implementation (invariant M2).
 let package = Package(
     name: "HardwareKit",
     platforms: [.macOS(.v14)],

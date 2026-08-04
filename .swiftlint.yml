@@ -1,5 +1,5 @@
-# Boreas — SwiftLint yapılandırması
-# Kaynak: AGENTS.md §6 · docs/development/setup.md
+# Boreas — SwiftLint configuration
+# Source: AGENTS.md §6 · docs/development/setup.md
 
 included:
   - Packages
@@ -12,12 +12,12 @@ excluded:
   - "**/Tests/Fixtures"
 
 # --------------------------------------------------------------------------
-# Değişmez T1: uyarılar hata sayılır. Kırık pencere bırakılmaz.
+# Invariant T1: warnings count as errors. No broken windows.
 # --------------------------------------------------------------------------
 strict: true
 
 opt_in_rules:
-  - force_unwrapping          # AGENTS.md §6.2 — Core içinde zorla açma yasak
+  - force_unwrapping          # AGENTS.md §6.2 — force unwrapping banned in Core
   - implicitly_unwrapped_optional
   - empty_count
   - explicit_init
@@ -32,15 +32,15 @@ opt_in_rules:
   - operator_usage_whitespace
   - overridden_super_call
   - prohibited_super_call
-  - fatal_error_message        # fatal_error gerekçesiz kullanılamaz
+  - fatal_error_message        # fatal_error must state its reason
   - discouraged_optional_boolean
 
 disabled_rules:
-  - todo                       # TODO.md sistemi var; koddaki TODO'lar iş listesine taşınır
-  # Biçimlendirme swift-format'ın işi. Bu kurallar onunla ÇAKIŞIYOR:
-  # swift-format çok satırlı literallere trailing comma ekliyor, SwiftLint
-  # ise yasaklıyordu — 'make format' çalıştıkça 'make lint' kırılıyordu.
-  # Sınır net: swift-format biçimi, SwiftLint anlamı denetler.
+  - todo                       # the TODO.md system exists; code TODOs move to the task list
+  # Formatting belongs to swift-format. These rules CONFLICT with it:
+  # swift-format adds trailing commas to multiline literals while SwiftLint
+  # banned them — every 'make format' broke 'make lint'.
+  # The boundary is clear: swift-format checks form, SwiftLint checks meaning.
   - trailing_comma
   - opening_brace
   - vertical_whitespace
@@ -61,22 +61,22 @@ file_length: { warning: 450, error: 700 }
 cyclomatic_complexity: { warning: 10, error: 18 }
 
 # --------------------------------------------------------------------------
-# Özel kurallar — değişmezleri lint katmanında da yakala
+# Custom rules — catch the invariants at the lint layer too
 # --------------------------------------------------------------------------
 custom_rules:
   no_hardcoded_user_string:
-    name: "Sabit yazılmış kullanıcı metni"
+    name: "Hard coded user facing text"
     regex: '\b(Text|Label|Button)\(\s*"[^"]{2,}"'
     match_kinds: [identifier, string]
-    message: "Değişmez Y1: String(localized:comment:) kullan. Bkz. AGENTS.md §2.8"
+    message: "Invariant Y1: use String(localized:comment:). See AGENTS.md §2.8"
     severity: error
 
   no_print_statements:
-    name: "print yerine Logger"
-    # NOT: '^' SwiftLint'te satır başına DEĞİL dosya başına bağlanıyor.
-    # Kelime sınırı + identifier kind kullanılıyor; yorum ve dize içindeki
-    # "print" kelimesi eşleşmiyor.
+    name: "Logger instead of print"
+    # NOTE: in SwiftLint '^' anchors to the start of the FILE, not the
+    # line. A word boundary + identifier kind is used; the word "print"
+    # inside comments and strings does not match.
     regex: '\bprint\s*\('
     match_kinds: [identifier]
-    message: "OSLog/Logger kullan. print() üretim kodunda kalmamalı."
+    message: "Use OSLog/Logger. print() must not survive into production code."
     severity: error

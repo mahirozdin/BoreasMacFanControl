@@ -1,83 +1,83 @@
-# 0016 — Dil kapsamı: 5 dil arayüz, İngilizce dokümantasyon
+# 0016 — Language scope: 5-language interface, English documentation
 
-- **Durum:** Kabul (kısmen [0021](0021-english-only-repository.md) tarafından güncellendi)
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §9.7, §23 A6
+- **Status:** Accepted (partly superseded by [0021](0021-english-only-repository.md))
+- **Date:** 2026-07-31
+- **Source:** blueprint §9.7, §23 A6
 
-## Bağlam
+## Context
 
-Proje uluslararası kullanıcıya açık olacak. Aynı zamanda tek geliştiricili — her çeviri bir bakım yükü. Bayat çeviri, çevirisizlikten daha zararlıdır: kullanıcı yanlış talimat izler.
+The project will be open to an international audience. It is also a single developer project — every translation is a maintenance burden. A stale translation is more harmful than no translation: the user follows the wrong instructions.
 
-## Karar
+## Decision
 
-**Uygulama arayüzü — 5 dil, v1.0'da eksiksiz:**
+**The application interface — 5 languages, complete at v1.0:**
 
-| Kod | Dil | Not |
+| Code | Language | Note |
 |---|---|---|
-| `en` | English | **Kaynak dil** — anahtarlar önce burada yazılır |
-| `tr` | Türkçe | Çeviri değil, Türkçe düşünülerek yazılır |
-| `ru` | Русский | Uzun dizeler — düzen esnekliği kritik |
-| `es` | Español | |
-| `zh-Hans` | 简体中文 | Basitleştirilmiş; geleneksel sonraki dalga |
+| `en` | English | **Source language** — keys are written here first |
+| `tr` | Turkish | Not a translation; written thinking in Turkish |
+| `ru` | Russian | Long strings — layout flexibility is critical |
+| `es` | Spanish | |
+| `zh-Hans` | Simplified Chinese | Simplified; Traditional in a later wave |
 
-**Dokümantasyon — farklı kural:**
+**Documentation — a different rule:**
 
-| Dosya | Diller |
+| File | Languages |
 |---|---|
-| `README.md` | **İngilizce (yetkili)** |
-| `README.{tr,ru,es,zh-Hans}.md` | Çeviri + "geride kalmış olabilir" notu |
-| `CONTRIBUTING.md`, `SECURITY.md`, `docs/**` | Yalnızca İngilizce |
-| Kod, yorum, commit mesajı | Yalnızca İngilizce |
-| Proje yönetim dokümanları (`TODO.md`, `AGENTS.md`, `BOOT.md`) | Türkçe |
+| `README.md` | **English (authoritative)** |
+| `README.{tr,ru,es,zh-Hans}.md` | Translations + a "may lag behind" note |
+| `CONTRIBUTING.md`, `SECURITY.md`, `docs/**` | English only |
+| Code, comments, commit messages | English only |
+| Project management documents (`TODO.md`, `AGENTS.md`, `BOOT.md`) | Turkish |
 
-**Zorunlu teknik kurallar:** String Catalog (`.xcstrings`); `String(localized:)` zorunlu; her dize için `comment` alanı dolu; Rusça'nın üç çoğul biçimi doğru ele alınır; eksik çeviri kaynak dile düşer, asla boş görünmez.
+**Mandatory technical rules:** String Catalog (`.xcstrings`); `String(localized:)` is required; the `comment` field is filled for every string; Russian's three plural forms are handled correctly; a missing translation falls back to the source language and never shows blank.
 
-**Düzen sonucu:** Rusça dizeler İngilizcenin %30–50 fazlası olabilir, Çince belirgin kısadır. Bu yüzden **sabit piksel genişlikli veya yükseklikli metin kabı yoktur**.
+**Layout consequence:** Russian strings can run 30–50% longer than English, Chinese is noticeably shorter. Hence **no text container has a fixed pixel width or height**.
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Option | Why not |
 |---|---|
-| Dokümantasyonu da 5 dilde tutmak | `docs/` sürekli değişir; tek geliştiriciyle senkron tutulamaz. Bayat çeviri zararlıdır |
-| Yalnızca İngilizce arayüz | Türkçe arayüz bu kategoride nadir — gerçek bir farklılaştırıcı |
-| Çeviriyi v1.1'e ertelemek | Yerelleştirme altyapısı sonradan eklenirse tüm dizeler yeniden yazılır |
+| Keeping the documentation in 5 languages as well | `docs/` changes constantly; with a single developer it cannot be kept in sync. A stale translation is harmful |
+| An English-only interface | A Turkish interface is rare in this category — a real differentiator |
+| Deferring translation to v1.1 | If the localisation infrastructure is added later, every string is rewritten |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Geniş uluslararası erişim
-- ✅ Türkçe birinci sınıf dil
-- ⚠️ Her yeni dize 5 çeviri gerektirir → CI **uyarı** verir (hata değil, sürümü engellemez)
-- ⚠️ Çeviri kalite onayı anadili konuşuru gerektirir → manuel iş
-- ⚠️ Düzen tasarımı çok dilli olmak zorunda
+- ✅ Broad international reach
+- ✅ Turkish is a first class language
+- ⚠️ Every new string requires 5 translations → CI **warns** (not an error, does not block a release)
+- ⚠️ Translation quality approval needs a native speaker → a manual task
+- ⚠️ Layout design has to be multilingual
 
-## Zorlama
+## Enforcement
 
 `make gate-i18n`:
-- `App/Sources` altında sabit yazılmış kullanıcı metni → kırmızı (Y1)
-- String Catalog'da 5 dilden biri eksikse → kırmızı
-- `comment` alanı boş dize varsa → kırmızı (Y2)
+- Hard coded user facing text under `App/Sources` → red (Y1)
+- Any of the 5 languages missing from the String Catalog → red
+- Any string with an empty `comment` field → red (Y2)
 
-Pseudo-locale düzen testi CI'da: yapay uzatılmış dize ile taşma denetimi (P6'da etkinleşir).
+A pseudo-locale layout test in CI: overflow checking with artificially lengthened strings (activated in P6).
 
 ---
 
-## Ek — 2026-08-03: çeviriler anadili konuşuru onayı olmadan yayınlanır
+## Addendum — 2026-08-03: translations ship without native speaker approval
 
-**Bağlam.** Özgün karar, çevirilerin anadili konuşuru tarafından incelenmesini gerektiriyordu (manuel iş M06). Proje sahibi bu gereksinimi kaldırdı: çeviriler proje içinde üretilecek ve inceleme beklenmeden yayınlanacak.
+**Context.** The original decision required translations to be reviewed by a native speaker (manual task M06). The project owner removed that requirement: translations will be produced within the project and shipped without waiting for review.
 
-**Karar.** M06 kaldırıldı. Çeviriler proje tarafından üretilir. Ancak **kökenleri gizlenmez** — dürüstlük, kalite eksikliğini telafi eden şeydir:
+**Decision.** M06 is removed. Translations are produced by the project. But **their origin is not hidden** — honesty is what compensates for the quality gap:
 
-1. `TRANSLATORS.md` her dil için kökeni açıkça belirtir: `proje tarafından üretildi, anadili konuşuru incelemesi bekleniyor`.
-2. Anadili konuşuru bir dili inceleyip onayladığında satır güncellenir ve katkıcı adlandırılır.
-3. Depoda kalıcı bir **çeviri düzeltme çağrısı** bulunur; issue şablonu (`translation_fix.yml`) tek dize düzeltmeyi kolaylaştırır.
-4. `en` ve `tr` kaynak kalitesindedir (proje sahibinin ve yazarın dilleri); `ru`, `es`, `zh-Hans` için kalite iddiası yapılmaz.
+1. `TRANSLATORS.md` states the origin for every language explicitly: `produced by the project, awaiting native speaker review`.
+2. When a native speaker reviews and approves a language, the line is updated and the contributor is named.
+3. The repository carries a standing **call for translation fixes**; an issue template (`translation_fix.yml`) makes fixing a single string easy.
+4. `en` and `tr` are source quality (the languages of the project owner and the author); no quality claim is made for `ru`, `es`, `zh-Hans`.
 
-**Neden kökeni işaretliyoruz.** Bir çevirinin incelenmediğini söylememek, kullanıcıya sessizce yanlış bilgi vermektir. Termal kontrol yapan bir uygulamada yanlış çevrilmiş bir güvenlik uyarısının maliyeti yüksektir. İşaretlemek, kullanıcının hangi dile ne kadar güveneceğini bilmesini sağlar ve topluluğa somut bir katkı kapısı açar.
+**Why we mark the origin.** Not saying that a translation is unreviewed is quietly misinforming the user. In an application that performs thermal control, a mistranslated safety warning is expensive. Marking lets the user know how much to trust each language, and opens a concrete contribution door to the community.
 
-**Sonuçlar.**
-- ✅ Beş dil v1.0'da yayınlanabilir; blokaj kalktı
-- ✅ Katkı için net ve küçük bir giriş noktası oluştu
-- ⚠️ `ru`/`es`/`zh-Hans` kalitesi başta belirsiz — açıkça beyan ediliyor
-- ⚠️ Güvenlik ve veri kaybı riski taşıyan uyarı metinleri, çeviri incelenene kadar **`en` yedeğiyle birlikte** gösterilmeyi hak edebilir; bu P6'da değerlendirilecek
+**Consequences.**
+- ✅ Five languages can ship at v1.0; the blocker is gone
+- ✅ A clear, small entry point for contribution now exists
+- ⚠️ `ru`/`es`/`zh-Hans` quality is initially uncertain — and declared openly
+- ⚠️ Warning texts that carry safety or data loss risk may deserve to be shown **alongside the `en` fallback** until the translation is reviewed; to be evaluated in P6
 
-**Zorlama.** `make gate-i18n` beş dilin varlığını ve `comment` alanlarını zaten denetliyor. Ek olarak P7'de `TRANSLATORS.md`'nin her dil için bir köken satırı içerdiği denetlenecek.
+**Enforcement.** `make gate-i18n` already checks that all five languages are present and that `comment` fields are filled. In addition, P7 will add a check that `TRANSLATORS.md` contains an origin line for every language.

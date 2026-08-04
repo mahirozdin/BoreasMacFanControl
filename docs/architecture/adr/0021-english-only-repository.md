@@ -60,8 +60,11 @@ Turkish documentation that nobody else can review.
 ## Enforcement
 
 `make gate-language` scans every tracked file for characters that appear in
-Turkish and in no English word (`ğ ı ş İ Ğ Ş`), plus a short list of Turkish
-function words that survive when diacritics are dropped.
+Turkish and in no English word — g-breve, dotless i, s-cedilla and their
+capitals — plus a short list of Turkish function words that survive when
+diacritics are dropped. The characters themselves are spelled out only in the
+gate script, which is excepted; printing them here would trip the gate this
+decision created.
 
 The excepted paths are listed in the script with the reason for each.
 

@@ -1,19 +1,19 @@
-# Yapılandırma
+# Configuration
 
-> Son güncelleme: 2026-07-31 — P0.21
-> Kaynak: blueprint §10 · Karar: [ADR 0013](adr/0013-json-config-zero-deps.md)
+> Last updated: 2026-07-31 — P0.21
+> Source: blueprint §10 · Decision: [ADR 0013](adr/0013-json-config-zero-deps.md)
 
-## Format ve konum
+## Format and location
 
-| Konu | Değer |
+| Topic | Value |
 |---|---|
-| Format | **JSON** — Codable-native, sıfır bağımlılık, şema doğrulanabilir |
-| Konum | `~/Library/Application Support/Boreas/config.json` |
-| Şema | `schema/config.schema.json` — repoda yayınlanır ve sürümlenir |
-| Sürümleme | `schemaVersion` alanı; otomatik göç + göç öncesi yedek |
-| Yedek | Her başarılı yazımdan önce `config.backup.json` |
+| Format | **JSON** — Codable-native, zero dependencies, schema verifiable |
+| Location | `~/Library/Application Support/Boreas/config.json` |
+| Schema | `schema/config.schema.json` — published and versioned in the repository |
+| Versioning | The `schemaVersion` field; automatic migration + a pre-migration backup |
+| Backup | `config.backup.json` before every successful write |
 
-## Yapı
+## Structure
 
 ```
 {
@@ -27,29 +27,29 @@
 }
 ```
 
-Tam örnek ve alan açıklamaları `schema/config.schema.json` içindedir (P4'te yazılacak). **Bu dosyada şema kopyası tutulmaz** — drift kaynağı olur.
+The full example and the field descriptions live in `schema/config.schema.json` (to be written in P4). **No copy of the schema is kept in this file** — it would become a source of drift.
 
-## Doğrulama kuralları
+## Validation rules
 
-| Alan | Kısıt |
+| Field | Constraint |
 |---|---|
-| Eğri noktaları | Sıcaklığa göre artan sıralı, görev oranı azalmayan |
+| Curve points | Sorted ascending by temperature, duty ratio non-decreasing |
 | `duty` | `[0.0, 1.0]` |
-| Sıcaklık | `[0, 120]` °C |
+| Temperature | `[0, 120]` °C |
 | `panicTemperatureCelsius` | `[70, 105]` |
-| `watchdogTimeoutSeconds` | `[10, 60]` — **kilitli** |
+| `watchdogTimeoutSeconds` | `[10, 60]` — **locked** |
 | `samplingIntervalSeconds` | `[1, 60]` |
-| Profil `id` | Benzersiz |
-| Bilinmeyen alan | **Hata değil uyarı** (ileri uyumluluk), loglanır |
+| Profile `id` | Unique |
+| Unknown field | **A warning, not an error** (forward compatibility), logged |
 
-## Geçersiz yapılandırma davranışı
+## Invalid configuration behaviour
 
-**Uygulama başlamayı reddetmez.** Son geçerli yapılandırmaya döner, kullanıcıya net hata mesajı ve hangi alanın sorunlu olduğunu gösterir. **Bu süreçte fanlar firmware kontrolündedir.**
+**The application does not refuse to start.** It falls back to the last valid configuration and shows the user a clear error message and which field is at fault. **Throughout this, the fans are under firmware control.**
 
-Bu davranış invariant testiyle korunur (G6).
+This behaviour is protected by an invariant test (G6).
 
-## Göç
+## Migration
 
-Şema sürümü arttığında göç fonksiyonu yazılır ve **veri kaybı olmadan taşıdığı testle kanıtlanır**. Göç öncesi yedek otomatik alınır.
+When the schema version increases, a migration function is written and **a test proves it migrates without data loss**. A pre-migration backup is taken automatically.
 
-Şema kırılması **MAJOR** sürüm gerektirir.
+A schema break requires a **MAJOR** version.

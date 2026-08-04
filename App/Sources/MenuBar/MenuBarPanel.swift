@@ -130,7 +130,7 @@ struct MenuBarPanel: View {
         HStack {
             // A Mac without a controllable fan gets no setup offer — the
             // error-scenario table says exactly that, and a quiet footer is
-            // not an error state (invariant İ4).
+            // not an error state (invariant I4).
             if !model.fans.isEmpty {
                 Button {
                     openWindow(id: HelperSetupView.windowID)

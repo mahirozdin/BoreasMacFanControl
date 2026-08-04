@@ -1,64 +1,64 @@
-# Test Stratejisi
+# Test Strategy
 
-> Son güncelleme: 2026-07-31 — P0.24
-> Kaynak: blueprint §15 · Karar: [ADR 0011](../architecture/adr/0011-hardware-abstraction.md)
+> Last updated: 2026-07-31 — P0.24
+> Source: blueprint §15 · Decision: [ADR 0011](../architecture/adr/0011-hardware-abstraction.md)
 
-## Katmanlar
+## Layers
 
-| Katman | Kapsam | Araç |
+| Layer | Scope | Tool |
 |---|---|---|
-| **Birim** | Eğri değerlendirme, histerezis, hız sınırlama, arbitraj, güvenlik zinciri, yapılandırma doğrulama, göç | Swift Testing |
-| **Özellik (property-based)** | Motor değişmezleri üretilmiş girdilerle | Swift Testing |
-| **Altın dosya** | Kaydedilmiş termal senaryolar → beklenen fan komut dizisi | `Tests/Fixtures/` |
-| **Entegrasyon** | XPC el sıkışması, daemon kur/kaldır, watchdog zaman aşımı | Sahte + gerçek daemon |
-| **Donanım duman testi** | Gerçek Mac'te devral/geri ver döngüsü | `scripts/smoke-test-hardware.sh` |
-| **UI** | Kurulum, profil değiştirme, eğri düzenleme | XCUITest |
-| **Erişilebilirlik** | VoiceOver etiket kapsamı, klavye gezinme, pseudo-locale düzen | Denetim + otomatik |
+| **Unit** | Curve evaluation, hysteresis, rate limiting, arbitration, safety chain, configuration validation, migration | Swift Testing |
+| **Property based** | Engine invariants against generated inputs | Swift Testing |
+| **Golden file** | Recorded thermal scenarios → expected fan command sequence | `Tests/Fixtures/` |
+| **Integration** | XPC handshake, daemon install/uninstall, watchdog timeout | Mock + real daemon |
+| **Hardware smoke test** | Take over / hand back cycle on a real Mac | `scripts/smoke-test-hardware.sh` |
+| **UI** | Installation, profile switching, curve editing | XCUITest |
+| **Accessibility** | VoiceOver label coverage, keyboard navigation, pseudo-locale layout | Audit + automated |
 
-## Kritik senaryolar
+## Critical scenarios
 
-Bunlar geçmeden **hiçbir sürüm yayınlanmaz**:
+**No release ships** until these pass:
 
-- [ ] `kill -9` sonrası fanlar ≤ watchdog süresi içinde firmware'e döner
-- [ ] Sistem uykusunda fanlar firmware'e devredilir
-- [ ] Daemon kurulu değilken uygulama tam işlevli izleme yapar, hata göstermez
-- [ ] Bozuk yapılandırma uygulamayı çökertmez, son geçerli hale döner
-- [ ] `T_panic` aşıldığında çıktı %100 olur ve tutma süresi boyunca kilitli kalır
-- [ ] Termal durum `critical` iken kullanıcı eğrisi ne olursa olsun çıktı %100
-- [ ] Sensör kaynağı hata verdiğinde izleme moduna düşülür, çökme yok
-- [ ] Fansız modelde uygulama anlamlı davranır
-- [ ] Profil geçişinde fan hızı sıçraması olmaz
-- [ ] Şema göçü veri kaybı olmadan taşır
+- [ ] After `kill -9`, the fans return to firmware within ≤ the watchdog timeout
+- [ ] On system sleep, the fans are handed back to firmware
+- [ ] With the daemon not installed, the application is a fully functional monitor and shows no error
+- [ ] A corrupt configuration does not crash the application; it falls back to the last valid state
+- [ ] When `T_panic` is exceeded, output goes to 100% and stays locked for the hold period
+- [ ] While the thermal state is `critical`, output is 100% regardless of the user curve
+- [ ] When the sensor source fails, it degrades to monitoring mode — no crash
+- [ ] On a fanless model, the application behaves meaningfully
+- [ ] A profile switch causes no fan speed jump
+- [ ] Schema migration carries data over without loss
 
-## Donanım kapsama sınırları
+## Hardware coverage limits
 
-Geliştirme donanımı **tek model**: Mac mini (M4, 2024) — tek fanlı, pilsiz masaüstü.
+The development hardware is a **single model**: Mac mini (M4, 2024) — single fan, battery-less desktop.
 
-| Kod yolu | Gerçek donanımda | Nasıl doğrulanır |
+| Code path | On real hardware | How it is verified |
 |---|---|---|
-| M4 nesli sensör keşfi ve gruplama | ✅ | Doğrudan |
-| Tek fan devral / geri ver | ✅ | Doğrudan |
-| Güvenlik zinciri K1–K5, watchdog | ✅ | Doğrudan |
-| Masaüstü (pilsiz) kod yolu | ✅ | Doğrudan |
-| Termal baskı yükselmesi | ✅ | Yük testiyle |
-| **Fansız model davranışı** | ❌ | Mock + topluluk raporu |
-| **Çok fanlı arbitraj, fan başına eğri** | ❌ | Mock + topluluk raporu |
-| **Pil / güç kaynağı tetikleyicileri** | ❌ | Mock + topluluk raporu |
-| **Pil sağlığı tanılaması** | ❌ | Mock + topluluk raporu |
-| **M1 / M2 / M3 sensör adlandırması** | ❌ | Mock + topluluk raporu |
+| M4 generation sensor discovery and grouping | ✅ | Directly |
+| Single fan take over / hand back | ✅ | Directly |
+| Safety chain K1–K5, watchdog | ✅ | Directly |
+| Desktop (battery-less) code path | ✅ | Directly |
+| Thermal pressure rise | ✅ | Via load test |
+| **Fanless model behaviour** | ❌ | Mock + community reports |
+| **Multi-fan arbitration, per-fan curves** | ❌ | Mock + community reports |
+| **Battery / power source triggers** | ❌ | Mock + community reports |
+| **Battery health diagnostics** | ❌ | Mock + community reports |
+| **M1 / M2 / M3 sensor naming** | ❌ | Mock + community reports |
 
-**Üç bağlayıcı sonuç:**
+**Three binding consequences:**
 
-1. **Mock ve Replay katmanları P2'de inşa edilir**, sonraya bırakılamaz
-2. **README'de "Test edilen donanım" bölümü zorunludur** — kapsamı abartmamak güvenin tek kaynağı
-3. **Doğrulanmamış kod yolları için özel issue şablonu** bulunur; kullanıcı log'u `Replay` ile yerel olarak yeniden oynatılır
+1. **The Mock and Replay layers are built in P2** — they cannot be deferred
+2. **A "Tested hardware" section in the README is mandatory** — not overstating coverage is the only source of trust
+3. **A dedicated issue template exists for unverified code paths**; the user's log is replayed locally with `Replay`
 
 ## CI
 
-`macos-latest` (arm64): lint → `xcodegen generate` → derleme (uyarılar hata) → birim + özellik + altın dosya testleri → kapsam (`Core` ≥ %85 bloklayıcı) → etiketli sürümlerde imzalama + notarizasyon + DMG.
+`macos-latest` (arm64): lint → `xcodegen generate` → build (warnings as errors) → unit + property + golden file tests → coverage (`Core` ≥ 85% blocking) → on tagged releases, signing + notarisation + DMG.
 
-**Donanım gerektiren testler CI'da çalışmaz.** Mock katmanı sayesinde motorun tamamı yine de test edilir.
+**Tests that require hardware do not run in CI.** Thanks to the Mock layer, the entire engine is still tested.
 
-## Kanıt kuralı
+## Evidence rule
 
-Doğrulama çalıştırılamadıysa Run Log'a **`NOT RUN` + neden** yazılır ve iş `DONE` yapılmaz. "Yazdım, çalışıyordur" yasaktır.
+If the verification could not be run, **`NOT RUN` + the reason** goes into the Run Log and the task is not marked `DONE`. "I wrote it, it probably works" is forbidden.

@@ -18,6 +18,13 @@ set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 . scripts/gates/_lib.sh
 
+# The character class below is multibyte UTF-8. Under the C locale grep
+# degrades it into a BYTE class, and continuation bytes shared with emoji
+# and typography (0x9E/0x9F/0xB0/0xB1) produce false positives — a green
+# gate on one machine and a red one in CI, depending on $LANG. The locale
+# is pinned so the gate means the same thing everywhere.
+export LC_ALL=en_US.UTF-8
+
 echo "▶ gate-language — the repository is written in English"
 require_tools git grep xargs
 

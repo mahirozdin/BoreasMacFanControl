@@ -1,49 +1,49 @@
-# 0015 — E-posta bildirimi yerine otomasyon kancaları
+# 0015 — Automation hooks instead of email notifications
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §8.4, §12.3
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §8.4, §12.3
 
-## Bağlam
+## Context
 
-Uzak bir Mac'i izleyen kullanıcı, eşik aşıldığında haberdar olmak ister. Klasik çözüm uygulamaya SMTP istemcisi gömmektir.
+A user monitoring a remote Mac wants to be notified when a threshold is crossed. The classic solution is to embed an SMTP client in the application.
 
-Bunun gerçek maliyeti: kimlik bilgisi saklama, Keychain yönetimi, sağlayıcıya özel uygulama şifreleri, TLS uyumluluğu, port/şifreleme otomatik keşfi, teslimat sorunları ve bunların hepsinin sürekli bakımı.
+The real cost of that: credential storage, Keychain management, provider specific app passwords, TLS compatibility, automatic port/encryption discovery, delivery problems, and the perpetual maintenance of all of it.
 
-## Karar
+## Decision
 
-SMTP istemcisi **yazılmaz**. Yerine iki genel mekanizma:
+An SMTP client is **not written**. In its place, two generic mechanisms:
 
 **① Webhook**
 ```json
 { "type": "webhook", "url": "https://…", "method": "POST", "template": "…" }
 ```
 
-**② Kabuk komutu**
+**② Shell command**
 ```json
 { "type": "command", "path": "~/bin/on-hot.sh", "arguments": ["${sensor}", "${celsius}"] }
 ```
 
-Güvenlik önlemleri: komut kancası varsayılan **kapalı**, açılırken açık uyarı; komut **kullanıcı ayrıcalıklarıyla** çalışır, asla daemon içinde değil; zaman aşımı ve eşzamanlılık sınırı uygulanır.
+Safety measures: the command hook is **off** by default, with an explicit warning when it is turned on; the command runs **with user privileges**, never inside the daemon; a timeout and a concurrency limit are applied.
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Option | Why not |
 |---|---|
-| Gömülü SMTP istemcisi | Devasa bakım yükü, kimlik bilgisi saklama sorumluluğu, sağlayıcıya özel kod |
-| Yalnızca yerel bildirim | Uzak sunucu senaryosunu karşılamaz |
-| Üçüncü taraf bildirim servisi | Bağımlılık + ağ + gizlilik yüzeyi ([0014](0014-zero-telemetry.md)'e aykırı) |
+| An embedded SMTP client | Enormous maintenance burden, responsibility for storing credentials, provider specific code |
+| Local notifications only | Does not cover the remote server scenario |
+| A third party notification service | Dependency + network + privacy surface (contrary to [0014](0014-zero-telemetry.md)) |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Çok daha az kod, çok daha az saldırı yüzeyi
-- ✅ Kimlik bilgisi saklama sorumluluğu tamamen ortadan kalkar
-- ✅ Kullanıcı kendi entegrasyonunu kurar — Slack, Discord, ntfy, Home Assistant, `mail` komutu
-- ⚠️ E-posta isteyen kullanıcı kendi betiğini yazmalı — dokümantasyonda hazır örnek verilir
-- ⚠️ Komut kancası ayrıcalık yükseltme riski taşır → varsayılan kapalı + uyarı
+- ✅ Far less code, far less attack surface
+- ✅ The responsibility for storing credentials disappears entirely
+- ✅ Users wire up their own integrations — chat services, push notification tools, home automation platforms, the `mail` command
+- ⚠️ A user who wants email must write their own script — the documentation ships a ready example
+- ⚠️ The command hook carries a privilege escalation risk → off by default + a warning
 
-## Zorlama
+## Enforcement
 
-- `make gate-daemon` → daemon'da alt süreç başlatma varsa kırmızı
-- `make gate-privacy` → ağ API'si yalnızca `App/Sources/Automation/` ve `App/Sources/Updates/` altında
-- Birim testi: komut kancası varsayılan olarak kapalı
+- `make gate-daemon` → red if the daemon spawns a subprocess
+- `make gate-privacy` → network APIs only under `App/Sources/Automation/` and `App/Sources/Updates/`
+- Unit test: the command hook is off by default

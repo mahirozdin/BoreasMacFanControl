@@ -1,63 +1,63 @@
-# 0020 — Küme atfedilemeyen çekirdek sensörleri için `compute` grubu
+# 0020 — A `compute` group for core sensors that cannot be attributed to a cluster
 
-- **Durum:** Kabul
-- **Tarih:** 2026-08-04
-- **Kaynak:** blueprint §5.5 taksonomisinden **sapma**
-- **İlgili:** [0011](0011-hardware-abstraction.md), [0018](0018-undocumented-sensor-api.md)
+- **Status:** Accepted
+- **Date:** 2026-08-04
+- **Source:** a **deviation** from the blueprint §5.5 taxonomy
+- **Related:** [0011](0011-hardware-abstraction.md), [0018](0018-undocumented-sensor-api.md)
 
-## Bağlam
+## Context
 
-Blueprint §5.5 sensör taksonomisini `compute.performance` ve `compute.efficiency` olarak ikiye ayırıyordu; varsayım, her çekirdek sensörünün bir kümeye atfedilebileceğiydi.
+Blueprint §5.5 split the sensor taxonomy into `compute.performance` and `compute.efficiency`; the assumption was that every core sensor could be attributed to a cluster.
 
-Gerçek donanımda (Mac mini M4, HID sensör arayüzü) bu varsayım tutmadı. Rapor edilen 40 sensörün 39'u şu biçimde:
+On real hardware (Mac mini M4, the HID sensor interface) the assumption did not hold. 39 of the 40 reported sensors take this form:
 
 ```
-PMU tdie1 … PMU tdie14        SoC üzerindeki die sıcaklıkları
+PMU tdie1 … PMU tdie14        die temperatures on the SoC
 PMU2 tdie1 … PMU2 tdie10
-PMU tdev1 … PMU tdev8         cihaz sıcaklıkları
-PMU tcal, PMU2 tcal           kalibrasyon
+PMU tdev1 … PMU tdev8         device temperatures
+PMU tcal, PMU2 tcal           calibration
 ```
 
-Bu sensörler **PMU tarafından raporlanıyor** ama **SoC die'ını ölçüyor**. İki sorun doğdu:
+These sensors are **reported by the PMU** but **measure the SoC die**. Two problems arose:
 
-1. `pmu → power` kuralı hepsini `power` grubuna atıyordu. Kullanıcı `compute.performance`'a bir fan eğrisi bağlasa **bu makinede hiçbir sensör eşleşmezdi** — eğri sessizce hiçbir şeye bağlı kalırdı.
-2. Bu sensörlerin hangi kümeye ait olduğu **bilinmiyor**. `tdie7`'nin performans mı verimlilik kümesinde mi olduğunu söyleyecek bir bilgi yok.
+1. The `pmu → power` rule was assigning all of them to the `power` group. Had the user attached a fan curve to `compute.performance`, **no sensor on this machine would have matched** — the curve would silently remain bound to nothing.
+2. Which cluster these sensors belong to is **unknown**. There is no information to say whether `tdie7` is in the performance or the efficiency cluster.
 
-## Karar
+## Decision
 
-Taksonomiye **`compute`** grubu eklendi: *belirli bir kümeye atfedilemeyen çekirdek sıcaklıkları.*
+A **`compute`** group was added to the taxonomy: *core temperatures that cannot be attributed to a specific cluster.*
 
-| Desen | Grup | Gerekçe |
+| Pattern | Group | Rationale |
 |---|---|---|
-| `tdie*`, `tdev*`, `die temp` | **`compute`** | SoC die sıcaklığı; küme bilinmiyor |
-| `pacc`, `performance`, `p-core` | `compute.performance` | Küme açıkça belirtilmiş |
-| `eacc`, `efficiency`, `e-core` | `compute.efficiency` | Küme açıkça belirtilmiş |
-| `tcal` | `power` | Kalibrasyon, sıcaklık kontrolü için anlamlı değil |
-| `pmu`, `pmgr`, `vrm` (yukarıdakiler dışında) | `power` | Gerçekten güç devresi |
+| `tdie*`, `tdev*`, `die temp` | **`compute`** | SoC die temperature; cluster unknown |
+| `pacc`, `performance`, `p-core` | `compute.performance` | Cluster stated explicitly |
+| `eacc`, `efficiency`, `e-core` | `compute.efficiency` | Cluster stated explicitly |
+| `tcal` | `power` | Calibration, not meaningful for temperature control |
+| `pmu`, `pmgr`, `vrm` (apart from the above) | `power` | Genuinely power circuitry |
 
-Sıralama kritik: `tdie`/`tdev` kuralları generic `pmu` kuralından **önce** denenir.
+Ordering is critical: the `tdie`/`tdev` rules are tried **before** the generic `pmu` rule.
 
-`compute`, fan eğrisi girdisi olarak seçilebilir (`curveInputCandidates` içinde).
+`compute` is selectable as a fan curve input (it is in `curveInputCandidates`).
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Candidate | Why rejected |
 |---|---|
-| `tdie*` → `compute.performance` | **Yanlış bilgi.** Hangi kümede olduğu bilinmiyor; "performans kümesi" demek uydurmak olur |
-| Mevcut hâlde bırakmak (`power`) | Kullanıcının eğrisi sessizce hiçbir şeye bağlanır — en kötü başarısızlık türü, çünkü fark edilmez |
-| `uncategorized`'a atmak | Teknik olarak dürüst ama işe yaramaz: soğutmayı yönlendiren asıl sensörler eğriye bağlanamaz hale gelirdi |
-| Model bazlı tablo yazmak | Her yeni çip için sürüm gerekir; ADR 0011'in reddettiği yaklaşım |
+| `tdie*` → `compute.performance` | **False information.** Which cluster it is in is unknown; calling it the "performance cluster" would be making it up |
+| Leaving it as it is (`power`) | The user's curve silently binds to nothing — the worst kind of failure, because it goes unnoticed |
+| Dumping them into `uncategorized` | Technically honest but useless: the very sensors that drive cooling would become unattachable to a curve |
+| Writing a per-model table | Every new chip would require a release; the approach ADR 0011 rejected |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Fan eğrileri bu donanımda anlamlı bir gruba bağlanabiliyor
-- ✅ Bilinmeyen, bilinmiyor olarak kalıyor — küme uydurulmuyor
-- ✅ Küme bilgisi açıkça raporlayan donanımda ayrım korunuyor
-- ⚠️ Taksonomi blueprint'ten farklı; `docs/architecture/hardware-access.md` ve sözlük güncellendi
-- ⚠️ Varsayılan profillerin girdi grubu `compute.performance` yerine daha geniş bir seçim kullanmalı — P5.07'de ele alınacak
+- ✅ Fan curves can attach to a meaningful group on this hardware
+- ✅ What is unknown stays unknown — no cluster is made up
+- ✅ On hardware that reports cluster information explicitly, the distinction is preserved
+- ⚠️ The taxonomy differs from the blueprint; `docs/architecture/hardware-access.md` and the glossary were updated
+- ⚠️ The default profiles' input group should use a broader selection than `compute.performance` — to be handled in P5.07
 
-## Zorlama
+## Enforcement
 
-- Birim testi: `PMU tdie7` → `.compute`, `PMU tcal` → `.power`, `pACC …` → `.computePerformance`
-- Birim testi: sıralama koruması — `tdie` kuralı `pmu` kuralından önce denenmezse test kırılır
-- `SensorGroup.curveInputCandidates` `compute` içerir, `uncategorized` içermez
+- Unit test: `PMU tdie7` → `.compute`, `PMU tcal` → `.power`, `pACC …` → `.computePerformance`
+- Unit test: an ordering guard — the test breaks if the `tdie` rule is not tried before the `pmu` rule
+- `SensorGroup.curveInputCandidates` contains `compute` and does not contain `uncategorized`

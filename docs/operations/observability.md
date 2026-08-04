@@ -1,41 +1,41 @@
-# Gözlemlenebilirlik
+# Observability
 
-> Son güncelleme: 2026-07-31 — P0.26
-> Kaynak: blueprint §11 · Karar: [ADR 0014](../architecture/adr/0014-zero-telemetry.md)
+> Last updated: 2026-07-31 — P0.26
+> Source: blueprint §11 · Decision: [ADR 0014](../architecture/adr/0014-zero-telemetry.md)
 
-## Uygulama içi log
+## In-app logging
 
-`OSLog` / `Logger` kullanılır.
+`OSLog` / `Logger` is used.
 
-**Kategoriler:** `sensor` · `fan` · `engine` · `daemon` · `xpc` · `ui` · `config`
-**Seviyeler:** `debug` (varsayılan kapalı) · `info` · `notice` · `error` · `fault`
+**Categories:** `sensor` · `fan` · `engine` · `daemon` · `xpc` · `ui` · `config`
+**Levels:** `debug` (off by default) · `info` · `notice` · `error` · `fault`
 
-> **Hiçbir log satırı kişisel veri içermez.** Kullanıcı adı, dosya yolu, ağ bilgisi loglanmaz (P3).
+> **No log line contains personal data.** No user name, file path or network information is logged (P3).
 
-## Ölçüm kaydı — kullanıcı isteğine bağlı
+## Measurement recording — at the user's request
 
-| Format | Kullanım |
+| Format | Use |
 |---|---|
-| **JSONL** | Varsayılan. Satır başına bir örnekleme; araçla işlemesi kolay, şema evrimine dayanıklı |
-| **CSV** | Tablo uygulamalarına doğrudan aktarım |
+| **JSONL** | Default. One sample per line; easy to process with tools, resilient to schema evolution |
+| **CSV** | Direct export to spreadsheet applications |
 
-**Döndürme:** günlük veya boyut tabanlı; varsayılan 14 gün saklama. Disk dolmasına karşı **sert üst sınır** (varsayılan 500 MB) — aşılırsa en eski dosyalar silinir ve kullanıcı bilgilendirilir.
+**Rotation:** daily or size based; default retention 14 days. A **hard upper limit** against filling the disk (default 500 MB) — when exceeded, the oldest files are deleted and the user is informed.
 
-**Kaydedilen alanlar:** zaman damgası · sensörler · fanlar · aktif profil · devrede olan güvenlik katmanı.
+**Recorded fields:** timestamp · sensors · fans · active profile · engaged safety layer.
 
-Aktif güvenlik katmanının kaydedilmesi kritiktir: "fan neden %100'de?" sorusunun cevabı budur.
+Recording the active safety layer is critical: it is the answer to the question "why is the fan at 100%?"
 
-## Metrik dışa aktarımı — sonraki dalga
+## Metric export — next wave
 
-- Prometheus metin formatında yerel HTTP uç noktası
-- **Yalnızca `127.0.0.1`**, yapılandırılabilir port, **varsayılan kapalı**
-- Açıldığında arayüzde **kalıcı bir gösterge** belirir — kullanıcı ağ dinlendiğini her zaman bilir
-- Örnek Grafana panosu repoda sunulur
+- Local HTTP endpoint in Prometheus text format
+- **`127.0.0.1` only**, configurable port, **off by default**
+- When enabled, a **persistent indicator** appears in the interface — the user always knows the network is being listened on
+- A sample Grafana dashboard is provided in the repo
 
-Bu özellik `ARCHITECTURE.md` §12'de ertelenmiş karar olarak izlenir.
+This feature is tracked as a deferred decision in `ARCHITECTURE.md` §12.
 
-## Destek raporu
+## Support report
 
-Kullanıcı isterse **yerel** bir tanılama dosyası oluşturulur. **Otomatik gönderim yoktur** — kullanıcı dosyayı kendisi inceler ve isterse issue'ya ekler.
+If the user asks, a **local** diagnostics file is generated. **There is no automatic upload** — the user inspects the file and attaches it to an issue if they choose.
 
-İçerik: anonim sistem özeti · uygulama log'u · yapılandırma (gizli değer içermez) · sensör ve fan anlık görüntüsü · keşfedilen donanım haritası.
+Contents: anonymous system summary · application log · configuration (contains no secret values) · sensor and fan snapshot · discovered hardware map.

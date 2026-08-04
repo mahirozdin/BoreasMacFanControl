@@ -1,430 +1,431 @@
 # Boreas Master TODO — P0 → P8
 
-- **Plan sürümü:** 1.0
-- **Baseline tarihi:** 2026-07-31
-- **Kaynak blueprint:** v1.1 (dondurulmuş: `docs/blueprint/boreas-blueprint-v1.1.md`)
-- **Genel durum:** P0–P2 tamam, P3 ilerliyor. **Ayrıcalıklı yardımcı bu makinede kurulu ve çalışıyor.** Kurulum yaşam döngüsü tamam: kurulumdan önce tam açıklama, Sistem Ayarları onay yönlendirmesi, kaldırma (UI + `boreas uninstall --all`) ve "geride hiçbir şey kalmıyor" kanıtı. 77 test, 9 kapı. Sıradaki: P3.07.
+- **Plan version:** 1.0
+- **Baseline date:** 2026-07-31
+- **Source blueprint:** v1.1 (frozen: `docs/blueprint/boreas-blueprint-v1.1.md`)
+- **Overall status:** P0–P2 complete, P3 in progress. **The privileged helper is installed and running on this machine.** The installation life cycle is complete: full disclosure before installing, System Settings approval routing, removal (UI + `boreas uninstall --all`) and proof that nothing is left behind. 77 tests, 10 gates. Next: P3.07.
 
 ---
 
-## Durum sözlüğü
+## Status glossary
 
-| Durum | Tanım |
+| Status | Meaning |
 |---|---|
-| `NOT_STARTED` | Hiçbir alt iş başlamadı |
-| `IN_PROGRESS` | En az bir alt iş bitti, hepsi bitmedi |
-| `BLOCKED` | Kalan tüm işler dış bağımlılık bekliyor (manuel iş) |
-| `DONE` | Tüm alt işler bitti **ve** kabul kriterleri kanıtlandı |
+| `NOT_STARTED` | No sub-task has begun |
+| `IN_PROGRESS` | At least one sub-task is done, not all |
+| `BLOCKED` | Every remaining task waits on an external dependency (manual task) |
+| `DONE` | All sub-tasks complete **and** acceptance criteria evidenced |
 
 ---
 
-## Durum özeti
+## Status summary
 
-| Faz | Durum | Tema | Sıradaki tamamlanmamış iş |
+| Phase | Status | Theme | Next incomplete task |
 |---|---|---|---|
-| P0 | `DONE` | Doküman sistemi ve kapılar | (tamamlandı) |
-| P1 | `DONE` | Depo iskeleti ve araç zinciri | (tamamlandı) |
-| P2 | `DONE` | Donanım okuma + Mock/Replay | (tamamlandı) |
-| P3 | `IN_PROGRESS` | Ayrıcalık katmanı ve daemon | **P3.07 — Watchdog** |
-| P4 | `NOT_STARTED` | Fan kontrolü ve güvenlik zinciri | P4.01 |
-| P5 | `NOT_STARTED` | Kontrol motoru | P5.01 |
-| P6 | `NOT_STARTED` | Kullanıcı arayüzü | P6.01 |
-| P7 | `NOT_STARTED` | Olgunlaşma | P7.01 |
-| P8 | `NOT_STARTED` | Yayın | P8.01 |
+| P0 | `DONE` | Documentation system and gates | (complete) |
+| P1 | `DONE` | Repository skeleton and toolchain | (complete) |
+| P2 | `DONE` | Hardware reading + Mock/Replay | (complete) |
+| P3 | `IN_PROGRESS` | Privilege layer and daemon | **P3.07 — Watchdog** |
+| P4 | `NOT_STARTED` | Fan control and the safety chain | P4.01 |
+| P5 | `NOT_STARTED` | Control engine | P5.01 |
+| P6 | `NOT_STARTED` | User interface | P6.01 |
+| P7 | `NOT_STARTED` | Maturation | P7.01 |
+| P8 | `NOT_STARTED` | Release | P8.01 |
 
 ---
 
-## "Sıradaki işi yap" algoritması
+## The "do the next task" algorithm
 
-1. `BOOT.md` sağlık snapshot'ını çalıştır. **Kırmızı kapı varsa önce onu düzelt.**
-2. Yukarıdaki durum özetinden en düşük numaralı tamamlanmamış fazı bul.
-3. O fazın bağımlılıkları `DONE` mu? Değilse bağımlılığa geç.
-4. Fazdaki ilk işaretlenmemiş atomik işi seç.
-5. İş bir manuel işe bağlıysa **atla, bir sonrakine geç.** Blokaj işi dondurmaz.
-6. İşi yap. Doğrulama komutlarını **çalıştır**, çıktıyı gör.
-7. `AGENTS.md` §8 Definition of Done listesini geç.
-8. Oturumu kapat: checkbox + durum özeti + Run Log — **aynı değişiklikte**.
+1. Run the `BOOT.md` health snapshot. **If a gate is red, fix that first.**
+2. Find the lowest numbered incomplete phase in the status summary above.
+3. Are that phase's dependencies `DONE`? If not, move to the dependency.
+4. Pick the first unchecked atomic task in the phase.
+5. If the task depends on a manual task, **skip it, take the next one.** A blocker never freezes the work.
+6. Do the task. **Run** the verification commands and read the output.
+7. Pass the `AGENTS.md` §8 Definition of Done list.
+8. Close the session: checkbox + status summary + run log — **in the same change**.
 
 ---
 
-## P0 — Doküman sistemi ve kapılar
+## P0 — Documentation system and gates
 
 - **ID:** P0
-- **Durum:** `DONE`
-- **Bağımlılık:** yok
-- **Amaç:** Bir kod ajanının hiç soru sormadan inşa edebileceği, makine ile zorlanan bir yürütme sistemi kurmak.
+- **Status:** `DONE`
+- **Depends on:** nothing
+- **Goal:** A machine enforced execution system that a coding agent can build from without asking a single question.
 
-### Alt işler
+### Sub-tasks
 
-- [x] **P0.01 — Depoyu başlat.** `git init`, `.gitignore`.
-- [x] **P0.02 — Blueprint'i dondur.** `docs/blueprint/` altına birebir kopya; `diff` ve SHA-256 ile kanıtla.
-- [x] **P0.03 — `AGENTS.md`.** Değişmezler (hukuki, kimlik, teknoloji, mimari, güvenlik, gizlilik, izin, yerelleştirme), seçim algoritması, doküman güncelleme protokolü, DoD.
-- [x] **P0.04 — `BOOT.md` ve `CLAUDE.md`.** Oturum protokolü, sağlık snapshot'ı, en sık ihlal edilen 10 kural.
-- [x] **P0.05 — `ARCHITECTURE.md`.** MUST/MUST NOT invariantları, güven sınırları, ADR indeksi, ertelenmiş kararlar.
-- [x] **P0.06 — `LEGAL.md`.** Yedi mutlak yasak, izinli kaynaklar, bağımsız geliştirme beyanı, zorlama katmanları ve **eksik katmanın açık kaydı**.
-- [x] **P0.07 — Sekiz kapı + `Makefile`.** Her birini kasıtlı ihlalle kanıtla.
-- [x] **P0.08 — ADR kütüphanesi.** 18 ADR; her birinde `Zorlama` bölümü dolu.
-- [x] **P0.09 — `docs/README.md`.** Gezinme haritası.
-- [x] **P0.10 — İzlenebilirlik matrisi.** 25 bölüm eşlenir, kayıp = 0.
-- [x] **P0.11–P0.13 — `docs/reference/`.** Karar kaydı, risk kaydı, sözlük.
-- [x] **P0.14–P0.17 — `docs/product/`.** Genel bakış, kontrol modeli, kapsam, arayüz.
-- [x] **P0.18–P0.21 — `docs/architecture/`.** Sistem, donanım erişimi, ayrıcalık modeli, yapılandırma.
-- [x] **P0.22–P0.25 — `docs/development/`.** Kurulum, depo yapısı, test, yerelleştirme.
-- [x] **P0.26–P0.28 — `docs/operations/`.** Gözlemlenebilirlik, bildirimler, tanılama.
-- [x] **P0.29–P0.31 — `docs/release/`.** Derleme/imzalama, README spesifikasyonu, keşfedilebilirlik.
-- [x] **P0.32 — `SECURITY.md`.** Güvenlik modeli ve açık bildirimi.
-- [x] **P0.33 — Kök `README.md`.** Geliştirme aşaması giriş noktası + doküman haritası. Ürün README'si P8'de yazılacak.
-- [x] **P0.34 — `make check` tam yeşil.** Tüm kapıların geçtiğini çıktıyla kanıtla ve Run Log'a yaz.
+- [x] **P0.01 — Initialise the repository.** `git init`, `.gitignore`.
+- [x] **P0.02 — Freeze the blueprint.** Verbatim copy under `docs/blueprint/`; prove with `diff` and SHA-256.
+- [x] **P0.03 — `AGENTS.md`.** Invariants (legal, identity, technology, architecture, safety, privacy, permission, localisation), selection algorithm, documentation update protocol, DoD.
+- [x] **P0.04 — `BOOT.md` and `CLAUDE.md`.** Session protocol, health snapshot, the ten most broken rules.
+- [x] **P0.05 — `ARCHITECTURE.md`.** MUST/MUST NOT invariants, trust boundaries, ADR index, deferred decisions.
+- [x] **P0.06 — `LEGAL.md`.** Seven absolute prohibitions, permitted sources, independent development declaration, enforcement layers and **an explicit record of the missing layer**.
+- [x] **P0.07 — Eight gates + `Makefile`.** Prove each with a deliberate violation.
+- [x] **P0.08 — ADR library.** 18 ADRs; the Enforcement section filled in for each.
+- [x] **P0.09 — `docs/README.md`.** Navigation map.
+- [x] **P0.10 — Traceability matrix.** 25 sections mapped, zero missing.
+- [x] **P0.11–P0.13 — `docs/reference/`.** Decision log, risk register, glossary.
+- [x] **P0.14–P0.17 — `docs/product/`.** Overview, control model, scope, interface.
+- [x] **P0.18–P0.21 — `docs/architecture/`.** System, hardware access, privilege model, configuration.
+- [x] **P0.22–P0.25 — `docs/development/`.** Setup, repository structure, testing, localisation.
+- [x] **P0.26–P0.28 — `docs/operations/`.** Observability, notifications, diagnostics.
+- [x] **P0.29–P0.31 — `docs/release/`.** Build/signing, README specification, discoverability.
+- [x] **P0.32 — `SECURITY.md`.** Security model and vulnerability reporting.
+- [x] **P0.33 — Root `README.md`.** Development stage entry point + documentation map. The product README is written in P8.
+- [x] **P0.34 — `make check` fully green.** Prove every gate passes with output and record it in the run log.
 
-### Kabul kriterleri
+### Acceptance criteria
 
-- Blueprint'in 25 bölümünün tamamı bir hedef dokümana eşlenmiş; **kayıp = 0**
-- 18 ADR'nin her birinde `Zorlama` bölümü dolu
-- Sekiz kapının her biri **kasıtlı ihlalle kanıtlanmış**
-- `make check` sıfır hata ile geçiyor
+- All 25 blueprint sections mapped to a target document; **zero missing**
+- The Enforcement section filled in for each of the 18 ADRs
+- Each of the eight gates **proven with a deliberate violation**
+- `make check` passes with zero errors
 
-### Doğrulama
+### Verification
 
 ```bash
 make check
-grep -c 'Kayıp bölüm' docs/reference/blueprint-map.md
-ls docs/architecture/adr/*.md | wc -l    # 18 olmalı
+grep -c 'Missing sections' docs/reference/blueprint-map.md
+ls docs/architecture/adr/*.md | wc -l    # should be 18
 ```
 
-### Artifact'ler
+### Artifacts
 `AGENTS.md` · `BOOT.md` · `CLAUDE.md` · `ARCHITECTURE.md` · `LEGAL.md` · `SECURITY.md` · `TODO.md` · `Makefile` · `scripts/gates/` · `docs/**`
 
-### Riskler
-R6 (hukuki iddia) — `LEGAL.md` ve ADR 0006 ile azaltıldı.
+### Risks
+R6 (legal claim) — mitigated by `LEGAL.md` and ADR 0006.
 
 ---
 
-## P1 — Depo iskeleti ve araç zinciri
+## P1 — Repository skeleton and toolchain
 
 - **ID:** P1
-- **Durum:** `DONE`
-- **Bağımlılık:** P0
-- **Amaç:** Kod yazmaya hazır, kapıları çalışan, CI'sı ayakta bir depo.
+- **Status:** `DONE`
+- **Depends on:** P0
+- **Goal:** A repository ready for code: gates working, CI standing.
 
-### Alt işler
+### Sub-tasks
 
-- [x] **P1.01 — `Brewfile` ve `scripts/bootstrap.sh`.** Araçları *var mı* değil **çalışıyor mu** diye kontrol et (`--version`); eksikte uygulanabilir çözüm öner. Idempotent olduğunu iki kez çalıştırarak kanıtla.
-- [x] **P1.02 — `project.yml` (XcodeGen).** App ve CLI hedefleri (**Daemon hedefi P3.02'ye taşındı**: boş bir daemon iskeleti `gate-daemon`'ı haklı olarak kırıyor, çünkü XPC imza doğrulaması arıyor); `DEPLOYMENT_TARGET: 14.0`, `ARCHS: arm64`. Ürün adı **tek değişkende**. `make generate` çalıştığını kanıtla.
-- [x] **P1.03 — SPM paket iskeletleri.** `Core`, `HardwareKit`, `SharedIPC` — boş ama derlenebilir. `Core`'un yalnızca Foundation'a bağlandığını `make gate-layers` ile kanıtla.
-- [x] **P1.04 — `LICENSE`.** Apache-2.0 tam metnini **kanonik kaynaktan** indir (elle yazma — hata riski). SHA ile doğrula.
-- [x] **P1.05 — `NOTICE`.** Telif bildirimi + boş atıf bölümü + "Acknowledgements".
-- [x] **P1.06 — `CONTRIBUTING.md`.** Kurulum, stil, commit kuralları, PR süreci, **bağımsız geliştirme beyanı** (`LEGAL.md` §4), yeni sensör desteği ekleme rehberi. İngilizce.
+- [x] **P1.01 — `Brewfile` and `scripts/bootstrap.sh`.** Check that tools *work* (`--version`), not merely that they exist; suggest an actionable fix when one is missing. Prove idempotency by running twice.
+- [x] **P1.02 — `project.yml` (XcodeGen).** App and CLI targets (**the Daemon target moved to P3.02**: an empty daemon skeleton rightly breaks `gate-daemon`, which looks for XPC signature verification); `DEPLOYMENT_TARGET: 14.0`, `ARCHS: arm64`. The product name in **a single variable**. Prove `make generate` works.
+- [x] **P1.03 — SPM package skeletons.** `Core`, `HardwareKit`, `SharedIPC` — empty but compiling. Prove `Core` depends only on Foundation via `make gate-layers`.
+- [x] **P1.04 — `LICENSE`.** Download the full Apache-2.0 text **from the canonical source** (never retype it — error risk). Verify with a SHA.
+- [x] **P1.05 — `NOTICE`.** Copyright notice + empty attribution section + "Acknowledgements".
+- [x] **P1.06 — `CONTRIBUTING.md`.** Setup, style, commit rules, PR process, **independent development declaration** (`LEGAL.md` §4), guide for adding new sensor support. In English.
 - [x] **P1.07 — `CODE_OF_CONDUCT.md`.** Contributor Covenant 2.1.
-- [x] **P1.08 — `CHANGELOG.md`.** Keep a Changelog, `Unreleased` bölümüyle.
-- [x] **P1.09 — `.github/PULL_REQUEST_TEMPLATE.md`.** `LEGAL.md` §4 beyanının üç onay kutusu + test kontrol listesi.
-- [x] **P1.10 — Issue şablonları.** `bug_report.yml`, `feature_request.yml`, **`unknown_sensor.yml`** (çip modeli, ham sensör adları, beklenen grup) ve **`translation_fix.yml`** (tek dize düzeltme — ADR 0016 eki).
-- [x] **P1.11 — `.swiftlint.yml` ve `.swift-format`.** `Core` için zorla açma yasağı kuralı dahil. `make lint` hedefini etkinleştir.
-- [x] **P1.12 — CI iş akışı.** lint → generate → build → test → kapılar. Var olmayan hedefler **sessizce atlanmalı**, kırmamalı.
-- [x] **P1.13 — `scripts/rename-product.sh`.** Ürün adını tek komutla değiştirir. Sahte bir adla çalıştırıp geri alarak kanıtla.
+- [x] **P1.08 — `CHANGELOG.md`.** Keep a Changelog, with an `Unreleased` section.
+- [x] **P1.09 — `.github/PULL_REQUEST_TEMPLATE.md`.** The three checkboxes of the `LEGAL.md` §4 declaration + test checklist.
+- [x] **P1.10 — Issue templates.** `bug_report.yml`, `feature_request.yml`, **`unknown_sensor.yml`** (chip model, raw sensor names, expected group) and **`translation_fix.yml`** (single string fix — ADR 0016 addendum).
+- [x] **P1.11 — `.swiftlint.yml` and `.swift-format`.** Including the force-unwrap ban for `Core`. Enable the `make lint` target.
+- [x] **P1.12 — CI workflow.** lint → generate → build → test → gates. Targets that do not exist yet must be **skipped silently**, not break the build.
+- [x] **P1.13 — `scripts/rename-product.sh`.** Renames the product in one command. Prove by running with a fake name and reverting.
 
-### Kabul kriterleri
-- `make bootstrap` temiz bir makinede çalışır ve eksikleri raporlar
-- `make generate && make build` başarılı
-- CI yeşil
-- `make check` yeşil kalır
+### Acceptance criteria
+- `make bootstrap` works on a clean machine and reports what is missing
+- `make generate && make build` succeed
+- CI green
+- `make check` stays green
 
-### Doğrulama
+### Verification
 ```bash
 make bootstrap && make generate && make build && make check
 ```
 
-### Riskler
-R7 (tükenmişlik) — P1 mekanik ve kısa tutulmalı.
+### Risks
+R7 (burnout) — keep P1 mechanical and short.
 
 ---
 
-## P2 — Donanım okuma + Mock/Replay
+## P2 — Hardware reading + Mock/Replay
 
 - **ID:** P2
-- **Durum:** `DONE`
-- **Bağımlılık:** P1
-- **Amaç:** Ayrıcalıksız izleme çalışsın; **soyutlama katmanı ilk günden yerinde olsun**.
+- **Status:** `DONE`
+- **Depends on:** P1
+- **Goal:** Unprivileged monitoring working, with **the abstraction layer in place from day one**.
 
-> **Bu faz ertelenemez bir yatırım içerir.** Geliştirme donanımı tek model olduğu için (R8), Mock ve Replay katmanları olmadan kod yollarının çoğu asla doğrulanamaz. → [ADR 0011](docs/architecture/adr/0011-hardware-abstraction.md)
+> **This phase contains an investment that cannot be deferred.** The development hardware is a single model (R8); without the Mock and Replay layers most code paths can never be verified. → [ADR 0011](docs/architecture/adr/0011-hardware-abstraction.md)
 
-### Alt işler
+### Sub-tasks
 
-- [x] **P2.01 — Protokoller.** `SensorSource`, `FanSource`, `PowerSource` (**`FanActuator` P4.01'e taşındı** — yazma yolu, `Live` uygulaması daemon'a bağlı) — `SharedIPC`/`HardwareKit` içinde. Model tipleri `Core`'da, hepsi `Sendable`.
-- [x] **P2.02 — `MockSensorSource` + `MockFanSource`.** Senaryo dosyasından beslenen deterministik sahte donanım. Aynı senaryonun aynı çıktıyı verdiğini testle kanıtla.
-- [x] **P2.03 — `ReplaySensorSource`.** JSONL log'unu yeniden oynatır. Kaydedilmiş bir oturumun birebir yeniden üretildiğini kanıtla.
-- [x] **P2.04 — `LiveSensorSource`.** HID sensör servisleri üzerinden sıcaklık okuma. Gerçek donanımda sensör listesi ve makul değerler alındığını kanıtla.
-- [x] **P2.05 — `SMCSensorSource` (yedek kaynak).** Birincil başarısız olduğunda devreye girer. Birincili zorla bozup yedeğe düştüğünü testle kanıtla.
-- [x] **P2.06 — `LiveFanSource`.** Fan sayısı, anlık/min/max RPM okuma. Ayrıcalık **gerektirmediğini** kanıtla.
-- [x] **P2.07 — Sensör adı normalleştirme ve gruplama.** Desen tabanlı sınıflandırma; eşleşmeyen sensör `uncategorized`'a düşer ve **gizlenmez**.
-- [x] **P2.08 — Zarif düşüş.** Her iki kaynak da başarısızken uygulama izleme moduna düşer, **çökmez**. Testle kanıtla.
-- [x] **P2.09 — Menü çubuğu iskeleti.** `MenuBarExtra`, tek sıcaklık + fan RPM. İlk görsel çıktı.
-- [x] **P2.10 — `Core` kapsam kapısı.** CI'da `Core` kapsamı ≥ %85 bloklayıcı hale getir; eşiğin **gerçekten uygulandığını** kasıtlı düşük kapsamla kanıtla.
+- [x] **P2.01 — Protocols.** `SensorSource`, `FanSource`, `PowerSource` (**`FanActuator` moved to P4.01** — the write path; its `Live` implementation depends on the daemon) — in `SharedIPC`/`HardwareKit`. Model types in `Core`, everything `Sendable`.
+- [x] **P2.02 — `MockSensorSource` + `MockFanSource`.** Deterministic fake hardware fed from a scenario file. Prove with a test that the same scenario produces the same output.
+- [x] **P2.03 — `ReplaySensorSource`.** Replays a JSONL log. Prove a recorded session is reproduced exactly.
+- [x] **P2.04 — `LiveSensorSource`.** Temperature reading through the HID sensor services. Prove on real hardware that a sensor list and sane values come back.
+- [x] **P2.05 — `SMCSensorSource` (fallback source).** Takes over when the primary fails. Prove by forcibly breaking the primary and falling back.
+- [x] **P2.06 — `LiveFanSource`.** Fan count, current/min/max RPM. Prove it **requires no privileges**.
+- [x] **P2.07 — Sensor name normalisation and grouping.** Pattern based classification; an unmatched sensor lands in `uncategorized` and is **never hidden**.
+- [x] **P2.08 — Graceful degradation.** With both sources failing the app falls back to monitoring mode and **does not crash**. Prove with a test.
+- [x] **P2.09 — Menu bar skeleton.** `MenuBarExtra`, one temperature + fan RPM. First visual output.
+- [x] **P2.10 — `Core` coverage gate.** Make `Core` coverage ≥ 85% blocking in CI; prove the threshold is **actually enforced** with deliberately low coverage.
 
-### Kabul kriterleri
-- Daemon **olmadan** tüm sensörler ve fan hızları okunuyor
-- `make gate-layers` her protokol için `Live` + `Mock` bulunduğunu doğruluyor
-- Sensör kaynağı hatasında uygulama çökmüyor
-- `Core` kapsamı ≥ %85 ve eşik bloklayıcı
+### Acceptance criteria
+- All sensors and fan speeds readable **without** the daemon
+- `make gate-layers` verifies a `Live` + `Mock` pair for every protocol
+- A sensor source failure does not crash the app
+- `Core` coverage ≥ 85% with the threshold blocking
 
-### Doğrulama
+### Verification
 ```bash
 make test && make check
 ```
 
-### Riskler
-R1 (API kırılması), R2 (yeni çip adlandırması), R8 (donanım kapsaması)
+### Risks
+R1 (API breakage), R2 (new chip naming), R8 (hardware coverage)
 
 ---
 
-## P3 — Ayrıcalık katmanı ve daemon
+## P3 — Privilege layer and daemon
 
 - **ID:** P3
-- **Durum:** `IN_PROGRESS`
-- **Bağımlılık:** P2
-- **Amaç:** Güvenli, dar yüzeyli, kendini denetleyen ayrıcalıklı yardımcı.
+- **Status:** `IN_PROGRESS`
+- **Depends on:** P2
+- **Goal:** A safe, narrow surfaced, self-policing privileged helper.
 
-### Alt işler
+### Sub-tasks
 
-- [x] **P3.00 — Development sertifikasıyla ampirik doğrulama.** `SMAppService` daemon kaydının ve XPC imza doğrulamasının ücretsiz hesap Development sertifikasıyla gerçekten çalıştığını **kanıtla** (varsayma). Çalışmıyorsa [ADR 0019](docs/architecture/adr/0019-signing-identity-deferred.md) revize edilir.
-- [x] **P3.01 — XPC protokolü (`SharedIPC`).** Yalnızca dört metot. `make gate-daemon` yüzeyi doğruluyor.
-- [x] **P3.02 — Daemon iskeleti + launchd plist.** `SMAppService.daemon` ile kayıt.
-- [x] **P3.03 — Çift yönlü imza doğrulaması.** `SecCodeCheckValidity` + `SecRequirement`. **İmzasız bir istemcinin reddedildiğini testle kanıtla.**
-- [x] **P3.04 — Kurulum akışı (UI).** Ne olacağı, hangi dosyaların nereye yazılacağı ve nasıl geri alınacağı **kurulumdan önce** gösterilir.
-- [x] **P3.05 — Sistem Ayarları yönlendirmesi.** Arka plan onayı gerekiyorsa durumu algıla ve doğrudan ilgili panele götür.
-- [x] **P3.06 — Kaldırma akışı.** UI düğmesi + `boreas uninstall --all`. Kaldırma sonrası hiçbir dosya kalmadığını kanıtla.
-- [ ] **P3.07 — `Watchdog`.** Kalp atışı denetimi, 3 kaçırmada devretme. **`kill -9` ile kanıtla.**
-- [ ] **P3.08 — `StateRestorer`.** Uyku, kapanış, daemon durdurma olaylarında anında devretme. Idempotent olduğunu kanıtla.
-- [ ] **P3.09 — Watchdog invariant testleri.** Zaman aşımı 10–60 sn dışına ayarlanamaz; kalp atışı kesilince devredilir.
+- [x] **P3.00 — Empirical verification with a Development certificate.** **Prove** (do not assume) that `SMAppService` daemon registration and XPC signature verification really work with a free account Development certificate. If not, [ADR 0019](docs/architecture/adr/0019-signing-identity-deferred.md) is revised.
+- [x] **P3.01 — XPC protocol (`SharedIPC`).** Exactly four methods. `make gate-daemon` verifies the surface.
+- [x] **P3.02 — Daemon skeleton + launchd plist.** Registered via `SMAppService.daemon`.
+- [x] **P3.03 — Two-way signature verification.** `SecCodeCheckValidity` + `SecRequirement`. **Prove with a test that an unsigned client is rejected.**
+- [x] **P3.04 — Installation flow (UI).** What will happen, which files are written where and how to undo it are shown **before installing**.
+- [x] **P3.05 — System Settings routing.** If background approval is needed, detect the state and take the user straight to the right pane.
+- [x] **P3.06 — Removal flow.** UI button + `boreas uninstall --all`. Prove nothing is left behind after removal.
+- [ ] **P3.07 — `Watchdog`.** Heartbeat monitoring, hand back after 3 misses. **Prove with `kill -9`.**
+- [ ] **P3.08 — `StateRestorer`.** Immediate hand back on sleep, shutdown and daemon stop events. Prove idempotency.
+- [ ] **P3.09 — Watchdog invariant tests.** The timeout cannot be set outside 10–60 s; the fans are handed back when the heartbeat stops.
 
-### Kabul kriterleri
-- Tek yönetici kimlik doğrulaması ile kurulum
-- `kill -9` sonrası fanlar ≤ watchdog süresinde firmware'e dönüyor (**gerçek donanımda ölçüldü**)
-- `make gate-daemon` yeşil
-- İmzasız istemci reddediliyor
+### Acceptance criteria
+- Installation with a single administrator authentication
+- After `kill -9` the fans return to firmware within the watchdog window (**measured on real hardware**)
+- `make gate-daemon` green
+- An unsigned client is rejected
 
-### Doğrulama
+### Verification
 ```bash
 make test && make check && scripts/smoke-test-hardware.sh
 ```
 
-### Riskler
-R5 (kurulum akışı takılması)
+### Risks
+R5 (installation flow stalling)
 
 ---
 
-## P4 — Fan kontrolü ve güvenlik zinciri
+## P4 — Fan control and the safety chain
 
 - **ID:** P4
-- **Durum:** `NOT_STARTED`
-- **Bağımlılık:** P3
-- **Amaç:** Fanları güvenle devralıp geri verebilmek.
+- **Status:** `NOT_STARTED`
+- **Depends on:** P3
+- **Goal:** Taking the fans over — and handing them back — safely.
 
-### Alt işler
+### Sub-tasks
 
-- [ ] **P4.01 — `LiveFanActuator`.** Devralma dizisi: orijinal durumu sakla → mod zorlamalı → hedef yaz. Kapalı çevrim doğrulama.
-- [ ] **P4.02 — `releaseToFirmware`.** Devretme dizisi + üstel geri çekilmeli yeniden deneme. Idempotent.
-- [ ] **P4.03 — `SafetyGovernor` (K4).** Fizikî sınır dışı komut reddedilir ve loglanır. Sınır dışı komutla kanıtla.
-- [ ] **P4.04 — K1 fan tabanı.** Çıktı donanım minimumunun altına inmez.
-- [ ] **P4.05 — K2 termal durum.** `ProcessInfo.thermalState`; `serious` → %55 taban, `critical` → %100. **Kapatılamaz.**
-- [ ] **P4.06 — K3 panik eşiği.** `T_panic` aşımında %100, ≥30 sn kilitli. Eşik yalnızca düşürülebilir.
-- [ ] **P4.07 — Güvenlik zinciri invariant testleri.** "Hiçbir katman çıktıyı düşüremez" dahil.
-- [ ] **P4.08 — Manuel kontrol (tek kaydırıcı).** Tüm fanlar; güvenlik zinciri devrede.
-- [ ] **P4.09 — Durum makinesi.** MONITORING / CONTROLLING / PANIC / RELEASING geçişleri loglanır.
-- [ ] **P4.10 — Donanım duman testi betiği.** `scripts/smoke-test-hardware.sh` — devral/geri ver, `kill -9`, uyku/uyanma.
+- [ ] **P4.01 — `LiveFanActuator`.** Takeover sequence: save the original state → force the mode → write the target. Closed loop verification.
+- [ ] **P4.02 — `releaseToFirmware`.** Hand back sequence + retry with exponential backoff. Idempotent.
+- [ ] **P4.03 — `SafetyGovernor` (K4).** A command outside physical limits is rejected and logged. Prove with an out-of-range command.
+- [ ] **P4.04 — K1 fan floor.** Output never goes below the hardware minimum.
+- [ ] **P4.05 — K2 thermal state.** `ProcessInfo.thermalState`; `serious` → 55% floor, `critical` → 100%. **Cannot be switched off.**
+- [ ] **P4.06 — K3 panic threshold.** Above `T_panic` → 100%, locked for ≥ 30 s. The threshold can only be lowered.
+- [ ] **P4.07 — Safety chain invariant tests.** Including "no layer may lower the output".
+- [ ] **P4.08 — Manual control (single slider).** All fans; the safety chain stays active.
+- [ ] **P4.09 — State machine.** MONITORING / CONTROLLING / PANIC / RELEASING transitions are logged.
+- [ ] **P4.10 — Hardware smoke test script.** `scripts/smoke-test-hardware.sh` — take over/hand back, `kill -9`, sleep/wake.
 
-### Kabul kriterleri
-- Fanlar güvenle devralınıp geri veriliyor
-- K1–K5 invariant testleri geçiyor
-- `T_panic` ve `critical` senaryoları kullanıcı ayarından bağımsız %100 üretiyor
-- Duman testi gerçek donanımda geçiyor
+### Acceptance criteria
+- The fans are taken over and handed back safely
+- The K1–K5 invariant tests pass
+- The `T_panic` and `critical` scenarios produce 100% regardless of user settings
+- The smoke test passes on real hardware
 
-### Doğrulama
+### Verification
 ```bash
 make test && scripts/smoke-test-hardware.sh
 ```
 
-### Riskler
-R3 (firmware geri alması), R4 (kullanıcı kaynaklı termal risk)
+### Risks
+R3 (firmware fighting back), R4 (user induced thermal risk)
 
 ---
 
-## P5 — Kontrol motoru
+## P5 — Control engine
 
 - **ID:** P5
-- **Durum:** `NOT_STARTED`
-- **Bağımlılık:** P4
-- **Amaç:** Sürekli eğri modelinin tam ve kanıtlı uygulaması.
+- **Status:** `NOT_STARTED`
+- **Depends on:** P4
+- **Goal:** The continuous curve model, implemented in full and proven.
 
-### Alt işler
+### Sub-tasks
 
-- [ ] **P5.01 — `Curve` modeli ve enterpolasyon.** Monotonluk kısıtı tip düzeyinde zorlanır.
-- [ ] **P5.02 — Özellik testleri (eğri).** "Monoton eğri monoton çıktı üretir", "çıktı her zaman `[fanMin, fanMax]` aralığında".
-- [ ] **P5.03 — EWMA yumuşatma.** `α` parametresi; sınır davranışı (0.0 ve 1.0) testli.
-- [ ] **P5.04 — Çift eğri histerezis.** Yön kilidi dahil. Eşik çevresinde salınım olmadığını testle kanıtla.
-- [ ] **P5.05 — Asimetrik hız sınırlayıcı.** `maxRise` / `maxFall` bağımsız uygulanır.
-- [ ] **P5.06 — Sensör toplayıcı.** `max` / `mean` / `p95`; grup bazlı seçim.
-- [ ] **P5.07 — Profil modeli ve tetikleyiciler.** Güç kaynağı, uygulama, zaman, pil, ekran, termal durum, elle.
-- [ ] **P5.08 — Arbitraj.** Öncelik sırası + elle seçimin üstünlüğü + geçişlerde sıçrama olmaması.
-- [ ] **P5.09 — Karşılaştırma testi.** "Ayrık basamaklı model uygulansaydı eşikte sıçrama olurdu" — ADR 0010'u kodda yaşatır.
-- [ ] **P5.10 — Yapılandırma şeması + doğrulama.** `schema/config.schema.json`; aralık kısıtları; **bozuk yapılandırma çökertmez** testi.
-- [ ] **P5.11 — Şema göçü altyapısı.** Sürüm alanı, göç fonksiyonu, göç öncesi yedek. Veri kaybı olmadığını testle kanıtla.
-- [ ] **P5.12 — Altın dosya senaryoları.** Kaydedilmiş termal senaryolar → beklenen komut dizisi.
+- [ ] **P5.01 — `Curve` model and interpolation.** The monotonicity constraint enforced at the type level.
+- [ ] **P5.02 — Property tests (curve).** "A monotone curve produces monotone output", "output always within `[fanMin, fanMax]`".
+- [ ] **P5.03 — EWMA smoothing.** The `α` parameter; boundary behaviour (0.0 and 1.0) tested.
+- [ ] **P5.04 — Dual curve hysteresis.** Including the direction lock. Prove with a test that there is no oscillation around a threshold.
+- [ ] **P5.05 — Asymmetric rate limiter.** `maxRise` / `maxFall` applied independently.
+- [ ] **P5.06 — Sensor aggregator.** `max` / `mean` / `p95`; selectable per group.
+- [ ] **P5.07 — Profile model and triggers.** Power source, application, time, battery, display, thermal state, manual.
+- [ ] **P5.08 — Arbitration.** Priority order + manual choice wins + no jumps at transitions.
+- [ ] **P5.09 — Comparison test.** "Had a discrete step model been used, the threshold would jump" — keeps ADR 0010 alive in code.
+- [ ] **P5.10 — Configuration schema + validation.** `schema/config.schema.json`; range constraints; a **broken configuration does not crash** test.
+- [ ] **P5.11 — Schema migration infrastructure.** Version field, migration function, pre-migration backup. Prove no data loss with a test.
+- [ ] **P5.12 — Golden file scenarios.** Recorded thermal scenarios → expected command sequence.
 
-### Kabul kriterleri
-- Tüm motor invariantları geçiyor
-- Bozuk yapılandırma uygulamayı çökertmiyor, son geçerli hale dönüyor
-- Altın dosya testleri geçiyor
-- `Core` kapsamı ≥ %85
+### Acceptance criteria
+- All engine invariants pass
+- A broken configuration does not crash the app; it falls back to the last valid state
+- Golden file tests pass
+- `Core` coverage ≥ 85%
 
-### Doğrulama
+### Verification
 ```bash
 make test && make check
 ```
 
 ---
 
-## P6 — Kullanıcı arayüzü
+## P6 — User interface
 
 - **ID:** P6
-- **Durum:** `NOT_STARTED`
-- **Bağımlılık:** P5
-- **Amaç:** Ürünün yüzü — eğri editörü dahil.
+- **Status:** `NOT_STARTED`
+- **Depends on:** P5
+- **Goal:** The face of the product — including the curve editor.
 
-### Alt işler
+### Sub-tasks
 
-- [ ] **P6.01 — Tasarım sistemi.** Sıcaklık ve fan için **ayrı sürekli renk skalaları**; kırmızı yalnızca panik/hata.
-- [ ] **P6.02 — Menü çubuğu paneli.** Profil seçici, fanlar, gruplu sıcaklıklar.
-- [ ] **P6.03 — Menü çubuğu durum öğesi.** Yapılandırılabilir içerik, yatay/dikey, kompakt mod, gizlenme uyarısı.
-- [ ] **P6.04 — Ana pencere — İzleme sekmesi.** Swift Charts; **sıcaklık ve fan grafiği aynı zaman ekseninde**.
-- [ ] **P6.05 — Ana pencere — Kontrol sekmesi.** Aktif profil **ve neden aktif olduğu**; güvenlik zinciri durumu.
-- [ ] **P6.06 — Eğri editörü.** Sürüklenebilir noktalar, monotonluk kısıtı, canlı çalışma noktası, 60 sn izi, histerezis bandı.
-- [ ] **P6.07 — Eğri editörü — sayısal düzenleme.** Tablo görünümü; erişilebilirlik ve hassasiyet için.
-- [ ] **P6.08 — Ayarlar penceresi.** Yedi sekme.
-- [ ] **P6.09 — Ana pencere — Tanılama sekmesi.** Dürüstlük kuralına uygun ifadeler.
-- [ ] **P6.10 — Global kısayollar.**
-- [ ] **P6.11 — Yerelleştirme altyapısı + `en`/`tr`.** String Catalog; `make gate-i18n` yeşil.
-- [ ] **P6.12 — Erişilebilirlik geçişi.** VoiceOver, klavye gezinme, eğrinin nokta listesi olarak sunumu, renk-bağımsız bilgi.
-- [ ] **P6.13 — Pseudo-locale düzen testi.** CI'da; yapay uzatılmış dize ile taşma denetimi.
+- [ ] **P6.01 — Design system.** **Separate continuous colour scales** for temperature and fans; red reserved for panic/error.
+- [ ] **P6.02 — Menu bar panel.** Profile picker, fans, grouped temperatures.
+- [ ] **P6.03 — Menu bar status item.** Configurable content, horizontal/vertical, compact mode, hidden-item warning.
+- [ ] **P6.04 — Main window — Monitoring tab.** Swift Charts; **temperature and fan charts on the same time axis**.
+- [ ] **P6.05 — Main window — Control tab.** The active profile **and why it is active**; safety chain status.
+- [ ] **P6.06 — Curve editor.** Draggable points, monotonicity constraint, live operating point, 60 s trail, hysteresis band.
+- [ ] **P6.07 — Curve editor — numeric editing.** Table view; for accessibility and precision.
+- [ ] **P6.08 — Settings window.** Seven tabs.
+- [ ] **P6.09 — Main window — Diagnostics tab.** Wording that honours the honesty rule.
+- [ ] **P6.10 — Global shortcuts.**
+- [ ] **P6.11 — Localisation infrastructure + `en`/`tr`.** String Catalog; `make gate-i18n` green.
+- [ ] **P6.12 — Accessibility pass.** VoiceOver, keyboard navigation, the curve presented as a point list, colour-independent information.
+- [ ] **P6.13 — Pseudo-locale layout test.** In CI; overflow checking with artificially lengthened strings.
 
-### Kabul kriterleri
-- `make gate-i18n` yeşil
-- VoiceOver ile tüm kritik akışlar tamamlanabiliyor
-- Pseudo-locale testinde taşma yok
-- Eğri editörü monotonluk kısıtını zorluyor
+### Acceptance criteria
+- `make gate-i18n` green
+- Every critical flow completable with VoiceOver
+- No overflow in the pseudo-locale test
+- The curve editor enforces the monotonicity constraint
 
 ---
 
-## P7 — Olgunlaşma
+## P7 — Maturation
 
 - **ID:** P7
-- **Durum:** `NOT_STARTED`
-- **Bağımlılık:** P6
-- **Amaç:** Günlük kullanımda güvenilir bir ürün.
+- **Status:** `NOT_STARTED`
+- **Depends on:** P6
+- **Goal:** A product that is dependable in daily use.
 
-### Alt işler
+### Sub-tasks
 
-- [ ] **P7.01 — Bildirim sistemi.** Tetikleyiciler + **bastırma penceresi** + oturum başına bir kez kuralı + toplama.
-- [ ] **P7.02 — Log altyapısı.** JSONL/CSV, döndürme, sert disk üst sınırı. **Aktif güvenlik katmanı kaydedilir.**
-- [ ] **P7.03 — Tanılama kontrolleri.** Fan tepkisi, fan dengesi, sensör geçerliliği, termal geçmiş, pil, depolama.
+- [ ] **P7.01 — Notification system.** Triggers + **suppression window** + once-per-session rule + coalescing.
+- [ ] **P7.02 — Logging infrastructure.** JSONL/CSV, rotation, hard disk ceiling. **The active safety layer is recorded.**
+- [ ] **P7.03 — Diagnostic checks.** Fan response, fan balance, sensor validity, thermal history, battery, storage.
 - [ ] **P7.04 — CLI (`boreas`).** `status`, `profile`, `install`, `uninstall --all`, `export`, `import`.
-- [ ] **P7.05 — Destek raporu üreteci.** **Yerel dosya**, otomatik gönderim yok.
-- [ ] **P7.06 — `ru` / `es` / `zh-Hans` çevirileri.** Rusça çoğul biçimleri doğru.
+- [ ] **P7.05 — Support report generator.** **A local file**, no automatic submission.
+- [ ] **P7.06 — `ru` / `es` / `zh-Hans` translations.** Russian plural forms correct.
 - [ ] **P7.07 — `TRANSLATORS.md`.**
-- [ ] **P7.08 — Sorun giderme dokümantasyonu.** `docs/` altında; README'ye özet.
-- [ ] **P7.09 — Bilinmeyen sensör raporu akışı.** UI'dan tek tıkla issue şablonu doldurma.
+- [ ] **P7.08 — Troubleshooting documentation.** Under `docs/`; summary in the README.
+- [ ] **P7.09 — Unknown sensor report flow.** One click from the UI to a filled issue template.
 
 ---
 
-## P8 — Yayın
+## P8 — Release
 
 - **ID:** P8
-- **Durum:** `NOT_STARTED`
-- **Bağımlılık:** P7
-- **Amaç:** İmzalı, notarize, keşfedilebilir bir v1.0.
+- **Status:** `NOT_STARTED`
+- **Depends on:** P7
+- **Goal:** A signed, notarized, discoverable v1.0.
 
-### Alt işler
+### Sub-tasks
 
-- [ ] **P8.01 — İmzalama betiği.** Uygulama, daemon ve CLI ayrı ayrı; Hardened Runtime. ⛔ M03
-- [ ] **P8.02 — Notarizasyon betiği.** `notarytool` + `stapler`. **Başarısızsa sürüm üretilmez.** ⛔ M03 M04
-- [ ] **P8.03 — DMG üretimi.** SHA-256 yayınlanır. ⛔ M03
-- [ ] **P8.04 — CI release job'ı.** Etiketle tetiklenir. ⛔ M03 M04
-- [ ] **P8.05 — Ürün `README.md` (İngilizce).** Simge kaynağı hazır: `Design/icon/`. `docs/release/readme-spec.md`'ye göre; **"Test edilen donanım" bölümü dürüst**.
-- [ ] **P8.06 — README çevirileri.** `tr`, `ru`, `es`, `zh-Hans` + "geride kalmış olabilir" notu.
-- [ ] **P8.07 — Keşfedilebilirlik kurulumu.** Depo açıklaması, topics, Homebrew cask `desc`, README SSS.
-- [ ] **P8.08 — Homebrew cask.** Gönderim (M05'e bağlı). ⛔ M05
-- [ ] **P8.09 — Sürüm kapıları kontrol listesi.** `ARCHITECTURE.md` §10'daki tüm kapılar yeşil.
+- [ ] **P8.01 — Signing script.** App, daemon and CLI separately; Hardened Runtime. ⛔ M03
+- [ ] **P8.02 — Notarization script.** `notarytool` + `stapler`. **No release if it fails.** ⛔ M03 M04
+- [ ] **P8.03 — DMG build.** SHA-256 published. ⛔ M03
+- [ ] **P8.04 — CI release job.** Triggered by a tag. ⛔ M03 M04
+- [ ] **P8.05 — Product `README.md` (English).** Icon source ready: `Design/icon/`. Per `docs/release/readme-spec.md`; **an honest "Tested hardware" section**.
+- [ ] **P8.06 — README translations.** `tr`, `ru`, `es`, `zh-Hans` + a "may lag behind" note.
+- [ ] **P8.07 — Discoverability setup.** Repository description, topics, Homebrew cask `desc`, README FAQ.
+- [ ] **P8.08 — Homebrew cask.** Submission (depends on M05). ⛔ M05
+- [ ] **P8.09 — Release gate checklist.** Every gate in `ARCHITECTURE.md` §10 green.
 
 ---
 
-<a id="manuel-isler"></a>
-## Manuel işler — sistem dışı
+<a id="manual-tasks"></a>
+## Manual tasks — outside the system
 
-Ajanın yapamayacağı, **proje sahibinin** yapması gereken işler. *"Bende ne var?"* sorusunun kanonik cevabı burasıdır.
+Work the agent cannot do; it belongs to **the project owner**. This is the canonical answer to *"what is on my plate?"*.
 
-| # | İş | Neden gerekli | Bloke ettiği | Durum |
+| # | Task | Why it is needed | Blocks | Status |
 |---|---|---|---|---|
-| M01 | Marka araması (`Boreas`) | Ad kesinleşmeden yayın yapılmamalı | P8 | **DONE** (2026-08-03, engel yok) |
-| M02 | GitHub deposu oluştur: `boreas-mac-fan-control`, açıklama ve topics ayarla | Depo olmadan CI ve dağıtım yok | P1.12, P8 | **DONE** (2026-08-02, private) |
-| M03 | Developer ID sertifikasını dışa aktar, GitHub secret olarak tanımla | Yalnızca dağıtım için. P1–P7 gerektirmiyor — bkz. [ADR 0019](docs/architecture/adr/0019-signing-identity-deferred.md) | **yalnızca P8** | OPEN (ertelendi) |
-| M04 | App Store Connect API anahtarı üret (notarytool için), secret olarak tanımla | Notarizasyon için zorunlu | **yalnızca P8** | OPEN (ertelendi) |
-| M05 | Homebrew cask adı müsaitliğini doğrula ve gönderim yap | Birincil dağıtım kanalı | P8.08 | OPEN |
-| M06 | ~~Anadili konuşuru çeviri incelemesi~~ | **KALDIRILDI** (2026-08-03). Çeviriler proje içinde üretilir; köken `TRANSLATORS.md`'de işaretlenir — [ADR 0016 eki](docs/architecture/adr/0016-language-scope.md) | — | İPTAL |
-| M07 | Topluluktan farklı Mac modelleri için sensör/fan raporu toplama | R8 — doğrulanamayan kod yolları | Sürekli | OPEN |
-| M08 | Uygulama simgesi tasarımı | Görsel kimlik | P8.05 | **DONE** (2026-08-03, `Design/icon/`) |
+| M01 | Trademark search (`Boreas`) | No release before the name is settled | P8 | **DONE** (2026-08-03, no obstacle) |
+| M02 | Create the GitHub repository `boreas-mac-fan-control`, set description and topics | No CI or distribution without it | P1.12, P8 | **DONE** (2026-08-02, private) |
+| M03 | Export the Developer ID certificate, define it as a GitHub secret | Distribution only. Not needed for P1–P7 — see [ADR 0019](docs/architecture/adr/0019-signing-identity-deferred.md) | **P8 only** | OPEN (deferred) |
+| M04 | Generate an App Store Connect API key (for notarytool), define it as a secret | Required for notarization | **P8 only** | OPEN (deferred) |
+| M05 | Verify Homebrew cask name availability and submit | Primary distribution channel | P8.08 | OPEN |
+| M06 | ~~Native speaker translation review~~ | **REMOVED** (2026-08-03). Translations are produced in-project; their origin is marked in `TRANSLATORS.md` — [ADR 0016 addendum](docs/architecture/adr/0016-language-scope.md) | — | CANCELLED |
+| M07 | Collect sensor/fan reports from the community for other Mac models | R8 — unverifiable code paths | Ongoing | OPEN |
+| M08 | Application icon design | Visual identity | P8.05 | **DONE** (2026-08-03, `Design/icon/`) |
 
-**Girmez:** yerel araç kurulumu (`brew install …`), bozuk yerel kurulum onarımı, `xcodegen generate`. **Bunlar ajanın işidir.**
+**Not included:** local tool installation (`brew install …`), repairing a broken local setup, `xcodegen generate`. **Those are the agent's job.**
 
 ---
 
-## Faz üstü yayın blokajları
+## Cross-phase release blockers
 
-Checkbox sırasından bağımsız, yayını **durduran** koşullar:
+Conditions that **stop a release**, independent of checkbox order:
 
-| # | Blokaj |
+| # | Blocker |
 |---|---|
-| B1 | Depoda herhangi bir üçüncü taraf ticari ürün adı bulunması (`LEGAL.md` Y5) |
-| B2 | `make check` kapılarından herhangi birinin kırmızı olması |
-| B3 | Bir güvenlik zinciri invariant testinin geçmemesi |
-| B4 | Notarizasyonun başarısız olması |
-| B5 | `kill -9` duman testinin gerçek donanımda geçmemiş olması |
-| B6 | README'de "Test edilen donanım" bölümünün eksik veya kapsamı abartıyor olması |
-| B7 | Herhangi bir dilde eksik çeviri nedeniyle boş arayüz metni görünmesi |
-| B8 | Depoda imzalama materyali veya gizli değer bulunması |
+| B1 | Any third party commercial product name anywhere in the repository (`LEGAL.md` Y5) |
+| B2 | Any `make check` gate red |
+| B3 | A safety chain invariant test failing |
+| B4 | Notarization failing |
+| B5 | The `kill -9` smoke test not passed on real hardware |
+| B6 | The README "Tested hardware" section missing or overstating coverage |
+| B7 | Blank interface text in any language due to a missing translation |
+| B8 | Signing material or a secret present in the repository |
 
 ---
 
 ## Run Log
 
-Append-only. Geçmiş **yeniden yazılmaz**; yanlış kayıt yeni bir satırla düzeltilir.
+Append-only. History is **never rewritten**; a wrong entry is corrected by a new line.
 
-| UTC | Oturum | İş | Sonuç | Özet | Doğrulama | Artifact'ler | Risk/Blokaj | Handoff |
+| UTC | Session | Task | Result | Summary | Verification | Artifacts | Risk/Blocked | Handoff |
 |---|---|---|---|---|---|---|---|---|
-| 2026-07-31 | kurulum | P0.01–P0.07 | DONE | Depo başlatıldı, blueprint donduruldu (SHA-256 eşleşmesi kanıtlandı), yönetişim katmanı ve sekiz kapı yazıldı. **Bulgu:** kapılar ilk yazımda `mapfile` kullanıyordu; macOS `/bin/bash` 3.2.57'de bu komut yok, tarama hiç çalışmıyor ve kapı yine de PASS veriyordu — klasik sahte kapı. `scripts/gates/_lib.sh` ile bash 3.2 uyumlu hale getirildi ve `require_tools` eklenerek eksik komutta sessiz geçiş imkânsız kılındı. | `make gate-names` PASS · `make blueprint-check` PASS · sekiz kapının tamamı kasıtlı ihlalle kanıtlandı (8/8 yakaladı) | `AGENTS.md` `BOOT.md` `CLAUDE.md` `ARCHITECTURE.md` `LEGAL.md` `Makefile` `scripts/gates/*` | — | Next: P0.08 |
-| 2026-07-31 | kurulum | P0.08–P0.32 | DONE | 18 ADR (`Zorlama` bölümleri dolu), `docs/` ağacı, izlenebilirlik matrisi (25/25 eşlendi, kayıp 0), `SECURITY.md`. **Bulgu:** `privilege-model.md` yazılırken yanlışlıkla bir üçüncü taraf helper yolu metne girdi — Y5 ihlali. Dosya commit edilmeden düzeltildi; git geçmişi taranarak temiz olduğu doğrulandı. Bu olay ADR 0006'daki "otomatik katman ad listesi tutamaz" sınırlamasının neden insan incelemesi katmanı gerektirdiğini somutlaştırıyor. **İkinci bulgu:** geçmiş taraması için yazdığım `... \| grep \| head` komutu her zaman 0 dönüyordu (`head` exit kodu) — kontrol komutunun kendisi sahte kapıydı; sayım tabanlı kontrole çevrildi. | Yasaklı terim taraması: geçmişte 0, çalışma ağacında 0 eşleşme | 18 ADR · `docs/**` (44 dosya) · `SECURITY.md` | R6 azaltıldı | Next: P0.33 |
-| 2026-07-31 | kurulum | P0.33–P0.34 | DONE | Kök README (geliştirme giriş noktası) yazıldı ve `make check` tam yeşile alındı. **Bulgu 1:** gate-names, kuralı TARİF eden dosyaları yakalıyordu (readme-spec, ADR 0002 vb.). Sabit istisna listesi yerine `gate-names:policy-doc` işaretleyici konvansiyonu kuruldu; dosya kendi muafiyetini beyan eder, kapı muaf dosya sayısını her çalıştığında raporlar. Muafiyet eklendikten sonra kapı **yeniden kanıtlandı** (işaretleyicisiz ihlal yakalanıyor, işaretleyicili muaf oluyor). **Bulgu 2:** docs-check, `AGENTS.md`'de var olmayan bir kapıya (`gate-repo` hedefi) referans verdiğimi yakaladı; referans `gate-layers` hedefine düzeltildi ve `format`/`release` hedefleri Makefile'a eklendi. Dondurulmuş blueprint bu denetimden çıkarıldı (planlanan hedefleri tarif ediyor, mevcut durumu değil). **Bulgu 3:** probe temizliğinde `git checkout` iki kez staged bozuk sürümü geri getirdi — probe'lardan sonra `git checkout` değil, doğrudan içerik onarımı yapılmalı. | `make check` exit=0, 8/8 kapı PASS · docs-check 3 ayrı ihlalle kanıtlandı (kırık link, matriste var olmayan hedef, indekste olmayan ADR) | `README.md` `TODO.md` `LEGAL.md` `Makefile` `scripts/gates/check-docs.sh` | — | Next: P1.01 |
-| 2026-07-31 | kurulum | P0.34 (düzeltme) | DONE | Önceki kayıt commit edilirken `make check` kırmızıydı ve bu fark edilmeden commit atıldı — disiplin ihlali, düzeltici commit ile kapatıldı. Sebep özyineleme: docs-check, **Run Log'un kendisinde** var olmayan bir hedefe `make <hedef>` biçiminde referans verdiğimi yakaladı. Metin, hedef adını `make` öneki olmadan yazacak şekilde düzeltildi. **Ders:** doküman metni de kapı kapsamındadır; bir bulguyu anlatırken kullanılan söz dizimi kapıyı tetikleyebilir. | `make check` exit=0, 8/8 PASS | `TODO.md` | — | Next: P1.01 |
-| 2026-08-02 | kurulum | M02, P1.04, P1.05 | DONE | GitHub deposu `mahirozdin/boreas-mac-fan-control` oluşturuldu ve push edildi; açıklama ile 16 konu etiketi §18.4'e göre ayarlandı; wiki ve projects kapatıldı. **Depo bilinçli olarak PRIVATE açıldı:** o an `LICENSE` yoktu ve lisanssız yayınlanan bir depo varsayılan olarak "tüm hakları saklıdır" sayılır — açık kaynak niyetinin tersi. Ardından P1.04 ve P1.05 yapıldı, artık public'e çevirmeyi engelleyen bir şey yok; karar proje sahibinde. LICENSE metni GitHub Licenses API'sinden alındı (yeni bir dış kaynağa gerek kalmadı, gh zaten yetkiliydi); 202 satır, patent hibesi maddesi doğrulandı. LICENSE içindeki apache.org bağlantısı nedeniyle gate-names allowlist'ine `apache.org` eklendi. | `make check` exit=0, 8/8 PASS · LICENSE bütünlük kontrolleri PASS (başlık, sürüm, patent maddesi, 202 satır) | `LICENSE` `NOTICE` `TODO.md` `scripts/gates/check-names.sh` | M02 kapandı | Next: P1.01 |
-| 2026-08-03 | kurulum | M01, M06, M08 + ADR 0019 | DONE | **M01** kapandı (proje sahibi marka araması yaptı, engel yok). **M06 iptal** — çeviriler proje içinde üretilecek; ADR 0016'ya ek yazıldı: köken `TRANSLATORS.md`'de açıkça işaretlenir, `translation_fix.yml` şablonu eklenir. Kaliteyi garanti edemediğimiz yerde en azından dürüst oluyoruz. **M08 tamamlandı** — dört kanatlı fan simgesi elle yazılmış SVG geometrisiyle üretildi (üretken görsel YZ kullanılmadı: telif kökeni belirsiz olurdu, LEGAL.md bunu kaldırmaz). On varyant elendi. **Rasterleştirme gerçek bir geometri hatası yakaladı:** kanat kökleri r=110'da, göbek r=88'de — 22px boşluk, önizleme boyutunda görünmüyordu, tam çözünürlükte kırık eklem olarak çıktı; kök göbeğin içine alındı. İlk beş varyant (ince kanat) 'örümcek/X' gibi okunuyordu, geniş kanat geometrisine geçildi. **ADR 0019** yazıldı: imzalama kimliği P8 ön koşulu, P1–P7 bloke değil; Yol B (imzasız) seçilirse ayrıcalıklı daemon'un çalışmayacağı ve ürünün ikiye bölüneceği önceden kayda geçti. | `make check` exit=0 · docs-check 19 ADR senkronu PASS · simge 1024/512/256/128/64/32'de görsel doğrulandı | `Design/icon/*` · `docs/architecture/adr/0019-*` · ADR 0016 eki · `ARCHITECTURE.md` `decisions.md` `ui.md` `TODO.md` | M03/M04 P8'e ertelendi | Next: P1.01 |
-| 2026-08-03 | kurulum | Seçim mekanizması + P1 (11 iş) | DONE | **Yapısal değişiklik:** sıradaki iş seçimi `scripts/next-task.py` ile makineye devredildi. Manuel işe bağlı her iş atlanıyor, faz sınırı tanınmıyor. P8 işlerine ⛔ işaretleri kondu; üç senaryoyla kanıtlandı (bloke olmayan iş seçilir · yalnız bloke kalınca exit=1 + hangi manuel iş gerektiği · manuel iş çözülünce iş açılır). `AGENTS.md` §4 ve `BOOT.md` §4 buna bağlandı. **P1:** araç zinciri kuruldu (xcodegen/swiftlint/xcbeautify), `swift format`'ın Swift 6.2'ye yerleşik olduğu görülüp ayrı paket bağımlılığı düşürüldü. Üç SPM paketi (Core/HardwareKit/SharedIPC) derleniyor, 4 test geçiyor. `project.yml` yazıldı, App ve CLI derleniyor, CLI çalıştırıldı. Lint, LICENSE, NOTICE, CONTRIBUTING, CODE_OF_CONDUCT, CHANGELOG, PR ve 4 issue şablonu, CI. **Dört gerçek hata yakalandı ve düzeltildi:** (1) `bootstrap.sh` komutu tek string olarak geçiriyordu, zsh kelime ayırması yapmadığı için sağlıklı Xcode'u bozuk sanıyordu — argüman dizisine çevrildi. (2) SwiftLint özel kuralında `^` satır başına değil dosya başına bağlanıyor; `\b` + `match_kinds: [identifier]` ile düzeltildi. (3) `rename-product.sh` BSD sed'de çalışmayan `\b` kelime sınırı kullanıyordu, ad sessizce değişmiyordu — `[[:<:]]` `[[:>:]]` ile düzeltildi. (4) `docs-check` İngilizce düzyazıdaki 'make participation' fiilini Makefile hedefi sanıyordu — yalnızca ters tırnak veya kod bloğu bağlamı sayılacak şekilde daraltıldı. **Kapsam düzeltmesi:** Daemon hedefi P1.02'den çıkarılıp P3.02'ye taşındı; boş bir daemon iskeleti `gate-daemon`'ı haklı olarak kırıyor. | `make check` 8/8 PASS · `make build` PASS · `make test` 4/4 PASS · `make lint` PASS · Xcode App ve CLI derlemesi PASS · CLI çalıştırıldı · next-task 3 senaryo · lint özel kuralları 4 vaka · rename script gerçek dosyalarda · docs-check 3 vaka | `scripts/next-task.py` `scripts/bootstrap.sh` `scripts/rename-product.sh` `Brewfile` `project.yml` `Packages/**` `App/**` `CLI/**` `.swiftlint.yml` `.swift-format` `.github/**` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `CHANGELOG.md` | — | Next: P2.01 |
-| 2026-08-03 | kurulum | P1.12 doğrulama | DONE | CI uzakta çalıştırıldı ve **gerçek bir uyumsuzluk yakaladı**: runner'ın varsayılan Xcode'u Swift 6.1 sunuyordu, paketler `swift-tools-version: 6.2` istiyor → 'Could not resolve package dependencies'. Yerelde görünmeyen bir hataydı. İş akışına en yeni `Xcode*.app`'i seçen ve Swift < 6.2 ise **sessizce geçmek yerine açık hata veren** bir adım eklendi. Runner Xcode 26.6.0 / Swift 6.3 seçti. Üç job da yeşil. | GitHub Actions: Gates ✓ · Lint ✓ · Build and test ✓ · 4/4 test · App ve CLI derlemesi ✓ | `.github/workflows/ci.yml` | — | Next: P2.01 |
-| 2026-08-03 | kurulum | P2.07 + Core model tipleri | DONE | Core'a beş model tipi (`SensorGroup`, `SensorReading`, `FanState`, `Duty`, `PowerContext`) ve `SensorClassifier` yazıldı; 21 test geçiyor. **Tasarım kararı — `Duty` bir tip, `Double` değil:** her çağrı yerinin clamp etmeyi hatırlaması gerekseydi, unutan biri donanımın kabul etmediği bir fan komutu üretirdi. Geçersiz değeri tutamayan bir tip bu hata sınıfını test etmek yerine ortadan kaldırıyor. **Test gerçek bir boşluk yakaladı:** `Duty(.infinity)` sıfıra çöküyordu — yanlış yön. Fan kontrolünde iki hata simetrik değil: fazla hava gürültü, az hava ısı. Belirsiz girdi artık YUKARI çözülüyor (`+inf`→1, `NaN`→1, gerekçesi kodda yazılı). Bu, güvenlik zincirinin 'hiçbir katman çıktıyı düşüremez' kuralının tip düzeyindeki karşılığı. **Sınıflandırma sıralaması kritik:** `efficiency` kuralı generic `cpu`'dan ÖNCE denenmezse her verimlilik kümesi performans olarak dosyalanır — test bunu koruyor. Eşleşmeyen sensör `uncategorized`'a düşüyor ve gizlenmiyor; donanım desteğinin eksik olduğunu gösteren tek sinyal bu. | `swift test` 21/21 PASS · `make check` 8/8 · `make lint` PASS | `Packages/Core/Sources/Core/Models/*` `Sensors/SensorClassifier.swift` + testler | — | Next: P2.01 |
-| 2026-08-03 | kurulum | P2.01–P2.03, P2.05–P2.07 | DONE | Donanım katmanı: 3 protokol, 3 Mock, Replay, 3 Live uygulaması (SMC sensör, SMC fan, IOKit güç). 48 test geçiyor. **Gerçek donanımda doğrulandı:** Mac mini M4'te 174 sensör ve 1 fan (1000 rpm, 1000–4900) okunuyor. **En değerli bulgu — mock'un yakalayamayacağı bir hata:** `SMCKeyData_t`'yi Swift struct olarak tanımlamıştım; alan boyutları doğru görünüyordu ama C hizalama dolgusu tutmuyordu ve her çağrı `kIOReturnBadArgument` dönüyordu. Birim testler bunu asla yakalayamazdı — bir mock struct dolgusu konusunda anlaşmazlığa düşemez. 80 baytlık tampona açık offsetlerle yazmaya çevrildi, offset tablosu kodda yazılı. **İkinci bulgu:** SMC anahtarları `TCMz` gibi opak kodlar, okunabilir adlar değil — 174 sensörün 174'ü `uncategorized` düşüyordu. Gerçek donanımdaki önek dağılımı incelenip SMC anahtar sezgileri eklendi (Tp/Te/Tg/Ts/TH…); artık yalnızca 5'i sınıflandırılamıyor. Okunabilir adlar için HID kaynağı (P2.04) hâlâ gerekli. **Üçüncü:** Swift 6 strict concurrency `NSLock`'u async bağlamda reddediyor — durumlu mock'lar `actor`'a çevrildi. **Araç çakışması:** `swift-format` trailing comma ekliyor, SwiftLint yasaklıyordu; `make format` her çalıştığında `make lint` kırılıyordu. Sınır netleştirildi: biçim swift-format'ın, anlam SwiftLint'in işi. **Kapı hatası:** `grep -i` yüzünden `instead of [A-Z]` kalıbındaki büyük harf şartı anlamsızlaşmış, 'instead of returning' bile eşleşiyordu — harf duyarlı kalıplar ayrıldı. Ayrıca kapıların `**/*.swift` glob'u alt dizinleri bulamıyordu, dizin yoluna çevrildi. **Kapsam:** `FanActuator` P4.01'e taşındı (yazma yolu, `Live` uygulaması daemon'a bağlı). | `swift test` 48/48 PASS · `make check` 8/8 · `make lint` PASS · gerçek donanımda `boreas status` ve `boreas sensors` çalıştırıldı | `Packages/Core/Sources/Core/{Models,Sensors}` `Packages/HardwareKit/Sources/HardwareKit/{Protocols,Mock,Replay,Live,SMC}` `CLI/Sources/main.swift` + testler | — | Next: P2.04 |
-| 2026-08-04 | kurulum | P2.04, P2.08–P2.10 + ADR 0020 | DONE | **HID sensör kaynağı** yazıldı — `dlsym` ile çözülen dokümante edilmemiş arayüz; her sembol opsiyonel, çözülemezse SMC'ye düşülüyor. Gerçek donanımda **40 adlandırılmış sensör** (`PMU tdie1`, `NAND CH0 temp`) döndürüyor, SMC yolunun 174 opak anahtarı yerine. **Gerçek donanım bir sınıflandırma hatası ortaya çıkardı:** 40 sensörün 39'u `PMU tdie<n>` biçiminde ve `pmu → power` kuralı hepsini güç grubuna atıyordu. Kullanıcı `compute.performance`'a eğri bağlasa bu makinede **hiçbir sensör eşleşmezdi** — sessizce hiçbir şeye bağlı bir eğri, en kötü başarısızlık türü çünkü fark edilmiyor. Blueprint taksonomisinde bu sensörler için karşılık yoktu; **ADR 0020** ile `compute` grubu eklendi (küme atfedilemeyen die sıcaklıkları). `tdie`/`tdev` kuralları generic `pmu`'dan önce deneniyor ve bu sıralama testle korunuyor. Şimdi 37 sensör `compute`'ta. **Zarif düşüş** `FallbackSensorSource` olarak ayrıldı ki mock'larla test edilebilsin — iki gerçek arka ucu bağlayıp ummak test değil. Tek hata demote etmiyor (3 ardışık gerekiyor), toparlanma anında. 8 test. **Menü çubuğu uygulaması** canlı veriyle çalışıyor: gerçek donanımda başlatıldı, CPU %0,0, Dock simgesi yok, hata log'u yok. Bellek 73,4 MB — hedef 60 MB, ancak bu Debug derlemesi; Release ölçümü P6'da yapılmalı. **Kapsam kapısı** eklendi ve eşiği gerçekten zorladığı kanıtlandı (%99 eşikle kırmızı, %50 ile yeşil). Kapı bir boşluk gösterdi: `PowerContext` Core'daydı ama testi HardwareKit'teydi, kapsamı %0 görünüyordu — Core testleri eklendi, kapsam %95,8 → %99,4. | `swift test` 69/69 PASS · `make check` 9/9 · `make lint` PASS · gerçek donanımda CLI ve uygulama çalıştırıldı · kapsam kapısı iki eşikle kanıtlandı | `HIDSensorSource` `FallbackSensorSource` `LiveSensorSource` `SMCSensorSource` `App/Sources/**` `scripts/gates/check-coverage.sh` ADR 0020 | Bellek hedefi Release'te doğrulanmalı | Next: P3.00 |
-| 2026-08-04 | kurulum | P3.01–P3.03 | DONE | Ayrıcalıklı yardımcı yazıldı: dört metotluk XPC yüzeyi, K4 güvenlik süzgeci, watchdog, IOKit güç bildirimleri. Uygulama paketine gömüldü, ikisi de the development team takımıyla imzalandı. **Sertifika bulgusu (P3.00'ın yarısı):** `security find-identity` çıktısındaki parantez içi değer **Team ID değil** — etiketteki değer ile sertifikanın gerçek takım kimliği farklı çıkıyor. İlk denemem bu yüzden reddedildi. Ayrıca bu makinede zaten bir **Developer ID Application** sertifikası var; ADR 0019'un 'Yol A kapalı' öncülü aslında geçerli değil. **Daha iyi bir tasarıma dönüştü:** takım kimliğini derleme zamanında gömmek yerine yardımcı kendi imzasından okuyor (`SecCodeCopySelf`). Yapılandırılacak değer yok, imza ayarlarıyla drift yok, aynı ikili hem Development hem Developer ID imzasıyla doğru. **Elle imza doğrulaması terk edildi:** `connection.auditToken` Swift'e açık değil; macOS 13'ten beri desteklenen `setCodeSigningRequirement` var. Apple'ın doğru yaptığı bir güvenlik kararını yeniden yazmak sahiplenilecek yeni bir hata yüzeyi demek. Kapı bu API'yi de kabul edecek şekilde güncellendi. **Kapı boşluğu kapatıldı:** gate-daemon protokol yüzeyini yalnızca daemon kaynağı varsa denetliyordu ve `public func` biçimindeki bir metodu kaçırırdı. Artık protokol gövdesinden metot çıkarıyor ve daemon'dan bağımsız çalışıyor; üç senaryoyla kanıtlandı (yeni func, gizlenmiş public func, eksilen metot). **İkinci sahte kapı bulundu:** `make lint` içindeki `swift format ... || echo ✓` gerçek biçim ihlallerini başarı gibi gösteriyordu. Var olan dizinler açıkça toplanıyor, çıkış kodu yutulmuyor; ihlalle kanıtlandı. **Test edilemeyen güvenlik katmanı düzeltildi:** K4 süzgeci Daemon hedefindeydi ve orada test bundle'ı yok. Saf mantık `Core.FanTargetGuard`'a taşındı, 8 test yazıldı; daemon ince bir adaptör. | `swift test` 77/77 PASS · `make check` 9/9 · `make lint` PASS (sahte kapı düzeltildikten sonra) · uygulama+yardımcı imzalı derlendi, paket yapısı doğrulandı | `Daemon/**` `Packages/SharedIPC/**` `Core/FanTargetGuard` `project.yml` `Makefile` | **Kök daemon kaydı onay bekliyor** | Next: P3.00 (kayıt denemesi) |
-| 2026-08-04 | kurulum | P3.00 + P3.03 doğrulaması | DONE | **Ayrıcalıklı yardımcı gerçekten kuruldu ve çalıştı.** Kayıt Development sertifikasıyla başarılı; ADR 0019'un varsayımı doğrulandı, revizyon gerekmiyor. `register()` `Operation not permitted` döndürdü ama durum `notFound` → `requiresApproval` oldu — bu bir hata değil, macOS 13+'ın belgelenmiş onay akışı. Proje sahibi Sistem Ayarları'ndan onayladıktan sonra durum `enabled` oldu, daemon talep üzerine başladı (`runs = 1`). **G5 üç senaryoyla kanıtlandı:** doğru takım+kimlik kabul edildi (nonce doğru döndü, fan ayrıcalıklı yoldan okundu: 1001 rpm, 1000–4900); **farklı takımla** imzalı geçerli bir Apple istemcisi daemon tarafından reddedildi; **doğru takım ama yanlış bundle kimliğiyle** imzalı istemci de reddedildi. Hem takım hem kimlik zorlanıyor. **Test koşumumda gerçek bir kilitlenme buldum:** `HelperCommands` `@MainActor` bağlamında çalışıyor, `Task {}` bu izolasyonu miras alıyor ve ben ana thread'i semaforla blokluyordum — task hiç çalışamıyordu. Belirti 'daemon cevap vermiyor' gibi görünüyordu; `runs = 0` ve sıfır log, sorunun daemon'da değil çağıranda olduğunu gösterdi. `Task.detached` ile düzeltildi. **Lint kırmızıyken bir commit attım** — disiplin ihlali, düzeltici commit'le kapatıldı. Dört elemanlı tuple `FanSnapshot` tipine çevrildi: ayrıcalık sınırı geçen dört etiketsiz sayı, refactor'da yer değiştirmeye açık. | Kayıt: `enabled`, `runs=1`, `pid` atandı · ping: nonce eşleşti · describeFans: 1 fan · reddetme: 2/2 senaryo · `make check` 9/9 · 77 test | `App/Sources/Helper/**` `BoreasApp.swift` | Yardımcı bu makinede kurulu kaldı | Next: P3.04 |
+| 2026-07-31 | setup | P0.01–P0.07 | DONE | Repository initialised, blueprint frozen (SHA-256 match proven), governance layer and eight gates written. **Finding:** the gates first used `mapfile`; macOS `/bin/bash` 3.2.57 does not have it, the scan never ran and the gate still reported PASS — the classic fake gate. Made bash 3.2 compatible via `scripts/gates/_lib.sh`, and `require_tools` was added so a missing command can never pass silently. | `make gate-names` PASS · `make blueprint-check` PASS · all eight gates proven with deliberate violations (8/8 caught) | `AGENTS.md` `BOOT.md` `CLAUDE.md` `ARCHITECTURE.md` `LEGAL.md` `Makefile` `scripts/gates/*` | — | Next: P0.08 |
+| 2026-07-31 | setup | P0.08–P0.32 | DONE | 18 ADRs (Enforcement sections filled), the `docs/` tree, the traceability matrix (25/25 mapped, zero missing), `SECURITY.md`. **Finding:** while writing `privilege-model.md` a third party helper path slipped into the text — a Y5 violation. Fixed before the file was committed; git history scanned and confirmed clean. The incident makes concrete why ADR 0006's "the automated layer cannot keep a name list" limitation requires a human review layer. **Second finding:** the `... \| grep \| head` command I wrote for the history scan always returned 0 (`head`'s exit code) — the check command itself was a fake gate; switched to a count based check. | Forbidden term scan: 0 in history, 0 in the working tree | 18 ADRs · `docs/**` (44 files) · `SECURITY.md` | R6 mitigated | Next: P0.33 |
+| 2026-07-31 | setup | P0.33–P0.34 | DONE | Root README (development entry point) written and `make check` brought to full green. **Finding 1:** gate-names was catching the files that DESCRIBE the rule (readme-spec, ADR 0002 and so on). Instead of a fixed exception list, the `gate-names:policy-doc` marker convention was established; a file declares its own exemption and the gate reports the exempt file count on every run. After adding the exemption the gate was **proven again** (a violation without the marker is caught, with the marker it is exempt). **Finding 2:** docs-check caught me referencing a gate that does not exist (a `gate-repo` target) in `AGENTS.md`; the reference was fixed to the `gate-layers` target and the `format`/`release` targets were added to the Makefile. The frozen blueprint was excluded from this check (it describes planned targets, not current state). **Finding 3:** during probe cleanup `git checkout` twice restored the staged broken version — after probes, repair content directly instead of `git checkout`. | `make check` exit=0, 8/8 gates PASS · docs-check proven with 3 separate violations (broken link, nonexistent target in the matrix, ADR missing from the index) | `README.md` `TODO.md` `LEGAL.md` `Makefile` `scripts/gates/check-docs.sh` | — | Next: P1.01 |
+| 2026-07-31 | setup | P0.34 (fix) | DONE | The previous entry was committed while `make check` was red, unnoticed — a discipline violation, closed with a corrective commit. The cause was recursive: docs-check caught the **run log itself** referencing a nonexistent target in `make <target>` form. The text was reworded to name targets without the `make` prefix. **Lesson:** documentation text is inside gate scope too; the syntax used while describing a finding can trip a gate. | `make check` exit=0, 8/8 PASS | `TODO.md` | — | Next: P1.01 |
+| 2026-08-02 | setup | M02, P1.04, P1.05 | DONE | GitHub repository `mahirozdin/boreas-mac-fan-control` created and pushed; description and 16 topic labels set per §18.4; wiki and projects disabled. **The repository was deliberately opened PRIVATE:** there was no `LICENSE` at that moment, and a repository published without a licence defaults to "all rights reserved" — the opposite of open source intent. P1.04 and P1.05 were then done; nothing blocks flipping to public any more, the decision rests with the project owner. The LICENSE text came from the GitHub Licenses API (no new external source needed, gh was already authorised); 202 lines, the patent grant clause verified. Because of the apache.org link inside LICENSE, `apache.org` was added to the gate-names allowlist. | `make check` exit=0, 8/8 PASS · LICENSE integrity checks PASS (header, version, patent clause, 202 lines) | `LICENSE` `NOTICE` `TODO.md` `scripts/gates/check-names.sh` | M02 closed | Next: P1.01 |
+| 2026-08-03 | setup | M01, M06, M08 + ADR 0019 | DONE | **M01** closed (the project owner ran the trademark search, no obstacle). **M06 cancelled** — translations will be produced in-project; an addendum was written to ADR 0016: origin is explicitly marked in `TRANSLATORS.md`, the `translation_fix.yml` template added. Where we cannot guarantee quality, we are at least honest about it. **M08 complete** — the four blade fan icon was produced with hand written SVG geometry (no generative image AI: the copyright provenance would be unclear, and LEGAL.md does not absorb that). Ten variants were eliminated. **Rasterisation caught a real geometry bug:** blade roots at r=110, hub at r=88 — a 22px gap, invisible at preview size, a broken joint at full resolution; the roots were pulled inside the hub. The first five variants (thin blades) read as 'spider/X'; switched to wide blade geometry. **ADR 0019** written: the signing identity is a P8 precondition, P1–P7 are not blocked; it is recorded in advance that choosing Path B (unsigned) would leave the privileged daemon nonfunctional and split the product in two. | `make check` exit=0 · docs-check 19 ADR sync PASS · icon visually verified at 1024/512/256/128/64/32 | `Design/icon/*` · `docs/architecture/adr/0019-*` · ADR 0016 addendum · `ARCHITECTURE.md` `decisions.md` `ui.md` `TODO.md` | M03/M04 deferred to P8 | Next: P1.01 |
+| 2026-08-03 | setup | Selection mechanism + P1 (11 tasks) | DONE | **Structural change:** next task selection was handed to a machine via `scripts/next-task.py`. Every task depending on a manual task is skipped, phase boundaries are ignored. ⛔ markers were placed on the P8 tasks; proven with three scenarios (an unblocked task is chosen · with only blocked tasks left, exit=1 plus which manual task is needed · resolving the manual task unlocks the work). `AGENTS.md` §4 and `BOOT.md` §4 were bound to it. **P1:** toolchain set up (xcodegen/swiftlint/xcbeautify); `swift format` turned out to be built into Swift 6.2 and the separate package dependency was dropped. Three SPM packages (Core/HardwareKit/SharedIPC) compile, 4 tests pass. `project.yml` written, App and CLI compile, the CLI was run. Lint, LICENSE, NOTICE, CONTRIBUTING, CODE_OF_CONDUCT, CHANGELOG, PR and 4 issue templates, CI. **Four real bugs caught and fixed:** (1) `bootstrap.sh` passed commands as a single string; zsh does no word splitting, so a healthy Xcode looked broken — switched to argument arrays. (2) In a SwiftLint custom rule `^` anchors to the start of the file, not the line; fixed with `\b` + `match_kinds: [identifier]`. (3) `rename-product.sh` used the `\b` word boundary, which BSD sed does not support, and the name silently never changed — fixed with `[[:<:]]` `[[:>:]]`. (4) `docs-check` mistook the English prose verb in 'make participation' for a Makefile target — narrowed to count only backtick or code block contexts. **Scope fix:** the Daemon target was moved out of P1.02 into P3.02; an empty daemon skeleton rightly breaks `gate-daemon`. | `make check` 8/8 PASS · `make build` PASS · `make test` 4/4 PASS · `make lint` PASS · Xcode App and CLI builds PASS · CLI run · next-task 3 scenarios · lint custom rules 4 cases · rename script on real files · docs-check 3 cases | `scripts/next-task.py` `scripts/bootstrap.sh` `scripts/rename-product.sh` `Brewfile` `project.yml` `Packages/**` `App/**` `CLI/**` `.swiftlint.yml` `.swift-format` `.github/**` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `CHANGELOG.md` | — | Next: P2.01 |
+| 2026-08-03 | setup | P1.12 verification | DONE | CI was run remotely and **caught a real mismatch**: the runner's default Xcode offered Swift 6.1 while the packages require `swift-tools-version: 6.2` → 'Could not resolve package dependencies'. Invisible locally. A step was added to the workflow that selects the newest `Xcode*.app` and **fails loudly instead of passing silently** when Swift < 6.2. The runner picked Xcode 26.6.0 / Swift 6.3. All three jobs green. | GitHub Actions: Gates ✓ · Lint ✓ · Build and test ✓ · 4/4 tests · App and CLI builds ✓ | `.github/workflows/ci.yml` | — | Next: P2.01 |
+| 2026-08-03 | setup | P2.07 + Core model types | DONE | Five model types (`SensorGroup`, `SensorReading`, `FanState`, `Duty`, `PowerContext`) and `SensorClassifier` written into Core; 21 tests pass. **Design decision — `Duty` is a type, not a `Double`:** if every call site had to remember to clamp, whoever forgot would produce a fan command the hardware rejects. A type that cannot hold an invalid value eliminates that bug class instead of testing for it. **A test caught a real gap:** `Duty(.infinity)` collapsed to zero — the wrong direction. In fan control the two errors are not symmetric: too much air is noise, too little is heat. Ambiguous input now resolves UP (`+inf`→1, `NaN`→1, the reasoning written in code). This is the type level counterpart of the safety chain's "no layer may lower the output" rule. **Classification order is critical:** unless the `efficiency` rule is tried BEFORE generic `cpu`, every efficiency cluster is filed as performance — a test protects the order. An unmatched sensor falls into `uncategorized` and is not hidden; it is the only signal that hardware support is incomplete. | `swift test` 21/21 PASS · `make check` 8/8 · `make lint` PASS | `Packages/Core/Sources/Core/Models/*` `Sensors/SensorClassifier.swift` + tests | — | Next: P2.01 |
+| 2026-08-03 | setup | P2.01–P2.03, P2.05–P2.07 | DONE | Hardware layer: 3 protocols, 3 Mocks, Replay, 3 Live implementations (SMC sensors, SMC fans, IOKit power). 48 tests pass. **Verified on real hardware:** a Mac mini M4 reads 174 sensors and 1 fan (1000 rpm, 1000–4900). **The most valuable finding — a bug no mock could catch:** I had defined `SMCKeyData_t` as a Swift struct; field sizes looked right but the C alignment padding did not match and every call returned `kIOReturnBadArgument`. Unit tests could never catch this — a mock cannot disagree about struct padding. Switched to writing into an 80 byte buffer at explicit offsets, the offset table written in code. **Second finding:** SMC keys are opaque codes like `TCMz`, not readable names — 174 of 174 sensors fell into `uncategorized`. The prefix distribution on real hardware was studied and SMC key heuristics added (Tp/Te/Tg/Ts/TH…); now only 5 remain unclassified. The HID source (P2.04) is still needed for readable names. **Third:** Swift 6 strict concurrency rejects `NSLock` in async contexts — stateful mocks became `actor`s. **Tool conflict:** `swift-format` adds trailing commas, SwiftLint banned them; every `make format` broke `make lint`. The boundary was drawn: formatting belongs to swift-format, meaning to SwiftLint. **Gate bug:** because of `grep -i`, the uppercase requirement in the `instead of [A-Z]` pattern was meaningless and even 'instead of returning' matched — case sensitive patterns were split out. Also the gates' `**/*.swift` glob missed subdirectories; switched to directory paths. **Scope:** `FanActuator` moved to P4.01 (the write path; its `Live` implementation depends on the daemon). | `swift test` 48/48 PASS · `make check` 8/8 · `make lint` PASS · `boreas status` and `boreas sensors` run on real hardware | `Packages/Core/Sources/Core/{Models,Sensors}` `Packages/HardwareKit/Sources/HardwareKit/{Protocols,Mock,Replay,Live,SMC}` `CLI/Sources/main.swift` + tests | — | Next: P2.04 |
+| 2026-08-04 | setup | P2.04, P2.08–P2.10 + ADR 0020 | DONE | **The HID sensor source** written — an undocumented interface resolved via `dlsym`; every symbol optional, falling back to SMC when unresolvable. On real hardware it returns **40 named sensors** (`PMU tdie1`, `NAND CH0 temp`) instead of the SMC path's 174 opaque keys. **Real hardware exposed a classification bug:** 39 of the 40 sensors have the form `PMU tdie<n>` and the `pmu → power` rule filed them all under power. Had a user bound a curve to `compute.performance`, **no sensor would match** on this machine — a curve silently bound to nothing, the worst failure mode because nobody notices. The blueprint taxonomy had no place for these sensors; **ADR 0020** added the `compute` group (die temperatures not attributable to a cluster). The `tdie`/`tdev` rules are tried before generic `pmu` and a test protects the order. 37 sensors now sit in `compute`. **Graceful degradation** was split into `FallbackSensorSource` so it can be tested with mocks — wiring two real backends together and hoping is not a test. A single failure does not demote (3 consecutive required), recovery is immediate. 8 tests. **The menu bar app** runs on live data: launched on real hardware, CPU 0.0%, no Dock icon, no error log. Memory 73.4 MB — target is 60 MB, but this is a Debug build; measure Release in P6. **The coverage gate** added and proven to actually enforce its threshold (red at 99%, green at 50%). The gate exposed a gap: `PowerContext` lived in Core but its test in HardwareKit, so its coverage read 0% — Core tests added, coverage 95.8% → 99.4%. | `swift test` 69/69 PASS · `make check` 9/9 · `make lint` PASS · CLI and app run on real hardware · coverage gate proven with two thresholds | `HIDSensorSource` `FallbackSensorSource` `LiveSensorSource` `SMCSensorSource` `App/Sources/**` `scripts/gates/check-coverage.sh` ADR 0020 | Memory target must be verified in Release | Next: P3.00 |
+| 2026-08-04 | setup | P3.01–P3.03 | DONE | The privileged helper written: four method XPC surface, K4 safety filter, watchdog, IOKit power notifications. Embedded in the app bundle, both signed with the development team. **Certificate finding (half of P3.00):** the value in parentheses in `security find-identity` output is **not the Team ID** — the label value and the certificate's real team identifier turn out to differ. My first attempt was rejected because of this. This machine also already has a **Developer ID Application** certificate; ADR 0019's "Path A closed" premise does not actually hold. **It turned into a better design:** instead of embedding the team identifier at build time, the helper reads it from its own signature (`SecCodeCopySelf`). Nothing to configure, no drift against signing settings, the same binary correct under both Development and Developer ID signatures. **Manual signature verification was abandoned:** `connection.auditToken` is not exposed to Swift; `setCodeSigningRequirement`, supported since macOS 13, exists. Rewriting a security decision Apple got right means owning a brand new bug surface. The gate was updated to accept this API as well. **A gate gap was closed:** gate-daemon checked the protocol surface only when daemon sources existed, and would have missed a `public func` form method. It now extracts methods from the protocol body and runs independently of the daemon; proven with three scenarios (new func, hidden public func, removed method). **A second fake gate found:** `swift format ... || echo ✓` inside `make lint` presented real formatting violations as success. Existing directories are now collected explicitly and the exit code is no longer swallowed; proven with a violation. **An untestable safety layer fixed:** the K4 filter lived in the Daemon target, which has no test bundle. The pure logic moved to `Core.FanTargetGuard`, 8 tests written; the daemon is a thin adapter. | `swift test` 77/77 PASS · `make check` 9/9 · `make lint` PASS (after the fake gate fix) · app+helper built signed, bundle layout verified | `Daemon/**` `Packages/SharedIPC/**` `Core/FanTargetGuard` `project.yml` `Makefile` | **Root daemon registration awaiting approval** | Next: P3.00 (registration attempt) |
+| 2026-08-04 | setup | P3.00 + P3.03 verification | DONE | **The privileged helper was actually installed and ran.** Registration succeeded with the Development certificate; ADR 0019's assumption confirmed, no revision needed. `register()` returned `Operation not permitted` but the status went `notFound` → `requiresApproval` — not an error, the documented macOS 13+ approval flow. After the project owner approved in System Settings the status became `enabled` and the daemon started on demand (`runs = 1`). **G5 proven with three scenarios:** correct team+identifier accepted (nonce echoed correctly, fan read over the privileged path: 1001 rpm, 1000–4900); a valid Apple client signed with **a different team** was rejected by the daemon; a client signed with **the right team but the wrong bundle identifier** was rejected too. Both team and identifier are enforced. **My test run found a real deadlock:** `HelperCommands` runs in a `@MainActor` context, `Task {}` inherits that isolation, and I was blocking the main thread with a semaphore — the task could never run. The symptom looked like 'the daemon is not answering'; `runs = 0` and zero logs showed the problem was the caller, not the daemon. Fixed with `Task.detached`. **I committed once while lint was red** — a discipline violation, closed with a corrective commit. The four element tuple became the `FanSnapshot` type: four unlabelled numbers crossing a privilege boundary are exactly the thing that gets transposed in a refactor. | Registration: `enabled`, `runs=1`, `pid` assigned · ping: nonce matched · describeFans: 1 fan · rejection: 2/2 scenarios · `make check` 9/9 · 77 tests | `App/Sources/Helper/**` `BoreasApp.swift` | The helper stays installed on this machine | Next: P3.04 |
+| 2026-08-04 | setup | P3.04–P3.06 | CLAIMED | Installation life cycle chunk claimed: installation flow UI, System Settings routing, removal flow. | — | — | — | — |
+| 2026-08-04 | setup | P3.04, P3.05 | DONE | **The setup window:** what will happen, which files are written where and how to undo it are shown in three sections **before the install button**; an entry added to the menu bar panel (never shown on fanless models, and when not installed it is a quiet offer, not an error — I4). The approval-pending state is detected, one button takes the user to System Settings, the status is polled every 2 s and verification starts by itself once approval lands. **Finding 1 (documentation error):** the P0 placeholder table in `privilege-model.md` assumed the legacy install paths (`/Library/PrivilegedHelperTools`, `/Library/LaunchDaemons`); `SMAppService` writes **nothing** to those locations — with the helper registered and running it was shown that neither directory contains an entry of ours, and the table was replaced with the empirically verified footprint (marked as a "found error"). No new ADR needed since the decision did not change (ADR 0008 already chose SMAppService). **Visual evidence was produced not with screenshots but with a `--render-setup` command added to the app:** the Screen Recording permission is against the spirit of I2 and cannot be approved in a headless session; `ImageRenderer` produces PNGs of all six phases deterministically and permission-free, all six visually verified. **P3.05 evidence limit (honest record):** `requiresApproval` could not be triggered live this session because BTM remembers the earlier approval and re-registration goes straight to `enabled`; the state leg was observed on real hardware in P3.00 with the same wrapper, the approval UI verified via render, and the routing API (`openSystemSettingsLoginItems`) executed without error (System Settings was already open, so who opened the window cannot be proven on its own — opening that pane is the API's sole function). Automated testing of the install flow is planned at the XCUITest layer in the test strategy; this phase's evidence is real hardware integration. | `xcodebuild` App PASS · `make lint` PASS · `make test` 77/77 PASS · `make check` 9/9 PASS · 6 phase PNG renders + visual verification · app run live, no error log, clean quit · `--helper-ping`: signatures matched, 1 fan | `App/Sources/Helper/HelperSetupModel.swift` `HelperSetupView.swift` `BoreasApp.swift` `MenuBarPanel.swift` `docs/architecture/privilege-model.md` | The `requiresApproval` leg should be exercised live on a clean machine (via M07 community reports) | Next: P3.06 |
+| 2026-08-04 | setup | P3.06 | DONE | **The removal flow, three ways:** the Remove button in the setup window, `boreas uninstall [--all]`, the System Settings toggle. Because the `SMAppService` registration is bound to the calling process's bundle, the CLI delegates removal to the maintenance entry point of the app it locates via LaunchServices; running it with nothing registered is not an error (idempotency proven with two consecutive runs, both exit 0). The user data directory name is read from the located bundle at runtime — the product name is not embedded in code (K2). **"Nothing left behind" proven from five angles:** `SMAppService` status `not registered` · `launchctl print` "Could not find service" · 0 entries of ours in the system folders · `~/Library/Application Support/Boreas` deleted (a representative fixture file had been placed there deliberately; `--all` really removed it) · no daemon process. The CLI `status` command's stale "lands in P3" line was replaced with the real helper state (by asking the app; measured overhead ~70 ms). **Finding 2 (timing):** a remove → sub-second reinstall sequence produces a transient `Operation not permitted` + `notRegistered` from `register()`; ~8 s later the same call cleanly returns `enabled`. Recorded in `privilege-model.md` as a "known edge"; the Try Again button in the UI covers it. **Finding 3:** BTM remembers the approval across removal — re-registration went straight to `enabled` without a System Settings prompt. The helper was reinstalled and the machine returned to baseline: ping green, signatures match, 1 fan visible. | `boreas uninstall --all` exit 0 + five evidence commands · idempotent rerun exit 0 · reinstall `enabled` · `--helper-ping` PASS · `make lint` PASS · `make test` 77/77 · `make check` 9/9 | `CLI/Sources/Uninstall.swift` `CLI/Sources/main.swift` `docs/architecture/privilege-model.md` | The fast remove-reinstall edge is only reachable by hand; automatic retry deliberately not added (visible error + Try Again preferred) | Next: P3.07 |
+| 2026-08-04 | migration | ADR 0021 | CLAIMED | English migration claimed: translate the remaining 77 files, rename the dotted-I permission invariant ids to ASCII (I1–I4), update the TODO parser contract, turn gate-language green. | — | — | — | — |
 
-| 2026-08-04 | kurulum | P3.04–P3.06 | CLAIMED | Kurulum yaşam döngüsü öbeği alındı: kurulum akışı UI, Sistem Ayarları yönlendirmesi, kaldırma akışı. | — | — | — | — |
-| 2026-08-04 | kurulum | P3.04, P3.05 | DONE | **Kurulum penceresi:** ne olacağı, hangi dosyaların nereye yazılacağı ve nasıl geri alınacağı üç bölüm halinde **kurulum düğmesinden önce** gösteriliyor; menü çubuğu paneline giriş eklendi (fansız modelde giriş hiç gösterilmez, kurulu değilken hata değil sessiz teklif — İ4). Onay bekleme durumu algılanıyor, tek düğme Sistem Ayarları'na götürüyor, durum 2 sn'de bir yoklanıp onay gelince kendiliğinden doğrulamaya geçiliyor. **Bulgu 1 (doküman hatası):** `privilege-model.md`'nin P0 yer tutucu tablosu eski nesil kurulum yollarını (`/Library/PrivilegedHelperTools`, `/Library/LaunchDaemons`) varsayıyordu; `SMAppService` bu konumlara **hiçbir şey yazmıyor** — yardımcı kayıtlı ve çalışırken iki dizinde de bize ait giriş olmadığı gösterildi, tablo ampirik gerçekle değiştirildi ("bulunan hata" olarak işaretli). Karar değişmediği için (ADR 0008 zaten SMAppService) yeni ADR gerekmedi. **Görsel kanıt ekran görüntüsüyle değil, uygulamaya eklenen `--render-setup` komutuyla üretildi:** Ekran Kaydı izni İ2 ruhuna aykırı ve başsız oturumda onaylanamaz; `ImageRenderer` altı fazın PNG'sini izinsiz ve deterministik üretiyor, altısı da gözle doğrulandı. **P3.05 kanıt sınırı (dürüst kayıt):** bu oturumda `requiresApproval` canlı tetiklenemedi çünkü BTM önceki onayı hatırlıyor ve yeniden kayıt doğrudan `enabled` oluyor; durum bacağı P3.00'da aynı sarmalayıcıyla gerçek donanımda gözlenmişti, onay UI'ı render ile doğrulandı, yönlendirme API'si (`openSystemSettingsLoginItems`) hatasız çalıştırıldı (Sistem Ayarları zaten açık olduğundan pencereyi kimin açtığı tek başına kanıtlanamaz — API'nin tek işlevi bu paneli açmak). Kurulum akışının otomatik testi test stratejisinde XCUITest katmanına planlı; bu fazın kanıtı gerçek donanım entegrasyonu. | `xcodebuild` App PASS · `make lint` PASS · `make test` 77/77 PASS · `make check` 9/9 PASS · 6 faz PNG render + gözle doğrulama · uygulama canlı çalıştırıldı, hata logu yok, temiz kapandı · `--helper-ping`: imzalar eşleşti, 1 fan | `App/Sources/Helper/HelperSetupModel.swift` `HelperSetupView.swift` `BoreasApp.swift` `MenuBarPanel.swift` `docs/architecture/privilege-model.md` | `requiresApproval` bacağı temiz makinede canlı sınanmalı (M07 topluluk raporlarıyla) | Next: P3.06 |
+| 2026-08-04 | migration | ADR 0021 (completion) | DONE | **The English migration is complete and gate-language is green.** 77 files translated: 20 ADRs + the ADR index, the whole docs/ tree, TODO.md (including the run log — content preserving, following the owner's precedent of scrubbing account identifiers), all gate scripts, Makefile, bootstrap/rename scripts, CI workflow, project.yml, package manifests, plists, lint config, icon docs. Five parallel translation agents handled prose; the coupled executable set (parser, gates, TODO) was done by hand. **The parser contract migrated with it:** phase dependency key is now `Depends on:`, the manual section heading `Manual tasks`, and `next-task.py` is English — re-proven with the same three scenarios as its introduction (picks P3.07 · skips a ⛔-blocked task · exit 1 naming the manual tasks when everything is blocked). The dotted-I permission invariant ids became ASCII I1–I4 repo-wide (docs, AGENTS.md, code comments). **Finding 1 (a fragile gate):** gate-language matched single BYTES, not characters — under the C locale (headless shells, CI) grep degrades a multibyte class into a byte class, and emoji/typography sharing continuation bytes (0x9E/0x9F/0xB0/0xB1) false-positived 11 files that contain no Turkish at all; on a terminal with a UTF-8 $LANG the same gate looked correct. The locale is now pinned inside the gate and it was proven three ways: green on the migrated repo, red on a planted Turkish probe, green on an emoji/degree/± probe. **Finding 2 (a real H1 violation predating the migration):** the Turkish source of ADR 0015 and notifications.md named third party commercial chat products as integration examples — invisible to gate-names, which by design keeps no name list. Genericized during translation ("a chat service webhook"); open source integration targets (ntfy, Home Assistant) kept, matching how the repo already names Homebrew and GitHub. The frozen blueprint retains the originals as a historical record, as ADR 0021 intends. **Finding 3:** the Makefile header still said a pre-rename product name candidate ("Zephyr") — visible in `make help` output; rename-product.sh only rewrites the current name, so the leftover survived every rename. Now Boreas. **Smaller repairs while passing through:** stale pre-0021 policy sentences in localization.md/setup.md now point at ADR 0021 · setup.md command table gained the missing gate-language/gate-coverage rows · bootstrap.sh no longer hardcodes the gate count · dead Turkish Y6 patterns dropped from gate-names (gate-language guards that path first) · docs-check matrix markers moved to the English "Missing sections"/none/MISSING forms in lockstep with the matrix translation · an innocent geometry comparison in the icon README was reworded because its English form collided with a Y6 pattern · run log table row continuity fixed (stray blank lines between rows). | gate-language proven 3 ways (repo green · Turkish probe red · emoji probe green) · `make check` 10/10 PASS · `make test` 77/77 PASS · `make lint` PASS · App and CLI builds PASS · next-task 3 scenarios PASS · residual sweep for Turkish function words outside excluded paths: 0 | 77 files across the repository (docs/**, scripts/**, TODO.md, AGENTS.md contract row, Makefile, CI, manifests, App comments) | `Türkçe` remains only as the native language name in the localization table (outside the scanned character set, parallel to the other native names) | Next: P3.07 |
 
-| 2026-08-04 | kurulum | P3.06 | DONE | **Kaldırma akışı üç yoldan:** kurulum penceresinde Remove düğmesi, `boreas uninstall [--all]`, Sistem Ayarları anahtarı. CLI, `SMAppService` kaydı çağıran sürecin paketine bağlı olduğu için kaldırmayı LaunchServices ile bulduğu uygulamanın bakım giriş noktasına devrediyor; kayıtlı bir şey yokken çalıştırmak hata değil (idempotentlik iki ardışık çalıştırmayla kanıtlandı, ikisi de exit 0). Kullanıcı veri dizini adı çalışma zamanında paketten okunuyor — ürün adı koda gömülmedi (K2). **"Hiçbir dosya kalmadı" beş açıdan kanıtlandı:** `SMAppService` durumu `not registered` · `launchctl print` "Could not find service" · sistem klasörlerinde 0 bize ait giriş · `~/Library/Application Support/Boreas` silinmiş (temsilî fixture dosyası önceden bilerek konmuştu, `--all` gerçekten sildi) · daemon süreci yok. `boreas status`'un bayat "P3'te gelecek" satırı gerçek yardımcı durumuyla değiştirildi (uygulamaya sorarak; ölçülen ek maliyet ~70 ms). **Bulgu 2 (zamanlama):** kaldır → saniye-altı yeniden kur dizisi `register()`'da geçici `Operation not permitted` + `notRegistered` üretiyor; ~8 sn sonra aynı çağrı sorunsuz `enabled`. `privilege-model.md`'ye "bilinen kenar" olarak işlendi; UI'daki Try Again düğmesi bu durumu karşılıyor. **Bulgu 3:** BTM onayı kaldırma sonrasında da hatırlıyor — yeniden kayıt Sistem Ayarları onayı istemeden doğrudan `enabled` oldu. Yardımcı yeniden kuruldu ve makine tabana döndü: ping yeşil, imzalar eşleşiyor, 1 fan görünüyor. | `boreas uninstall --all` exit 0 + beş kanıt komutu · idempotent tekrar exit 0 · geri kurulum `enabled` · `--helper-ping` PASS · `make lint` PASS · `make test` 77/77 · `make check` 9/9 | `CLI/Sources/Uninstall.swift` `CLI/Sources/main.swift` `docs/architecture/privilege-model.md` | Hızlı kaldır-kur kenarı yalnızca elle tetiklenebilir durumda; otomatik yeniden deneme bilinçli eklenmedi (görünür hata + Try Again tercih edildi) | Next: P3.07 |
-
-### Run Log kayıt şablonu
+### Run log entry template
 
 ```
-| YYYY-MM-DD | <oturum> | P<n>.<nn> | DONE/BLOCKED | <ne yapıldı ve NEDEN öyle yapıldı; beklenmedik bulgular> | <komutlar + PASS/FAIL/NOT RUN+neden> | <dosyalar> | <risk> | Next: P<n>.<nn> |
+| YYYY-MM-DD | <session> | P<n>.<nn> | DONE/BLOCKED | <what was done and WHY it was done that way; unexpected findings> | <commands + PASS/FAIL/NOT RUN+reason> | <files> | <risk> | Next: P<n>.<nn> |
 ```
 
-**Kurallar:**
-- `NOT RUN` yazmaktan çekinme — "yazdım, çalışıyordur" sistemi yalancı yapar
-- Beklenmedik bulguyu **kanıtıyla** yaz; bir sonraki oturum aynı tuzağa düşmesin
-- `Handoff` tek ve kesin bir iş olmalı
+**Rules:**
+- Never hesitate to write `NOT RUN` — "I wrote it, it probably works" makes the system a liar
+- Record the unexpected finding **with its evidence**, so the next session does not fall into the same trap
+- `Handoff` must be a single, definite task

@@ -1,62 +1,62 @@
-# Kullanıcı Arayüzü
+# User Interface
 
-> Son güncelleme: 2026-07-31 — P0.17
-> Kaynak: blueprint §9
+> Last updated: 2026-07-31 — P0.17
+> Source: blueprint §9
 
-## Tasarım dili
+## Design language
 
-Görsel kimlik sıfırdan tasarlanır. Bağlayıcı kararlar:
+The visual identity is designed from scratch. Binding decisions:
 
-| Öğe | Karar |
+| Element | Decision |
 |---|---|
-| Temel yaklaşım | macOS 26 tasarım dili; sistem malzemeleri, SF Pro, sistem vurgusu |
-| Renk sistemi | **Sıcaklık ve fan için ayrı skalalar.** Sıcaklık: soğuk mavi → nötr → sıcak turuncu, **sürekli** geçiş. Fan: nötr gri doluluk. Kırmızı **yalnızca** panik/hata için ayrılmıştır |
-| Neden sürekli skala | Ayrık üç renkli bant, sürekli eğri felsefesiyle çelişir. Sürekli veri sürekli görselleştirilir |
-| İkonografi | SF Symbols; özel ikon yalnızca uygulama simgesi |
-| Uygulama simgesi | Özgün, **dört kanatlı fan** + göbek; soğuk mavi gradyan. Kaynak ve gerekçe: [`Design/icon/`](../../Design/icon/README.md) |
-| Karanlık/aydınlık | İkisi de birinci sınıf |
-| Animasyon | Yalnızca anlam taşıyanlar; dekoratif animasyon yok |
+| Base approach | macOS 26 design language; system materials, SF Pro, system accent colour |
+| Colour system | **Separate scales for temperature and fans.** Temperature: cool blue → neutral → warm orange, a **continuous** transition. Fans: neutral grey fill. Red is reserved **only** for panic/error |
+| Why a continuous scale | A discrete three colour band contradicts the continuous curve philosophy. Continuous data is visualised continuously |
+| Iconography | SF Symbols; the only custom icon is the application icon |
+| Application icon | Original, a **four blade fan** + hub; cool blue gradient. Source and rationale: [`Design/icon/`](../../Design/icon/README.md) |
+| Dark/light | Both are first class |
+| Animation | Only those that carry meaning; no decorative animation |
 
-> **Karar değişikliği (2026-08-03):** Bu tablo önceden "fan pervanesi klişesinden kaçınılır" diyordu. Proje sahibi açıkça fan motifi istedi ve bu karar uygulandı. Klişe riski, geometrinin özgünlüğüyle karşılanıyor: geniş süpürülmüş kanatlar, parametrik olarak tanımlanmış ve her sayısı gerekçelendirilmiş. Ayrıntı `Design/icon/README.md`.
+> **Decision change (2026-08-03):** This table previously said "the fan blade cliché is avoided". The project owner explicitly asked for a fan motif, and that decision was applied. The cliché risk is answered by the originality of the geometry: wide swept blades, parametrically defined, with every number justified. Details in `Design/icon/README.md`.
 
-**Metin ilkesi:** Tüm arayüz metinleri sıfırdan yazılır. Türkçe metinler çeviri gibi durmaz — Türkçe düşünülerek yazılır, İngilizce ayrıca yazılır. → `docs/development/localization.md`
+**Text principle:** All interface text is written from scratch. The Turkish text does not read like a translation — it is written thinking in Turkish, with the English written separately. → `docs/development/localization.md`
 
-## Menü çubuğu
+## Menu bar
 
-**Durum öğesi:** yapılandırılabilir içerik (birincil/ikincil sıcaklık, fan RPM, mini grafik) · yatay veya dikey · kompakt mod · aktif profil göstergesi · fan kontrolü aktifken belirgin ama rahatsız etmeyen gösterge · yer kalmadığında (çentik dahil) bilgilendirme.
+**Status item:** configurable content (primary/secondary temperature, fan RPM, mini chart) · horizontal or vertical · compact mode · active profile indicator · a visible but unobtrusive indicator while fan control is active · informing the user when space runs out (notch included).
 
-**Açılır panel:** profil seçici (tek tıkla değiştirme + geçici geçersiz kılma) · fanlar (ad, RPM, doluluk) · sıcaklıklar (gruplu, katlanabilir) · ana pencere / ayarlar / çıkış.
+**Drop-down panel:** profile picker (one click switch + temporary override) · fans (name, RPM, fill) · temperatures (grouped, collapsible) · main window / settings / quit.
 
-Panel açıkken ölçüm döngüsü **durmaz**.
+The sampling loop does **not stop** while the panel is open.
 
-## Ana pencere
+## Main window
 
-**① İzleme** — özet kartlar · zaman serisi grafiği (Swift Charts, 5dk/1sa/6sa/24sa) · **fan RPM grafiği aynı zaman ekseninde** (sıcaklık ve tepki görsel olarak hizalanır) · sensör tablosu · maksimumları sıfırlama.
+**① Monitoring** — summary cards · time series chart (Swift Charts, 5 min/1 h/6 h/24 h) · **fan RPM chart on the same time axis** (temperature and response align visually) · sensor table · reset maximums.
 
-**② Kontrol** — aktif profil **ve neden aktif olduğu** (hangi tetikleyici sağlandı — şeffaflık önemli) · eğri editörü · fan↔sensör grubu eşlemesi · manuel geçersiz kılma (süre seçicili) · güvenlik zinciri durumu.
+**② Control** — the active profile **and why it is active** (which trigger held — transparency matters) · curve editor · fan↔sensor group mapping · manual override (with a duration picker) · safety chain status.
 
-**③ Tanılama** — `docs/operations/diagnostics.md` içindeki kontroller · sistem ve donanım özeti · log erişimi · **yerel** destek raporu (otomatik gönderim yok).
+**③ Diagnostics** — the checks in `docs/operations/diagnostics.md` · system and hardware summary · log access · **local** support report (no automatic upload).
 
-## Eğri editörü
+## Curve editor
 
-Ürünün imza arayüzü.
+The product's signature interface.
 
-- X: sıcaklık, Y: görev oranı; sürüklenebilir kontrol noktaları
-- Çift tıkla ekleme, sağ tıkla silme; **monotonluk kısıtı sürükleme sırasında zorlanır**
-- **Canlı katmanlar:** anlık çalışma noktası · son 60 sn'nin izi (soluk bulut — gerçek davranışı eğriyle karşılaştırma) · histerezis bandı gölgesi
-- **Sayısal düzenleme:** her nokta tablodan da girilebilir (erişilebilirlik + hassasiyet)
-- Hazır şablonlar · geri al/yinele
-- Yan panelde canlı parametreler (histerezis, yumuşatma, yükselme/düşme hızı) grafikte anında yansır
+- X: temperature, Y: duty cycle; draggable control points
+- Double click to add, right click to delete; **the monotonicity constraint is enforced while dragging**
+- **Live layers:** the current operating point · the trace of the last 60 s (a faint cloud — comparing real behaviour against the curve) · the hysteresis band shadow
+- **Numeric editing:** every point can also be entered from a table (accessibility + precision)
+- Ready-made templates · undo/redo
+- Live parameters in the side panel (hysteresis, smoothing, rise/fall rate) reflect instantly in the chart
 
-## Ayarlar
+## Settings
 
-Sekmeler: **Genel · Görünüm · Sensörler · Kontrol · Bildirimler · Kayıt · Gelişmiş**
+Tabs: **General · Appearance · Sensors · Control · Notifications · Recording · Advanced**
 
-## Erişilebilirlik — pazarlık konusu değil
+## Accessibility — not negotiable
 
-- Tüm etkileşimli öğeler klavyeyle erişilebilir, mantıklı odak sırası
-- Grafikler ve eğri editörü için VoiceOver açıklamaları; **eğri, nokta listesi olarak da sunulur**
-- `Increase Contrast`, `Reduce Motion`, `Reduce Transparency` uyumu
-- **Renk tek başına bilgi taşımaz** — daima sayı veya etiketle desteklenir
-- Dynamic Type desteği; **sabit piksel genişlikli veya yükseklikli metin kabı yok**
-- Menü çubuğu öğesi anlamlı erişilebilirlik etiketi sunar
+- All interactive elements are keyboard reachable, with a sensible focus order
+- VoiceOver descriptions for the charts and the curve editor; **the curve is also presented as a list of points**
+- Honours `Increase Contrast`, `Reduce Motion`, `Reduce Transparency`
+- **Colour never carries information alone** — always backed by a number or label
+- Dynamic Type support; **no text container with a fixed pixel width or height**
+- The menu bar item provides a meaningful accessibility label

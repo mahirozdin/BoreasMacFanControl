@@ -1,37 +1,37 @@
 #!/usr/bin/env bash
 # ============================================================================
-# KAPI: gate-daemon
-# Zorladığı değişmezler: ARCHITECTURE.md M4 (XPC yüzeyi), M5 (config okumaz),
-#                        M6 (ağ yok), G5 (imza doğrulaması)
+# GATE: gate-daemon
+# Enforces: ARCHITECTURE.md M4 (XPC surface), M5 (reads no configuration),
+#           M6 (no network), G5 (signature verification)
 # ADR: 0007-privilege-split.md, 0008-smappservice-xpc.md
 #
-# Daemon root olarak çalışır. Yüzeyi ne kadar dar olursa saldırı yüzeyi o kadar
-# küçüktür. Bu kapı, yüzeyin fark ettirmeden genişlemesini önler.
+# The daemon runs as root. The narrower its surface, the smaller the attack
+# surface. This gate keeps the surface from widening unnoticed.
 # ============================================================================
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 . scripts/gates/_lib.sh
 
-echo "▶ gate-daemon — ayrıcalıklı yüzey sınırları"
+echo "▶ gate-daemon — privileged surface limits"
 require_tools git grep awk sort xargs
 
 
 # ---------------------------------------------------------------------------
-# M4 — XPC protokolü yalnızca dört metot içerir
+# M4 — the XPC protocol contains exactly four methods
 #
-# Bu denetim daemon kaynağından BAĞIMSIZ çalışır: yüzey, protokol yazıldığı
-# anda sınırlıdır. Daemon'un varlığını beklemek, yüzeyin fark edilmeden
-# genişlemesine izin verirdi.
+# This check runs INDEPENDENTLY of the daemon sources: the surface is bounded
+# the moment the protocol is written. Waiting for the daemon to exist would
+# let the surface widen unnoticed.
 #
-# Metot çıkarımı protokol GÖVDESİNDEN yapılır, dosyanın tamamından değil.
-# Daha önce '^func' deseniyle taranıyordu; 'public func' yazılmış bir metodu
-# kaçırıyordu ve aynı dosyadaki static yardımcıları yanlışlıkla sayabilirdi.
+# Methods are extracted from the protocol BODY, not the whole file. It used
+# to scan with a '^func' pattern, which missed a method written as
+# 'public func' and could mistakenly count static helpers in the same file.
 # ---------------------------------------------------------------------------
 PROTO_FILE=$(tracked 'Packages/SharedIPC/Sources/' | grep '\.swift$' \
              | while read -r f; do grep -lq 'protocol FanControlProtocol' "$f" && echo "$f"; done)
 
 if [ -z "$PROTO_FILE" ]; then
-  skip "FanControlProtocol henüz yok — P3.01'de yazılacak"
+  skip "no FanControlProtocol yet — written in P3.01"
 else
   ALLOWED='^(describeFans|applyTargets|releaseToFirmware|heartbeat)$'
   METHODS=$(awk '
@@ -50,13 +50,13 @@ else
   EXTRA=$(printf '%s\n' "$METHODS" | grep . | grep -vE "$ALLOWED" || true)
 
   if [ -n "$EXTRA" ]; then
-    fail "XPC yüzeyinde izinsiz metot (M4) — genişletmek ADR gerektirir:"
+    fail "unsanctioned method on the XPC surface (M4) — widening it requires an ADR:"
     printf '%s\n' "$EXTRA" | sed 's/^/      /'
   elif [ "$COUNT_M" -ne 4 ]; then
-    fail "XPC yüzeyinde $COUNT_M metot var, 4 bekleniyor (M4)"
+    fail "the XPC surface has $COUNT_M methods, 4 expected (M4)"
     printf '%s\n' "$METHODS" | sed 's/^/      /'
   else
-    ok "XPC yüzeyi dört metotla sınırlı"
+    ok "XPC surface limited to four methods"
   fi
 fi
 
@@ -64,52 +64,52 @@ DAEMON=$(tracked 'Daemon/' | grep '\.swift$' || true)
 COUNT=$(printf '%s\n' "$DAEMON" | grep -c . || true)
 
 if [ "$COUNT" -eq 0 ]; then
-  skip "Daemon kaynağı yok — P3'te oluşacak"
+  skip "no daemon sources — arrive in P3"
 else
-  note "taranan daemon dosyası: $COUNT"
+  note "daemon files scanned: $COUNT"
 
   # -------------------------------------------------------------------------
-  # M5 — daemon yapılandırma/dosya okumaz
+  # M5 — the daemon reads no configuration or files
   # -------------------------------------------------------------------------
   CONFIG_IO='(JSONDecoder|JSONSerialization|PropertyListDecoder|contentsOfFile|Data\(contentsOf:)'
   if HITS=$(grep_files "$DAEMON" -nHE "$CONFIG_IO"); then
-    fail "daemon dosya/yapılandırma okuyor (M5)"
+    fail "the daemon reads files/configuration (M5)"
     printf '%s\n' "$HITS" | head -10 | sed 's/^/      /'
   else
-    ok "daemon yapılandırma okumuyor"
+    ok "the daemon reads no configuration"
   fi
 
   # -------------------------------------------------------------------------
-  # M6 — daemon ağ kullanmaz
+  # M6 — the daemon uses no network
   # -------------------------------------------------------------------------
   if HITS=$(grep_files "$DAEMON" -nHE '(URLSession|import[[:space:]]+Network|NWConnection)'); then
-    fail "daemon ağ API'si kullanıyor (M6)"
+    fail "the daemon uses a network API (M6)"
     printf '%s\n' "$HITS" | head -10 | sed 's/^/      /'
   else
-    ok "daemon ağ kullanmıyor"
+    ok "the daemon uses no network"
   fi
 
   # -------------------------------------------------------------------------
-  # Alt süreç yasağı — ayrıcalık yükseltme riski
+  # Subprocess ban — privilege escalation risk
   # -------------------------------------------------------------------------
   if HITS=$(grep_files "$DAEMON" -nHE '(Process\(\)|posix_spawn|NSTask|execv)'); then
-    fail "daemon alt süreç başlatıyor — ayrıcalık yükseltme riski"
+    fail "the daemon spawns subprocesses — privilege escalation risk"
     printf '%s\n' "$HITS" | head -10 | sed 's/^/      /'
   else
-    ok "daemon alt süreç başlatmıyor"
+    ok "the daemon spawns no subprocesses"
   fi
 
   # -------------------------------------------------------------------------
-  # G5 — imza doğrulaması mevcut olmalı
+  # G5 — signature verification must be present
   # -------------------------------------------------------------------------
-  # setCodeSigningRequirement, macOS 13'ten beri bunun DESTEKLENEN yolu.
-  # Elle SecCodeCheckValidity çağırmak da kabul ediliyor ama tercih değil:
-  # bir güvenlik kararını Apple'ın zaten doğru yaptığı yerde yeniden yazmak
-  # sahiplenilecek yeni bir hata yüzeyi demek.
+  # setCodeSigningRequirement has been the SUPPORTED route since macOS 13.
+  # Calling SecCodeCheckValidity by hand is accepted too, but not preferred:
+  # rewriting a security decision where Apple already got it right means
+  # owning a brand new bug surface.
   if grep_files "$DAEMON" -lE '(setCodeSigningRequirement|SecCodeCheckValidity|SecRequirementCreateWithString)' >/dev/null; then
-    ok "XPC imza doğrulaması mevcut"
+    ok "XPC signature verification present"
   else
-    fail "XPC imza doğrulaması bulunamadı (G5)"
+    fail "XPC signature verification not found (G5)"
   fi
 fi
 

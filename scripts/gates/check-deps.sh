@@ -1,38 +1,38 @@
 #!/usr/bin/env bash
 # ============================================================================
-# KAPI: gate-deps
-# Zorladığı değişmezler: AGENTS.md T4 (sıfır bağımlılık), H5 (lisans uyumu)
+# GATE: gate-deps
+# Enforces: AGENTS.md T4 (zero dependencies), H5 (licence compatibility)
 # ADR: 0013-json-config-zero-deps.md, 0005-apache-2-license.md
 # ============================================================================
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 . scripts/gates/_lib.sh
 
-echo "▶ gate-deps — bağımlılık ve lisans uyumu"
+echo "▶ gate-deps — dependencies and licence compatibility"
 require_tools git grep xargs
 
 # ---------------------------------------------------------------------------
-# T4 — Package.swift içinde harici bağımlılık olmamalı
+# T4 — no external dependency inside Package.swift
 # ---------------------------------------------------------------------------
 MANIFESTS=$(tracked 'Package.swift **/Package.swift')
 HAS_DEPS=0
 
 if [ -z "$MANIFESTS" ]; then
-  skip "Package.swift yok — P1'de oluşacak"
+  skip "no Package.swift — arrives in P1"
 else
-  note "taranan manifest: $(printf '%s\n' "$MANIFESTS" | grep -c .)"
+  note "manifests scanned: $(printf '%s\n' "$MANIFESTS" | grep -c .)"
   if HITS=$(grep_files "$MANIFESTS" -nHE '\.package\(url:'); then
     HAS_DEPS=1
-    fail "harici bağımlılık bulundu (T4 — sıfır çalışma zamanı bağımlılığı)"
+    fail "external dependency found (T4 — zero runtime dependencies)"
     printf '%s\n' "$HITS" | sed 's/^/      /'
-    note "gerçekten gerekliyse ADR yaz ve NOTICE'a ekle"
+    note "if it is truly necessary, write an ADR and add it to NOTICE"
   else
-    ok "harici bağımlılık yok"
+    ok "no external dependencies"
   fi
 fi
 
 # ---------------------------------------------------------------------------
-# H5 — yasaklı lisans izi
+# H5 — forbidden licence traces
 # ---------------------------------------------------------------------------
 LICENSE_EXCLUDE='^(LEGAL\.md|AGENTS\.md|BLUEPRINT\.md|BOOT\.md|docs/blueprint/|docs/architecture/adr/0005-|scripts/gates/check-deps\.sh)'
 ALL=$(tracked "" "$LICENSE_EXCLUDE")
@@ -40,18 +40,18 @@ BANNED_LICENSE='(GNU GENERAL PUBLIC LICENSE|GNU LESSER GENERAL PUBLIC|GNU AFFERO
 
 if [ -n "$ALL" ]; then
   if HITS=$(grep_files "$ALL" -lE "$BANNED_LICENSE"); then
-    fail "yasaklı lisans izi (H5) — GPL/LGPL/AGPL/SSPL kabul edilmez:"
+    fail "forbidden licence trace (H5) — GPL/LGPL/AGPL/SSPL is not acceptable:"
     printf '%s\n' "$HITS" | sed 's/^/      /'
   else
-    ok "yasaklı lisans izi yok"
+    ok "no forbidden licence traces"
   fi
 fi
 
 # ---------------------------------------------------------------------------
-# Bağımlılık varsa NOTICE zorunlu
+# If there are dependencies, NOTICE is mandatory
 # ---------------------------------------------------------------------------
 if [ "$HAS_DEPS" -eq 1 ] && [ ! -f NOTICE ]; then
-  fail "bağımlılık var ama NOTICE dosyası yok"
+  fail "dependencies exist but there is no NOTICE file"
 fi
 
 gate_result "gate-deps"

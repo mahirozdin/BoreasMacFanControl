@@ -1,29 +1,29 @@
-# Sözlük
+# Glossary
 
-> Son güncelleme: 2026-07-31 — P0.13
-> Kaynak: blueprint §22
+> Last updated: 2026-07-31 — P0.13
+> Source: blueprint §22
 
-| Terim | Tanım |
+| Term | Definition |
 |---|---|
-| **Görev oranı (duty)** | Fanın minimum ve maksimum hızı arasındaki konumu, 0.0–1.0. `rpm = fanMin + (fanMax − fanMin) × duty` |
-| **Eğri** | Sıcaklığı görev oranına dönüştüren parçalı doğrusal fonksiyon. En az 2, en fazla 16 kontrol noktası |
-| **Kontrol noktası** | Eğriyi tanımlayan `(sıcaklık, görev oranı)` çifti |
-| **Histerezis** | Salınımı önlemek için yükselen ve düşen yönlerde farklı eşik kullanma. Boreas'ta çift eğri yöntemiyle |
-| **Hız sınırlama (slew)** | Çıktının birim zamandaki değişimini kısıtlama. Boreas'ta **asimetrik**: yükselme hızlı, düşme yavaş |
-| **EWMA** | Üstel ağırlıklı hareketli ortalama — girdi yumuşatma yöntemi |
-| **Profil** | Eğriler, parametreler ve tetikleyicilerden oluşan adlandırılmış yapılandırma seti |
-| **Tetikleyici** | Bir profilin aktif olma koşulu (güç kaynağı, uygulama, saat, termal durum vb.) |
-| **Arbitraj** | Birden fazla aday profil arasından aktif olanı seçme süreci |
-| **Toplayıcı (aggregate)** | Bir sensör grubundan tek değer üretme yöntemi: `max`, `mean`, `p95` |
-| **Güvenlik zinciri** | Motor çıktısının donanıma ulaşmadan geçtiği koruma katmanları (K1–K5) |
-| **Ölü adam anahtarı** | Kalp atışı kesildiğinde otomatik güvenli duruma dönen mekanizma |
-| **Kalp atışı (heartbeat)** | Uygulamanın daemon'a düzenli gönderdiği yaşam sinyali |
-| **Devralma** | Fan kontrolünün firmware'den yazılıma geçmesi |
-| **Devretme** | Fan kontrolünün yazılımdan firmware'e iade edilmesi |
-| **Termal baskı** | İşletim sisteminin bildirdiği sistem geneli termal durum (`nominal`/`fair`/`serious`/`critical`) |
-| **Panik eşiği** | Aşıldığında çıktının koşulsuz %100 olduğu sıcaklık (K3) |
-| **Kapı (gate)** | Bir değişmezi makine ile zorlayan, CI'da bloklayıcı denetim |
-| **Sahte kapı** | Çalışıyor görünen ama aslında hiçbir şey kontrol etmeyen denetim |
-| **Atomik iş** | Tek oturumda bitirilebilen, tek kabul kanıtı olan görev |
-| **Dondurulmuş kaynak** | Başlangıç spesifikasyonunun asla düzenlenmeyen kopyası |
-| **Live / Mock / Replay** | Donanım protokollerinin üç uygulaması: gerçek, sahte, log'dan yeniden oynatan |
+| **Duty** | The fan's position between its minimum and maximum speed, 0.0–1.0. `rpm = fanMin + (fanMax − fanMin) × duty` |
+| **Curve** | The piecewise linear function that maps temperature to duty. At least 2, at most 16 control points |
+| **Control point** | A `(temperature, duty)` pair defining the curve |
+| **Hysteresis** | Using different thresholds in the rising and falling directions to prevent oscillation. In Boreas, via the dual-curve method |
+| **Slew limiting** | Constraining how much the output may change per unit of time. In Boreas it is **asymmetric**: rising is fast, falling is slow |
+| **EWMA** | Exponentially weighted moving average — an input smoothing method |
+| **Profile** | A named configuration set made of curves, parameters and triggers |
+| **Trigger** | The condition under which a profile becomes active (power source, application, time of day, thermal state, etc.) |
+| **Arbitration** | The process of selecting the active profile among several candidates |
+| **Aggregate** | The method that produces a single value from a sensor group: `max`, `mean`, `p95` |
+| **Safety chain** | The protection layers the engine output passes through before it reaches the hardware (K1–K5) |
+| **Dead man's switch** | The mechanism that returns to a safe state automatically when the heartbeat stops |
+| **Heartbeat** | The liveness signal the application sends to the daemon at regular intervals |
+| **Takeover** | Fan control passing from the firmware to the software |
+| **Handback** | Fan control being returned from the software to the firmware |
+| **Thermal pressure** | The system-wide thermal state reported by the operating system (`nominal`/`fair`/`serious`/`critical`) |
+| **Panic threshold** | The temperature above which the output is unconditionally 100% (K3) |
+| **Gate** | A check that enforces an invariant by machine and blocks in CI |
+| **Fake gate** | A check that appears to work but in fact verifies nothing |
+| **Atomic task** | A task that can be finished in a single session and has a single piece of acceptance evidence |
+| **Frozen source** | The copy of the initial specification that is never edited |
+| **Live / Mock / Replay** | The three implementations of the hardware protocols: real, fake, and replaying from a log |

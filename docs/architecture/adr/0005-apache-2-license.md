@@ -1,39 +1,39 @@
 # 0005 — Apache License 2.0
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §2.5, §2.6
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §2.5, §2.6
 
-## Bağlam
+## Context
 
-Proje ücretsiz ve açık kaynak olacak. Donanım kontrolü, patent iddiası riski taşıyabilecek bir alan. Ayrıca katkıcılardan gelen kodun da aynı korumayı taşıması gerekiyor.
+The project will be free and open source. Hardware control is a field that can carry patent claim risk. Code arriving from contributors must also carry the same protection.
 
-## Karar
+## Decision
 
 **Apache License 2.0.**
 
-İzinli bağımlılık lisansları: MIT, BSD (2/3-clause), Apache-2.0, ISC.
-**Yasaklı:** GPL, LGPL, AGPL, SSPL, ticari/tescilli.
+Permitted dependency licences: MIT, BSD (2/3-clause), Apache-2.0, ISC.
+**Forbidden:** GPL, LGPL, AGPL, SSPL, commercial/proprietary.
 
-Her bağımlılık ve fikir alınan proje `NOTICE` dosyasına yazılır.
+Every dependency, and every project ideas were drawn from, is recorded in the `NOTICE` file.
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Candidate | Why rejected |
 |---|---|
-| **MIT** | En basit ve yaygın, ama **patent hibesi yok**. Donanım kontrolü alanında bu boşluk hem projeyi hem kullanıcıyı savunmasız bırakır |
-| **GPL-3.0** | Türev işlerin açık kalmasını zorlar ama kurumsal benimsemeyi engeller ve yayılımı sınırlar |
+| **MIT** | The simplest and most widespread, but **no patent grant**. In the field of hardware control that gap leaves both the project and the user exposed |
+| **GPL-3.0** | Forces derivative works to stay open, but blocks corporate adoption and limits spread |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Açık patent hibesi (§3) — projeyi ve kullanıcıyı korur
-- ✅ Katkıcılardan da patent hibesi alınır
-- ✅ Ticari kullanıma açık → daha geniş benimseme
-- ✅ `NOTICE` mekanizması atıf yönetimini standartlaştırır
-- ⚠️ GPL lisanslı hiçbir kod kullanılamaz — bazı mevcut açık kaynak referanslar dışarıda kalır
+- ✅ An explicit patent grant (§3) — protects the project and the user
+- ✅ A patent grant is received from contributors too
+- ✅ Open to commercial use → wider adoption
+- ✅ The `NOTICE` mechanism standardises attribution management
+- ⚠️ No GPL licensed code can be used — some existing open source references stay out of reach
 
-## Zorlama
+## Enforcement
 
-- `make gate-deps` → yasaklı lisans metni veya SPDX tanımlayıcısı bulunursa kırmızı
-- `make gate-deps` → bağımlılık varsa `NOTICE` dosyası zorunlu
-- `LICENSE` dosyası depo kökünde
+- `make gate-deps` → red if a forbidden licence text or SPDX identifier is found
+- `make gate-deps` → the `NOTICE` file is mandatory once there is a dependency
+- The `LICENSE` file sits at the repository root

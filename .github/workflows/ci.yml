@@ -48,9 +48,10 @@ jobs:
       - uses: actions/checkout@v4
 
       # ------------------------------------------------------------------
-      # Runner'ın VARSAYILAN Xcode'u eski olabilir. Paketler swift-tools 6.2
-      # istiyor; 6.1 ile "Could not resolve package dependencies" alınıyor.
-      # En yeni kurulu Xcode seçilir ve sürüm SESSİZCE geçilmez, doğrulanır.
+      # The runner's DEFAULT Xcode can be old. The packages ask for
+      # swift-tools 6.2; 6.1 gives "Could not resolve package dependencies".
+      # The newest installed Xcode is selected and the version is verified,
+      # never passed SILENTLY.
       # ------------------------------------------------------------------
       - name: Select newest Xcode
         run: |
@@ -70,8 +71,9 @@ jobs:
           echo "Swift $SWV OK"
 
       # ------------------------------------------------------------------
-      # Var olmayan bileşenlerin adımları SESSİZCE atlanır, kırmaz.
-      # Fazlar ilerledikçe bu koşullar kendiliğinden doğru olur.
+      # Steps for components that do not exist yet are skipped SILENTLY,
+      # they never break the build. As the phases progress these conditions
+      # become true on their own.
       # ------------------------------------------------------------------
       - name: Are the Swift packages present
         id: pkgs
@@ -124,7 +126,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO build | xcbeautify --quieter
 
       # ------------------------------------------------------------------
-      # Kapsam kapısı P2.10'da bloklayıcı hale gelir. Şimdi rapor eder.
+      # The coverage gate becomes blocking in P2.10. For now it reports.
       # ------------------------------------------------------------------
       - name: Coverage report for Core
         if: steps.pkgs.outputs.ready == 'true'

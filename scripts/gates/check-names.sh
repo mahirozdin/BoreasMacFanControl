@@ -1,97 +1,99 @@
 #!/usr/bin/env bash
 # ============================================================================
-# KAPI: gate-names
-# Zorladığı değişmezler: AGENTS.md §2.1 H1, H4  ·  LEGAL.md Y5, Y6
+# GATE: gate-names
+# Enforces: AGENTS.md §2.1 H1, H4  ·  LEGAL.md Y5, Y6
 # ADR: docs/architecture/adr/0006-independent-development-policy.md
 #
-# NEDEN AD LİSTESİ YOK:
-#   Yasaklı ürün adlarını bu dosyada saklamak, yasağın kendisini ihlal ederdi —
-#   o adlar depoya girmiş olurdu. Bu yüzden kapı, ad gerektirmeyen üç katman
-#   kullanır: karşılaştırmalı pazarlama kalıpları, dış alan adı allowlist'i ve
-#   marka sembolü taraması. Kalan boşluk PR beyanı + insan incelemesiyle
-#   kapatılır. Bkz. LEGAL.md §5.2.
+# WHY THERE IS NO NAME LIST:
+#   Keeping forbidden product names in this file would violate the ban
+#   itself — the names would be in the repository. So the gate uses three
+#   layers that need no names: comparative marketing patterns, an external
+#   domain allowlist and a trademark symbol scan. The remaining space is
+#   covered by the PR declaration plus human review. See LEGAL.md §5.2.
 # ============================================================================
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 . scripts/gates/_lib.sh
 
-echo "▶ gate-names — üçüncü taraf ürün adı / karşılaştırmalı pazarlama"
+echo "▶ gate-names — third party product names / comparative marketing"
 require_tools git grep sed sort xargs
 
 # ---------------------------------------------------------------------------
-# MUAFİYET — iki katman
+# EXEMPTION — two layers
 #
-# Politika dosyaları kuralın KENDİ metnini içerdikleri için kaçınılmaz olarak
-# yanlış pozitif üretir (ör. yasaklı kalıpları listeleyen bir tablo).
+# Policy files inevitably produce false positives because they contain the
+# rule's OWN text (say, a table listing the forbidden patterns).
 #
-#   1) Sabit muafiyet: temel yönetişim dosyaları
-#   2) İşaretleyici muafiyeti: içinde POLICY_MARKER geçen her dosya
+#   1) Fixed exemption: the core governance files
+#   2) Marker exemption: any file carrying POLICY_MARKER
 #
-# İşaretleyici tercih edilir çünkü dosya kendi muafiyetini beyan eder ve bu
-# beyan kod incelemesinde görünür. Sabit liste zamanla bayatlar.
+# The marker is preferred because the file declares its own exemption and
+# that declaration is visible in code review. A fixed list goes stale.
 # ---------------------------------------------------------------------------
 POLICY_MARKER='gate-names:policy-doc'
 EXCLUDE_RE='^(LEGAL\.md|AGENTS\.md|CLAUDE\.md|BLUEPRINT\.md|BOOT\.md|docs/blueprint/|scripts/gates/check-names\.sh|scripts/gates/_lib\.sh)'
 
 ALL_FILES=$(tracked "" "$EXCLUDE_RE")
 
-# İşaretleyici taşıyan dosyaları da çıkar
+# Also drop the files carrying the marker
 MARKED=$(grep_files "$ALL_FILES" -lF -e "$POLICY_MARKER" || true)
 if [ -n "$MARKED" ]; then
   FILES=$(printf '%s\n' "$ALL_FILES" | grep -vxF "$(printf '%s\n' "$MARKED")" || true)
-  note "politika işaretleyicisiyle muaf: $(printf '%s\n' "$MARKED" | grep -c .) dosya"
+  note "exempt via policy marker: $(printf '%s\n' "$MARKED" | grep -c .) file(s)"
 else
   FILES="$ALL_FILES"
 fi
 COUNT=$(printf '%s\n' "$FILES" | grep -c . || true)
-note "taranan dosya: $COUNT"
+note "files scanned: $COUNT"
 
 if [ "$COUNT" -eq 0 ]; then
-  warn "taranacak tracked dosya yok — 'git add' yapılmamış olabilir"
+  warn "no tracked files to scan — 'git add' may not have been run"
 fi
 
-# NOT: tüm metin taramalarında grep -I kullanılır — ikili dosyalar (PNG vb.)
-# atlanır. Aksi halde rastgele bayt dizileri ™/® olarak eşleşiyor.
+# NOTE: every text scan uses grep -I — binary files (PNG and so on) are
+# skipped. Otherwise random byte sequences match ™/®.
 # ---------------------------------------------------------------------------
-# 1. Karşılaştırmalı pazarlama kalıpları (Y6)
+# 1. Comparative marketing patterns (Y6)
 # ---------------------------------------------------------------------------
-# Büyük/küçük harf DUYARSIZ kalıplar: bir ürün adının nasıl yazıldığından
-# bağımsız olarak karşılaştırma yapan ifadeler.
-COMPARATIVE_ANY='(alternative[[:space:]]+to|better[[:space:]]+than|replacement[[:space:]]+for|drop-in[[:space:]]+replacement|competitor|rakip[[:space:]]+(ürün|uygulama|yazılım)|alternatifidir|alternatifi[[:space:]]+olarak|yerine[[:space:]]+kullanılabilir|gibi[[:space:]]+ama)'
+# Case INSENSITIVE patterns: phrases that compare regardless of how a product
+# name is written. (The Turkish-language variants were dropped with ADR 0021:
+# the repository language is English, and any Turkish prose would trip
+# gate-language before these patterns could matter.)
+COMPARATIVE_ANY='(alternative[[:space:]]+to|better[[:space:]]+than|replacement[[:space:]]+for|drop-in[[:space:]]+replacement|competitor)'
 
-# Büyük harf DUYARLI kalıplar: burada büyük harf, bir ÜRÜN ADINI işaret eder.
-# Bu ayrım şart — `grep -i` ile taransaydı [A-Z] şartı anlamsızlaşır ve
-# "instead of returning", "instead of failing" gibi sıradan İngilizce de
-# eşleşirdi. Gerçekten oldu.
+# Case SENSITIVE patterns: here the capital letter is what points at a
+# PRODUCT NAME. The split is essential — scanned with `grep -i` the [A-Z]
+# requirement would be meaningless and ordinary English like "instead of
+# returning", "instead of failing" would match. It actually happened.
 COMPARATIVE_CASED='instead[[:space:]]+of[[:space:]]+[A-Z]'
 
 COMP_FAIL=0
 if HITS=$(grep_files "$FILES" -InEHi "$COMPARATIVE_ANY"); then
-  fail "karşılaştırmalı pazarlama kalıbı bulundu (Y6)"
+  fail "comparative marketing pattern found (Y6)"
   printf '%s\n' "$HITS" | head -10 | sed 's/^/      /'
   COMP_FAIL=1
 fi
 if HITS=$(grep_files "$FILES" -InEH "$COMPARATIVE_CASED"); then
-  fail "büyük harfli ürün adıyla karşılaştırma kalıbı (Y6)"
+  fail "comparison against a capitalised product name (Y6)"
   printf '%s\n' "$HITS" | head -10 | sed 's/^/      /'
   COMP_FAIL=1
 fi
-[ "$COMP_FAIL" -eq 0 ] && ok "karşılaştırmalı pazarlama kalıbı yok"
+[ "$COMP_FAIL" -eq 0 ] && ok "no comparative marketing patterns"
 
 # ---------------------------------------------------------------------------
-# 2. Marka sembolü — üçüncü taraf marka referansının işareti
+# 2. Trademark symbols — the tell of a third party brand reference
 # ---------------------------------------------------------------------------
 if HITS=$(grep_files "$FILES" -InH -e '™' -e '®'); then
-  fail "marka sembolü (™/®) bulundu — üçüncü taraf marka referansı olabilir"
+  fail "trademark symbol (™/®) found — possible third party brand reference"
   printf '%s\n' "$HITS" | head -10 | sed 's/^/      /'
 else
-  ok "marka sembolü yok"
+  ok "no trademark symbols"
 fi
 
 # ---------------------------------------------------------------------------
-# 3. Dış alan adı allowlist'i
-#    Ad listesi tutmadan üçüncü taraf ürün referansını yakalamanın yolu:
-#    izinli olmayan her dış alan adı insan incelemesi ister.
+# 3. External domain allowlist
+#    How to catch third party product references without keeping a name
+#    list: every external domain not on the allowlist asks for human review.
 # ---------------------------------------------------------------------------
 ALLOWED='(apple\.com|developer\.apple\.com|support\.apple\.com|github\.com|githubusercontent\.com|swift\.org|opensource\.org|spdx\.org|keepachangelog\.com|semver\.org|contributor-covenant\.org|brew\.sh|conventionalcommits\.org|www\.apache\.org|apache\.org|www\.apple\.com|www\.contributor-covenant\.org|www\.w3\.org|w3\.org|img\.shields\.io|shields\.io|localhost|127\.0\.0\.1|example\.org|example\.com|bubiapps\.com)'
 
@@ -100,16 +102,16 @@ if [ "$COUNT" -gt 0 ]; then
   UNKNOWN=$(printf '%s\n' "$URLS" | sed -E 's#https?://##' | grep . | sort -u \
             | grep -vE "^${ALLOWED}$" || true)
   if [ -n "$UNKNOWN" ]; then
-    fail "allowlist dışı dış alan adı — insan incelemesi gerekli:"
+    fail "external domain outside the allowlist — human review required:"
     printf '%s\n' "$UNKNOWN" | sed 's/^/      /'
-    note "izinliyse bu script'teki ALLOWED listesine ekle"
+    note "if it is acceptable, add it to the ALLOWED list in this script"
   else
-    ok "tüm dış alan adları allowlist'te"
+    ok "all external domains are on the allowlist"
   fi
 fi
 
 # ---------------------------------------------------------------------------
-# 4. Yerel ad listesi (opsiyonel, .gitignore'da)
+# 4. Local name list (optional, gitignored)
 # ---------------------------------------------------------------------------
 LOCAL_LIST="scripts/gates/.forbidden-names.local"
 if [ -f "$LOCAL_LIST" ]; then
@@ -123,12 +125,12 @@ if [ -f "$LOCAL_LIST" ]; then
     fi
   done < "$LOCAL_LIST"
   if [ "$HITS_FOUND" -eq 1 ]; then
-    fail "yerel yasaklı ad listesinden eşleşme bulundu (Y5)"
+    fail "match from the local forbidden name list (Y5)"
   else
-    ok "yerel ad listesi: eşleşme yok"
+    ok "local name list: no matches"
   fi
 else
-  note "yerel ad listesi yok — opsiyonel, bkz. LEGAL.md §5.2"
+  note "no local name list — optional, see LEGAL.md §5.2"
 fi
 
 gate_result "gate-names"

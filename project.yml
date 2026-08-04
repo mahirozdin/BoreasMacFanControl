@@ -1,10 +1,10 @@
-# Boreas — XcodeGen proje tanımı
+# Boreas — XcodeGen project definition
 #
-# .xcodeproj bu dosyadan ÜRETİLİR ve asla commit edilmez (değişmez T5).
-# Üretmek için: make generate
+# The .xcodeproj is GENERATED from this file and never committed (invariant T5).
+# To generate: make generate
 #
-# ÜRÜN ADI TEK YERDE: aşağıdaki PRODUCT_NAME / BUNDLE_PREFIX değişkenleri.
-# Yeniden adlandırma: scripts/rename-product.sh (değişmez K2)
+# THE PRODUCT NAME LIVES IN ONE PLACE: the PRODUCT_NAME / BUNDLE_PREFIX
+# variables below. Renaming: scripts/rename-product.sh (invariant K2)
 
 name: Boreas
 
@@ -23,7 +23,7 @@ settings:
   base:
     PRODUCT_NAME: Boreas
     BUNDLE_PREFIX: com.bubiapps.boreas
-    ARCHS: arm64                    # ADR 0004 — yalnızca Apple Silicon
+    ARCHS: arm64                    # ADR 0004 — Apple Silicon only
     ONLY_ACTIVE_ARCH: NO
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
@@ -53,7 +53,7 @@ targets:
       - path: App/Sources
       - path: App/Resources
         optional: true
-      # launchd tanımı ikilinin yanında durmak zorunda.
+      # The launchd definition has to sit beside the binary.
       - path: Daemon/com.bubiapps.boreas.fanhelper.plist
         buildPhase:
           copyFiles:
@@ -67,8 +67,8 @@ targets:
         embed: true
         codeSign: true
         copy:
-          # SMAppService, hem launchd plist'ini hem ikiliyi uygulama
-          # paketinin İÇİNDE bu yolda arar.
+          # SMAppService looks for both the launchd plist and the binary
+          # at this path INSIDE the application bundle.
           destination: wrapper
           subpath: Contents/Library/LaunchDaemons
     info:
@@ -79,16 +79,16 @@ targets:
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
         LSMinimumSystemVersion: "14.0"
-        # Menü çubuğu uygulaması: Dock simgesi yok (blueprint §9.2)
+        # Menu bar application: no Dock icon (blueprint §9.2)
         LSUIElement: true
         NSHumanReadableCopyright: "Licensed under the Apache License 2.0"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas
         CODE_SIGN_STYLE: Manual
-        # DEVELOPMENT_TEAM ve CODE_SIGN_IDENTITY Local.xcconfig'ten gelir.
-        # Dosya yoksa imzasız derlenir — paketler ve CLI için yeterli,
-        # ayrıcalıklı yardımcı için değil (ADR 0019).
+        # DEVELOPMENT_TEAM and CODE_SIGN_IDENTITY come from Local.xcconfig.
+        # Without the file the build is unsigned — enough for the packages
+        # and the CLI, not for the privileged helper (ADR 0019).
 
   # ------------------------------------------------------------------ cli
   boreas:
@@ -128,8 +128,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas.fanhelper
         CODE_SIGN_STYLE: Manual
         SKIP_INSTALL: YES
-        # Bir komut satırı aracının imza kimliği bunu izler. Ayarlanmazsa
-        # uygulamanınkini miras alıyor ve XPC gereksinimi eşleşmiyor.
+        # The signing identifier of a command line tool follows this. Left
+        # unset it inherits the app's and the XPC requirement stops matching.
         PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas.fanhelper
         CREATE_INFOPLIST_SECTION_IN_BINARY: YES
 
@@ -142,8 +142,8 @@ schemes:
     test:
       config: Debug
 
-  # CLI'nin kendi şeması olmak zorunda: xcodebuild -target ile SPM paket
-  # grafiği çözülmüyor, -scheme ile çözülüyor.
+  # The CLI needs its own scheme: xcodebuild -target does not resolve the
+  # SPM package graph, -scheme does.
   boreas:
     build:
       targets: { boreas: all }

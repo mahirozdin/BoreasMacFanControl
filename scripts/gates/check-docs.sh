@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # ============================================================================
-# KAPI: docs-check
-# Zorladığı kural: AGENTS.md §7 doküman güncelleme protokolü
-# Denetimler:
-#   1. Kırık göreli markdown linkleri
-#   2. İzlenebilirlik matrisindeki her hedefin gerçekten var olması
-#   3. ADR dosyaları  ==  ADR indeksi  ==  ARCHITECTURE.md tablosu
-#   4. Dokümandaki make komutları == Makefile hedefleri
+# GATE: docs-check
+# Enforces: AGENTS.md §7 documentation update protocol
+# Checks:
+#   1. Broken relative markdown links
+#   2. Every target in the traceability matrix actually exists
+#   3. ADR files  ==  ADR index  ==  ARCHITECTURE.md table
+#   4. make commands in documentation == Makefile targets
 # ============================================================================
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
@@ -15,16 +15,16 @@ FAIL=0
 ok()   { printf '  ✓ %s\n' "$*"; }
 fail() { printf '  ✗ %s\n' "$*"; FAIL=1; }
 
-echo "▶ docs-check — doküman bütünlüğü"
+echo "▶ docs-check — documentation integrity"
 
 # ---------------------------------------------------------------------------
-# 1. Kırık göreli linkler
+# 1. Broken relative links
 # ---------------------------------------------------------------------------
 BROKEN=""
 while IFS= read -r md; do
   [ -f "$md" ] || continue
   dir=$(dirname "$md")
-  # [metin](hedef) → hedef; http(s), mailto ve #anchor hariç
+  # [text](target) → target; http(s), mailto and #anchor excluded
   while IFS= read -r target; do
     [ -z "$target" ] && continue
     case "$target" in http*|mailto:*|\#*) continue ;; esac
@@ -37,14 +37,14 @@ while IFS= read -r md; do
 done < <(git ls-files '*.md' 2>/dev/null)
 
 if [ -n "$BROKEN" ]; then
-  fail "kırık göreli link:"
+  fail "broken relative link:"
   printf '%s' "$BROKEN"
 else
-  ok "kırık göreli link yok"
+  ok "no broken relative links"
 fi
 
 # ---------------------------------------------------------------------------
-# 2. İzlenebilirlik matrisi hedefleri
+# 2. Traceability matrix targets
 # ---------------------------------------------------------------------------
 MAP="docs/reference/blueprint-map.md"
 if [ -f "$MAP" ]; then
@@ -53,24 +53,24 @@ if [ -f "$MAP" ]; then
     [ -e "$t" ] || MISSING+="    $t"$'\n'
   done < <(grep -oE '`(docs/[^`]+\.md|[A-Z_]+\.md)`' "$MAP" 2>/dev/null | tr -d '`' | sort -u)
   if [ -n "$MISSING" ]; then
-    fail "izlenebilirlik matrisinde var olmayan hedef:"
+    fail "nonexistent target in the traceability matrix:"
     printf '%s' "$MISSING"
   else
-    ok "izlenebilirlik matrisi hedefleri mevcut"
+    ok "traceability matrix targets exist"
   fi
 
-  # Kayıp bölüm kontrolü
-  if grep -qiE '^\|.*\|[[:space:]]*(—|-|yok|KAYIP)[[:space:]]*\|' "$MAP"; then
-    fail "izlenebilirlik matrisinde eşlenmemiş bölüm var (kayıp = 0 olmalı)"
+  # Missing section check
+  if grep -qiE '^\|.*\|[[:space:]]*(—|-|none|MISSING)[[:space:]]*\|' "$MAP"; then
+    fail "unmapped section in the traceability matrix (missing must be 0)"
   else
-    ok "eşlenmemiş blueprint bölümü yok"
+    ok "no unmapped blueprint section"
   fi
 else
-  fail "$MAP bulunamadı"
+  fail "$MAP not found"
 fi
 
 # ---------------------------------------------------------------------------
-# 3. ADR üçlü senkronu
+# 3. ADR three-way sync
 # ---------------------------------------------------------------------------
 ADR_DIR="docs/architecture/adr"
 if [ -d "$ADR_DIR" ]; then
@@ -81,36 +81,36 @@ if [ -d "$ADR_DIR" ]; then
         | grep -oE '[0-9]{4}' | sort -u)
 
   if [ "$FILES" = "$IDX" ]; then
-    ok "ADR dosyaları == ADR indeksi ($(echo "$FILES" | grep -c . ) adet)"
+    ok "ADR files == ADR index ($(echo "$FILES" | grep -c . ) entries)"
   else
-    fail "ADR dosyaları ile indeks uyuşmuyor"
-    printf '      dosyalar: %s\n' "$(echo $FILES)"
-    printf '      indeks:   %s\n' "$(echo $IDX)"
+    fail "ADR files and the index disagree"
+    printf '      files: %s\n' "$(echo $FILES)"
+    printf '      index: %s\n' "$(echo $IDX)"
   fi
 
   if [ "$FILES" = "$ARCH" ]; then
-    ok "ADR dosyaları == ARCHITECTURE.md tablosu"
+    ok "ADR files == ARCHITECTURE.md table"
   else
-    fail "ADR dosyaları ile ARCHITECTURE.md tablosu uyuşmuyor"
-    printf '      dosyalar:        %s\n' "$(echo $FILES)"
+    fail "ADR files and the ARCHITECTURE.md table disagree"
+    printf '      files:           %s\n' "$(echo $FILES)"
     printf '      ARCHITECTURE.md: %s\n' "$(echo $ARCH)"
   fi
 else
-  fail "$ADR_DIR bulunamadı"
+  fail "$ADR_DIR not found"
 fi
 
 # ---------------------------------------------------------------------------
-# 4. Dokümandaki make komutları Makefile'da var mı
+# 4. Do the make commands in documentation exist in the Makefile?
 # ---------------------------------------------------------------------------
-# Dondurulmuş blueprint bu denetimin dışındadır: planlanan (henüz yazılmamış)
-# hedefleri tarif eder, mevcut durumu değil.
+# The frozen blueprint is outside this check: it describes planned (not yet
+# written) targets, not current state.
 #
-# BAĞLAM ŞARTI: yalnızca KOD bağlamındaki "make x" sayılır —
-#   `make x`   (ters tırnak içinde)  veya
-#   ^make x    (satır başı, kod bloğu içinde)
-# Düz İngilizce metinde "make" bir fiildir ("make participation", "make a
-# report") ve bağlamsız bir regex bunları hedef sanıp kapıyı sahte biçimde
-# kırar. Bu gerçekten yaşandı.
+# CONTEXT REQUIREMENT: only "make x" in CODE context counts —
+#   `make x`   (inside backticks)  or
+#   ^make x    (start of line, inside a code block)
+# In plain English prose "make" is a verb ("make participation", "make a
+# report") and a context-free regex mistakes those for targets and breaks the
+# gate falsely. That actually happened.
 if [ -f Makefile ]; then
   MISSING=""
   while IFS= read -r tgt; do
@@ -122,10 +122,10 @@ if [ -f Makefile ]; then
            | xargs -0 grep -ohE '`make [a-z][a-z0-9-]*`|^make [a-z][a-z0-9-]*' 2>/dev/null \
            | tr -d '`' | awk '{print $2}' | sort -u)
   if [ -n "$MISSING" ]; then
-    fail "dokümanda geçen ama Makefile'da olmayan hedef:"
+    fail "target mentioned in documentation but absent from the Makefile:"
     printf '%s' "$MISSING"
   else
-    ok "dokümandaki make hedefleri Makefile ile tutarlı"
+    ok "make targets in documentation match the Makefile"
   fi
 fi
 

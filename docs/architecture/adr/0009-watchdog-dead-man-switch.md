@@ -1,45 +1,45 @@
-# 0009 — Ölü adam anahtarı (watchdog)
+# 0009 — Dead man's switch (watchdog)
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §6.4, §7.6
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §6.4, §7.6
 
-## Bağlam
+## Context
 
-Fan kontrolünü devralan bir yazılım, kendi başarısızlığında donanımı savunmasız bırakmamalı. Uygulama çökebilir, `kill -9` ile öldürülebilir, donabilir, kullanıcı oturumu kapanabilir. Bu senaryoların **hepsinde** fanlar firmware kontrolüne dönmeli.
+Software that takes over fan control must not leave the hardware defenceless when it itself fails. The application can crash, be killed with `kill -9`, freeze, or the user session can end. In **all** of these scenarios the fans must return to firmware control.
 
-Kritik gözlem: kontrolü elinde tutan taraf (daemon), kendi sağlığını değil **karşı tarafın** sağlığını denetlemeli. Uygulamanın "ben ölüyorum" mesajı gönderebileceğini varsaymak, tam da çöktüğü senaryoda işe yaramaz.
+The critical observation: the side holding control (the helper) must monitor the health of **the other side**, not its own. Assuming the application can send an "I am dying" message fails in exactly the scenario where it has crashed.
 
-## Karar
+## Decision
 
-- Uygulama daemon'a düzenli **kalp atışı** gönderir (varsayılan 5 sn)
-- Daemon ardışık **3 kalp atışını** kaçırırsa (≈15 sn) fanları koşulsuz firmware'e iade eder
-- Daemon ayrıca şunlarda **anında** devreder: sistem uykusu, sistem kapanışı, daemon durdurulması
-- Zaman aşımı **10–60 sn aralığında kilitlidir**, devre dışı bırakılamaz
+- The application sends the helper a regular **heartbeat** (default 5 s)
+- If the helper misses **3 heartbeats** in a row (≈15 s), it hands the fans back to firmware unconditionally
+- The helper also hands back **immediately** on: system sleep, system shutdown, the helper being stopped
+- The timeout is **locked to the 10–60 s range** and cannot be disabled
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Candidate | Why rejected |
 |---|---|
-| Uygulamanın çıkışta temizlik yapması | `kill -9`, çökme ve donma senaryolarını kapsamaz |
-| `atexit` / sinyal işleyici | `SIGKILL` yakalanamaz |
-| Watchdog'u kullanıcıya kapatılabilir yapmak | Güvenlik özelliği isteğe bağlı olamaz |
+| The application cleaning up on exit | Does not cover the `kill -9`, crash and freeze scenarios |
+| `atexit` / signal handlers | `SIGKILL` cannot be caught |
+| Letting the user switch the watchdog off | A safety feature cannot be optional |
 
-## Sonuçlar
+## Consequences
 
-- ✅ Tüm başarısızlık modları tek mekanizmayla kapanır
-- ✅ Kullanıcı yanlış yapılandırmayla donanımı riske atamaz
-- ⚠️ En kötü durumda ~15 sn boyunca fanlar son ayarda kalır — kabul edilen pencere
-- ⚠️ Kalp atışı trafiği sürekli; maliyeti ölçülmeli (hedef: ihmal edilebilir)
+- ✅ All failure modes are closed by a single mechanism
+- ✅ The user cannot put the hardware at risk through misconfiguration
+- ⚠️ In the worst case the fans stay at their last setting for ~15 s — the accepted window
+- ⚠️ Heartbeat traffic is continuous; its cost must be measured (target: negligible)
 
-## Zorlama
+## Enforcement
 
-Invariant testleri (silinemez):
+Invariant tests (may never be deleted):
 
 ```
-test("watchdog zaman aşımı 10-60 sn dışına ayarlanamaz")
-test("kalp atışı kesildiğinde daemon firmware'e devreder")
-test("releaseToFirmware idempotenttir")
+test("the watchdog timeout cannot be set outside 10-60 s")
+test("the helper hands back to firmware when the heartbeat stops")
+test("releaseToFirmware is idempotent")
 ```
 
-Donanım duman testi: `kill -9` sonrası fanların ≤ watchdog süresi içinde firmware'e döndüğü ölçülür (`scripts/smoke-test-hardware.sh`).
+Hardware smoke test: after `kill -9`, the fans are measured to return to firmware within ≤ the watchdog timeout (`scripts/smoke-test-hardware.sh`).

@@ -1,52 +1,52 @@
-# Ürün Tanımı
+# Product Definition
 
-> Son güncelleme: 2026-07-31 — P0.14
-> Kaynak: blueprint §1
+> Last updated: 2026-07-31 — P0.14
+> Source: blueprint §1
 
-## Tek cümlede
+## In one sentence
 
-Boreas; Apple Silicon Mac'lerde dahili sıcaklık sensörlerini gerçek zamanlı izleyen, fan hızlarını kullanıcı tanımlı sürekli eğrilerle yöneten, sistem güvenliğinden ödün vermeden çalışan, ücretsiz ve açık kaynak bir menü çubuğu uygulamasıdır.
+Boreas is a free, open source menu bar application that monitors the internal temperature sensors of Apple Silicon Macs in real time, drives fan speeds with user defined continuous curves, and does so without compromising system safety.
 
 ## Problem
 
-Apple Silicon Mac'lerde soğutma tamamen firmware kontrolündedir ve kullanıcıya hiçbir ayar sunulmaz. Bu iki yönde de sorun yaratır:
+On Apple Silicon Macs, cooling is entirely under firmware control and the user is offered no adjustment. This creates problems in both directions:
 
-1. **Çok sessiz olduğu durumlar** — uzun derleme, video encode, sanallaştırma gibi yüklerde firmware fanları geç ve muhafazakâr açar; çip termal olarak kısılır, performans düşer.
-2. **Çok gürültülü olduğu durumlar** — sessizlik gerektiren senaryolarda (ses kaydı, gece çalışma) fanlar gereksiz yüksek döner.
+1. **When it is too quiet** — under loads like long builds, video encoding or virtualisation, the firmware spins the fans up late and conservatively; the chip is thermally throttled and performance drops.
+2. **When it is too loud** — in scenarios that demand silence (audio recording, working at night), the fans spin needlessly high.
 
-İkisinin de ortak sebebi aynı: **karar mekanizması kullanıcıya kapalı.**
+Both share the same root cause: **the decision mechanism is closed to the user.**
 
-## Hedef kitle
+## Target audience
 
-| Segment | İhtiyaç |
+| Segment | Need |
 |---|---|
-| Yazılım geliştiriciler | Uzun derleme/test koşularında throttling'i azaltmak |
-| Video/görsel üretim | Export sırasında sürdürülebilir performans |
-| Ses üretimi | Kayıt sırasında mutlak sessizlik |
-| Sunucu/homelab | Headless Mac'lerde izleme, alarm, metrik |
-| Meraklı kullanıcı | Makinesinin içinde ne olup bittiğini görmek |
+| Software developers | Reduce throttling during long build/test runs |
+| Video/visual production | Sustained performance during export |
+| Audio production | Absolute silence while recording |
+| Server/homelab | Monitoring, alerts and metrics on headless Macs |
+| Curious users | See what is going on inside their machine |
 
-## Ürün ilkeleri
+## Product principles
 
-Tartışmaya kapalı. Her tasarım kararı bunlara karşı sınanır.
+Not open to debate. Every design decision is tested against these.
 
-1. **Güvenlik her zaman kullanıcı tercihini yener.** Yazılım çökerse, donarsa veya öldürülürse fanlar firmware kontrolüne döner. → [ADR 0009](../architecture/adr/0009-watchdog-dead-man-switch.md)
-2. **Hassas izin istenmez.** SIP kapatma, kernel extension, Recovery Mode, Tam Disk Erişimi, Erişilebilirlik izni yok. → [ADR 0007](../architecture/adr/0007-privilege-split.md)
-3. **Geri alınabilir.** Uygulamayı silmek sistemi kurulumdan önceki haline döndürür.
-4. **Telemetri yok.** → [ADR 0014](../architecture/adr/0014-zero-telemetry.md)
-5. **Yapılandırma kullanıcıya aittir.** Okunabilir, sürüm kontrolüne alınabilir, elle düzenlenebilir. → [ADR 0013](../architecture/adr/0013-json-config-zero-deps.md)
-6. **Ücretsiz ve açık.** Lisans anahtarı, aktivasyon sunucusu, "pro" katmanı yoktur ve olmayacaktır.
-7. **Ölçülebilir.** Uygulamanın kendi maliyeti ölçülür ve bütçenin altında tutulur.
+1. **Safety always beats user preference.** If the software crashes, hangs or is killed, the fans return to firmware control. → [ADR 0009](../architecture/adr/0009-watchdog-dead-man-switch.md)
+2. **No sensitive permission is requested.** No SIP disabling, kernel extension, Recovery Mode, Full Disk Access or Accessibility permission. → [ADR 0007](../architecture/adr/0007-privilege-split.md)
+3. **Reversible.** Deleting the application returns the system to its pre-install state.
+4. **No telemetry.** → [ADR 0014](../architecture/adr/0014-zero-telemetry.md)
+5. **The configuration belongs to the user.** Readable, version controllable, hand editable. → [ADR 0013](../architecture/adr/0013-json-config-zero-deps.md)
+6. **Free and open.** There is no licence key, activation server or "pro" tier, and there never will be.
+7. **Measurable.** The application's own cost is measured and kept under budget.
 
-## Başarı kriterleri
+## Success criteria
 
-| Metrik | Hedef |
+| Metric | Target |
 |---|---|
-| Boştaki CPU kullanımı | Ortalama < %0,3 |
-| Uygulama bellek ayak izi | < 60 MB |
-| Daemon bellek ayak izi | < 8 MB |
-| Soğuk açılıştan menü çubuğuna | < 400 ms |
-| Kurulumdan ilk fan kontrolüne | Tek yönetici şifresi, < 30 sn |
-| Zorla sonlandırma sonrası devir teslim | ≤ 10 sn |
+| Idle CPU usage | Average < 0.3% |
+| Application memory footprint | < 60 MB |
+| Daemon memory footprint | < 8 MB |
+| Cold launch to menu bar | < 400 ms |
+| From install to first fan control | One administrator password, < 30 s |
+| Hand back after force kill | ≤ 10 s |
 
-Ölçüm yöntemleri ve kapılar: `ARCHITECTURE.md` §3.
+Measurement methods and gates: `ARCHITECTURE.md` §3.

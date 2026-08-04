@@ -1,51 +1,51 @@
-# README Spesifikasyonu
+# README Specification
 
-<!-- gate-names:policy-doc — Bu dosya yasaklı kalıpları TARİF ettiği için gate-names taramasından muaftır. Bkz. LEGAL.md §5.1 -->
+<!-- gate-names:policy-doc — This file DESCRIBES forbidden patterns and is therefore exempt from the gate-names scan. See LEGAL.md §5.1 -->
 
-> Son güncelleme: 2026-07-31 — P0.30
-> Kaynak: blueprint §18
+> Last updated: 2026-07-31 — P0.30
+> Source: blueprint §18
 
-Ürün `README.md` **İngilizce** yazılır (yetkili sürüm) ve 4 dile çevrilir → [ADR 0016](../architecture/adr/0016-language-scope.md)
+The product `README.md` is written in **English** (the authoritative version) and translated into 4 languages → [ADR 0016](../architecture/adr/0016-language-scope.md)
 
-## Zorunlu bölümler — bu sırayla
+## Required sections — in this order
 
-| # | Bölüm | İçerik |
+| # | Section | Content |
 |---|---|---|
-| 1 | Başlık + tek cümlelik tanım | Ürün adı, logo, ne yaptığı |
-| 2 | Rozetler | Derleme durumu, sürüm, lisans, desteklenen macOS, mimari |
-| 3 | Ekran görüntüsü / kısa GIF | Menü çubuğu paneli + eğri editörü; karanlık ve aydınlık |
-| 4 | Neden bu proje var | Problem tanımı. **Hiçbir üçüncü taraf ürün adı geçmez** |
-| 5 | Öne çıkan özellikler | 6–10 madde, tek satır, faydaya odaklı |
-| 6 | **Gereksinimler ve test edilen donanım** | Apple Silicon (M1+), macOS 14.0+. **Hangi modelde fiilen test edildiği açıkça yazılır** (R8) |
-| 7 | Kurulum | Homebrew (birincil) + DMG. İlk açılış ve Gatekeeper adımları |
-| 8 | Hızlı başlangıç | 3 adım: aç → profil seç → (isteğe bağlı) fan kontrolünü etkinleştir |
-| 9 | **İzinler ve neden gerekli** | İstenen izinler + **istenmeyenler listesi**. Kullanıcı güveninin kazanıldığı bölüm — üstte tutulmalı |
-| 10 | Nasıl çalışır | 6–8 cümle + katman diyagramı |
-| 11 | Güvenlik | Ölü adam anahtarı, güvenlik zinciri, dar daemon yüzeyi |
-| 12 | Gizlilik | Sıfır telemetri taahhüdü, açık ve net |
-| 13 | Yapılandırma | Dosya konumu, örnek parça, şema bağlantısı |
-| 14 | CLI kullanımı | Komut listesi ve örnekler |
-| 15 | Sorun giderme | En sık 8–10 sorun; ayrıntı `docs/` |
-| 16 | Kaldırma | Tam adımlar + geriye hiçbir şey bırakmadığının garantisi |
-| 17 | Yol haritası | Kısa |
-| 18 | Katkı | `CONTRIBUTING.md` + **bilinmeyen sensör raporu çağrısı** |
-| 19 | SSS | → `discoverability.md` |
-| 20 | Sorumluluk reddi | `LEGAL.md` §8 |
-| 21 | Lisans | Apache-2.0 + `NOTICE` |
+| 1 | Title + one-sentence definition | Product name, logo, what it does |
+| 2 | Badges | Build status, version, licence, supported macOS, architecture |
+| 3 | Screenshot / short GIF | Menu bar panel + curve editor; dark and light |
+| 4 | Why this project exists | The problem statement. **No third party product name appears** |
+| 5 | Feature highlights | 6–10 items, one line each, benefit-focused |
+| 6 | **Requirements and tested hardware** | Apple Silicon (M1+), macOS 14.0+. **States explicitly which model it was actually tested on** (R8) |
+| 7 | Installation | Homebrew (primary) + DMG. First launch and Gatekeeper steps |
+| 8 | Quick start | 3 steps: open → pick a profile → (optionally) enable fan control |
+| 9 | **Permissions and why they are needed** | The permissions requested + **the list of those not requested**. The section where user trust is earned — keep it near the top |
+| 10 | How it works | 6–8 sentences + a layer diagram |
+| 11 | Safety | Dead man's switch, safety chain, narrow daemon surface |
+| 12 | Privacy | The zero telemetry commitment, plain and clear |
+| 13 | Configuration | File location, a sample fragment, a link to the schema |
+| 14 | CLI usage | Command list and examples |
+| 15 | Troubleshooting | The 8–10 most common problems; detail in `docs/` |
+| 16 | Uninstall | Complete steps + the guarantee that nothing is left behind |
+| 17 | Roadmap | Short |
+| 18 | Contributing | `CONTRIBUTING.md` + **a call for unknown sensor reports** |
+| 19 | FAQ | → `discoverability.md` |
+| 20 | Disclaimer | `LEGAL.md` §8 |
+| 21 | Licence | Apache-2.0 + `NOTICE` |
 
-## Olmaması gerekenler
+## What must not appear
 
-| Olmayacak | Neden |
+| Must not appear | Why |
 |---|---|
-| Herhangi bir üçüncü taraf ürün adı | `LEGAL.md` Y5 |
-| "X alternatifi" / "X gibi ama ücretsiz" | Y6 — karşılaştırmalı pazarlama riski |
-| Karşılaştırma tablosu (biz vs onlar) | Aynı gerekçe |
-| Abartılı performans iddiası ("%40 daha serin") | Kanıtlanamaz; ölçüm metodolojisi olmadan yazılmaz |
-| Bağış/sponsorluk baskısı | İlk sürümde odağı dağıtır |
-| Uzun kişisel hikâye | README teknik bir belgedir |
+| Any third party product name | `LEGAL.md` Y5 |
+| "An alternative to X" / "like X but free" | Y6 — comparative marketing risk |
+| A comparison table (us vs. them) | Same reasoning |
+| Exaggerated performance claims ("40% cooler") | Unprovable; not written without a measurement methodology |
+| Donation/sponsorship pressure | Distracts from focus in the first release |
+| A long personal story | The README is a technical document |
 
-## Ton
+## Tone
 
-Sade, dürüst, abartısız. **Neyi yapamadığını da söyler** (ör. donanım fanları kapattığında kontrol mümkün değildir).
+Plain, honest, unexaggerated. **It also says what it cannot do** (e.g. when the hardware turns the fans off, control is not possible).
 
-> Dürüstlük, bu kategoride en güçlü pazarlamadır.
+> Honesty is the strongest marketing in this category.

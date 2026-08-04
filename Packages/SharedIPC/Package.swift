@@ -1,8 +1,9 @@
 // swift-tools-version: 6.2
 import PackageDescription
 
-// SharedIPC — XPC sözleşmesi. Uygulama ve daemon'un ortak dili.
-// Yüzey dört metotla sınırlıdır; genişletmek ADR gerektirir (değişmez M4).
+// SharedIPC — the XPC contract. The shared language of app and daemon.
+// The surface is limited to four methods; widening it requires an ADR
+// (invariant M4).
 let package = Package(
     name: "SharedIPC",
     platforms: [.macOS(.v14)],

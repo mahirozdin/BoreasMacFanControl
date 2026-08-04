@@ -1,15 +1,15 @@
-# Boreas — geliştirme araçları
+# Boreas — development tools
 #
-# Kurulum:  brew bundle
-# Doğrulama: make bootstrap   (araçların ÇALIŞTIĞINI da kontrol eder)
+# Install:  brew bundle
+# Verify:   make bootstrap   (also checks that the tools actually WORK)
 #
-# NOT: swift-format burada YOK. Swift 6.2 araç zincirine yerleşik olarak
-# geliyor ve `swift format` alt komutuyla çağrılıyor. Ayrı paket kurmak
-# iki farklı sürümün çakışmasına yol açardı.
+# NOTE: swift-format is NOT here. It ships built into the Swift 6.2
+# toolchain and is invoked as the `swift format` subcommand. Installing a
+# separate package would let two different versions collide.
 #
-# Bunların hiçbiri ÇALIŞMA ZAMANI bağımlılığı değildir — uygulamaya
-# linklenmezler, dağıtılan ürüne girmezler. Bkz. ADR 0013 ve NOTICE.
+# None of these is a RUNTIME dependency — they are not linked into the
+# application and never enter the shipped product. See ADR 0013 and NOTICE.
 
-brew "xcodegen"    # project.yml -> .xcodeproj  (ADR 0001, değişmez T5)
-brew "swiftlint"   # kural denetimi
-brew "xcbeautify"  # xcodebuild çıktısını okunabilir kılar
+brew "xcodegen"    # project.yml -> .xcodeproj  (ADR 0001, invariant T5)
+brew "swiftlint"   # rule enforcement
+brew "xcbeautify"  # makes xcodebuild output readable

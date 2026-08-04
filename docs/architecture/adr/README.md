@@ -1,50 +1,50 @@
-# Mimari Karar Kayıtları (ADR)
+# Architecture Decision Records (ADR)
 
-> Son güncelleme: 2026-07-31 — P0.08
-> Kaynak: blueprint §3, §5, §6, §7, §23
+> Last updated: 2026-07-31 — P0.08
+> Source: blueprint §3, §5, §6, §7, §23
 
-Format: Michael Nygard — `Bağlam` / `Karar` / `Alternatifler` / `Sonuçlar` / **`Zorlama`**.
+Format: Michael Nygard — `Context` / `Decision` / `Alternatives` / `Consequences` / **`Enforcement`**.
 
-**`Zorlama` bölümü zorunludur.** Bir karar kodda veya CI'da zorlanamıyorsa, o karar bir dilektir.
+**The `Enforcement` section is mandatory.** If a decision cannot be enforced in code or in CI, that decision is a wish.
 
-## İndeks
+## Index
 
-| # | Karar | Durum | Alan |
+| # | Decision | Status | Area |
 |---|---|---|---|
-| [0001](0001-native-swift.md) | Native Swift + SwiftUI | Kabul | Teknoloji |
-| [0002](0002-product-name.md) | Ürün adı: Boreas | Kabul | Kimlik |
-| [0003](0003-minimum-macos-14.md) | Minimum macOS 14.0 Sonoma | Kabul | Teknoloji |
-| [0004](0004-apple-silicon-only.md) | Yalnızca Apple Silicon (arm64) | Kabul | Kapsam |
-| [0005](0005-apache-2-license.md) | Apache License 2.0 | Kabul | Hukuk |
-| [0006](0006-independent-development-policy.md) | **Bağımsız geliştirme politikası** | Kabul | Hukuk |
-| [0007](0007-privilege-split.md) | Ayrıcalıksız okuma / ayrıcalıklı yazma | Kabul | Mimari |
-| [0008](0008-smappservice-xpc.md) | SMAppService + imza doğrulamalı XPC | Kabul | Güvenlik |
-| [0009](0009-watchdog-dead-man-switch.md) | Ölü adam anahtarı (watchdog) | Kabul | Güvenlik |
-| [0010](0010-continuous-curve-model.md) | Sürekli eğri kontrol modeli | Kabul | Ürün |
-| [0011](0011-hardware-abstraction.md) | Donanım soyutlaması: Live/Mock/Replay | Kabul | Mimari |
-| [0012](0012-core-layer-purity.md) | `Core` katman saflığı | Kabul | Mimari |
-| [0013](0013-json-config-zero-deps.md) | JSON yapılandırma + sıfır bağımlılık | Kabul | Mimari |
-| [0014](0014-zero-telemetry.md) | Sıfır telemetri | Kabul | Gizlilik |
-| [0015](0015-automation-hooks-not-email.md) | E-posta yerine otomasyon kancaları | Kabul | Kapsam |
-| [0016](0016-language-scope.md) | 5 dil arayüz / İngilizce dokümantasyon | Kabul | Ürün |
-| [0017](0017-distribution-channels.md) | Dağıtım kanalları; App Store dışlandı | Kabul | Yayın |
-| [0018](0018-undocumented-sensor-api.md) | Dokümante edilmemiş sensör API'si kabulü | Kabul | Risk |
-| [0019](0019-signing-identity-deferred.md) | İmzalama kimliği P8'e ertelendi | Kabul | Yayın |
-| [0020](0020-compute-die-sensor-group.md) | Küme atfedilemeyen çekirdek sensörleri için `compute` grubu | Kabul | Donanım |
+| [0001](0001-native-swift.md) | Native Swift + SwiftUI | Accepted | Technology |
+| [0002](0002-product-name.md) | Product name: Boreas | Accepted | Identity |
+| [0003](0003-minimum-macos-14.md) | Minimum macOS 14.0 Sonoma | Accepted | Technology |
+| [0004](0004-apple-silicon-only.md) | Apple Silicon only (arm64) | Accepted | Scope |
+| [0005](0005-apache-2-license.md) | Apache License 2.0 | Accepted | Legal |
+| [0006](0006-independent-development-policy.md) | **Independent development policy** | Accepted | Legal |
+| [0007](0007-privilege-split.md) | Unprivileged reading / privileged writing | Accepted | Architecture |
+| [0008](0008-smappservice-xpc.md) | SMAppService + signature verified XPC | Accepted | Security |
+| [0009](0009-watchdog-dead-man-switch.md) | Dead man's switch (watchdog) | Accepted | Security |
+| [0010](0010-continuous-curve-model.md) | Continuous curve control model | Accepted | Product |
+| [0011](0011-hardware-abstraction.md) | Hardware abstraction: Live/Mock/Replay | Accepted | Architecture |
+| [0012](0012-core-layer-purity.md) | `Core` layer purity | Accepted | Architecture |
+| [0013](0013-json-config-zero-deps.md) | JSON configuration + zero dependencies | Accepted | Architecture |
+| [0014](0014-zero-telemetry.md) | Zero telemetry | Accepted | Privacy |
+| [0015](0015-automation-hooks-not-email.md) | Automation hooks instead of email | Accepted | Scope |
+| [0016](0016-language-scope.md) | 5 language interface / English documentation | Accepted | Product |
+| [0017](0017-distribution-channels.md) | Distribution channels; App Store excluded | Accepted | Release |
+| [0018](0018-undocumented-sensor-api.md) | Accepting the undocumented sensor API | Accepted | Risk |
+| [0019](0019-signing-identity-deferred.md) | Signing identity deferred to P8 | Accepted | Release |
+| [0020](0020-compute-die-sensor-group.md) | A `compute` group for core sensors that cannot be attributed to a cluster | Accepted | Hardware |
 | [0021](0021-english-only-repository.md) | The repository is written in English | Accepted | Governance |
 
-## Yeni ADR yazarken
+## Writing a new ADR
 
-1. Sıradaki numarayı al, `NNNN-kisa-slug.md` olarak oluştur
-2. Beş bölümü de doldur — **`Zorlama` boş bırakılamaz**
-3. Bu indekse satır ekle
-4. `ARCHITECTURE.md` §11 tablosuna satır ekle
-5. `make docs-check` çalıştır — üçlü senkron denetlenir
+1. Take the next number and create the file as `NNNN-short-slug.md`
+2. Fill in all five sections — **`Enforcement` cannot be left empty**
+3. Add a row to this index
+4. Add a row to the `ARCHITECTURE.md` §11 table
+5. Run `make docs-check` — the three way sync is checked
 
-## Ne zaman ADR yazılır
+## When to write an ADR
 
-- Blueprint'ten sapma (**zorunlu**)
-- Yeni teknoloji/çatı seçimi
-- Yeni değişmez veya "asla/daima" kuralı
-- Ayrıcalıklı yüzeyin genişletilmesi
-- Geri alınması pahalı olacak her karar
+- A deviation from the blueprint (**mandatory**)
+- A new technology or framework choice
+- A new invariant or a "never/always" rule
+- Widening the privileged surface
+- Any decision that would be expensive to reverse

@@ -1,45 +1,45 @@
-# 0018 — Dokümante edilmemiş sensör API'sinin kabulü
+# 0018 — Accepting the undocumented sensor API
 
-- **Durum:** Kabul
-- **Tarih:** 2026-07-31
-- **Kaynak:** blueprint §5.1, §21 R1
+- **Status:** Accepted
+- **Date:** 2026-07-31
+- **Source:** blueprint §5.1, §21 R1
 
-## Bağlam
+## Context
 
-Apple Silicon'da sıcaklık sensörlerine erişmenin pratik yolu, HID sensör servisleridir. Bu API **resmî olarak dokümante edilmemiştir** ve macOS güncellemeleriyle değişebilir.
+On Apple Silicon, the practical way to reach the temperature sensors is the HID sensor services. This API is **not officially documented** and may change with macOS updates.
 
-Alternatif yol SMC anahtarlarıdır; o da dokümante edilmemiştir ama farklı bir mekanizmadır — yani ikisinin aynı anda bozulma olasılığı düşüktür.
+The alternative route is the SMC keys; that is undocumented too, but it is a different mechanism — so the odds of both breaking at the same time are low.
 
-Önemli ayrım: **dokümante edilmemiş API kullanımı App Store inceleme kuralıdır.** Doğrudan dağıtım + notarizasyon akışını engellemez. Proje App Store'da yayınlanmayacağı için ([0017](0017-distribution-channels.md)) engel oluşturmaz.
+An important distinction: **use of an undocumented API is an App Store review rule.** It does not block the direct distribution + notarisation flow. Since the project will not be published on the App Store ([0017](0017-distribution-channels.md)), it poses no obstacle.
 
-## Karar
+## Decision
 
-- Birincil sensör kaynağı: HID sensör servisleri
-- **Yedek kaynak:** SMC anahtarları üzerinden okuma
-- Her ikisi de `SensorSource` protokolü arkasında ([0011](0011-hardware-abstraction.md))
-- Birincil başarısızsa yedeğe geçilir; **ikisi de başarısızsa uygulama izleme moduna düşer, kullanıcıyı bilgilendirir ve asla çökmez**
-- Sensör adları **koda gömülmez**, çalışma zamanında keşfedilir
-- Eşleşmeyen sensör **gizlenmez**, `uncategorized` grubunda gösterilir ve kullanıcı tek tıkla rapor oluşturabilir
+- Primary sensor source: the HID sensor services
+- **Fallback source:** reading via the SMC keys
+- Both sit behind the `SensorSource` protocol ([0011](0011-hardware-abstraction.md))
+- If the primary fails, the fallback takes over; **if both fail, the application drops to monitoring mode, informs the user and never crashes**
+- Sensor names are **not embedded in code**; they are discovered at runtime
+- An unmatched sensor is **not hidden**; it is shown in the `uncategorized` group and the user can generate a report with a single click
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Candidate | Why rejected |
 |---|---|
-| Yalnızca resmî API kullanmak | Apple, üçüncü taraflara sıcaklık sensörü API'si sunmuyor — ürün mümkün olmazdı |
-| Tek kaynağa bağlanmak | Tek bir macOS güncellemesi ürünü tamamen çalışmaz hale getirebilir |
-| Sensör listesini koda gömmek | Her yeni çip nesli sürüm çıkmasını gerektirir |
+| Using only official APIs | Apple offers no temperature sensor API to third parties — the product would be impossible |
+| Depending on a single source | A single macOS update could render the product completely non-functional |
+| Embedding the sensor list in code | Every new chip generation would require a release |
 
-## Sonuçlar
+## Consequences
 
-- ✅ İki bağımsız kaynak → tek noktadan bozulma riski düşük
-- ✅ Yeni çip nesillerine sürüm çıkmadan uyum
-- ✅ Topluluk, bilinmeyen sensörleri raporlayarak katkı verebilir
-- ⚠️ macOS güncellemeleri kırılma riski taşır (R1) — sürüm notlarında izlenir
-- ⚠️ App Store dağıtımı kalıcı olarak imkânsız (zaten [0017](0017-distribution-channels.md) ile kapsam dışı)
+- ✅ Two independent sources → low risk of a single point of failure
+- ✅ Adapts to new chip generations without a release
+- ✅ The community can contribute by reporting unknown sensors
+- ⚠️ macOS updates carry a breakage risk (R1) — tracked in release notes
+- ⚠️ App Store distribution is permanently impossible (already out of scope via [0017](0017-distribution-channels.md))
 
-## Zorlama
+## Enforcement
 
-- `make gate-layers` → sensör erişimi protokol arkasında olmalı; `Live` + `Mock` zorunlu (M2)
-- Birim testi: birincil kaynak hata fırlattığında yedeğe geçilir
-- Birim testi: her iki kaynak da başarısızken uygulama izleme moduna düşer, çökmez
-- `ProcessInfo.thermalState` (resmî API) güvenlik zincirinin K2 katmanında kullanılır — dokümante edilmemiş API'ye bağımlı **değildir**
+- `make gate-layers` → sensor access must sit behind a protocol; `Live` + `Mock` required (M2)
+- Unit test: when the primary source throws, the fallback takes over
+- Unit test: when both sources fail, the application drops to monitoring mode and does not crash
+- `ProcessInfo.thermalState` (an official API) is used in the K2 layer of the safety chain — it does **not** depend on the undocumented API

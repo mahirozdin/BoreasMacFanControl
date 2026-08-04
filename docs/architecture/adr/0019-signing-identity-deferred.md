@@ -1,72 +1,72 @@
-# 0019 — İmzalama kimliği P8'e ertelendi
+# 0019 — Signing identity deferred to P8
 
-- **Durum:** Kabul
-- **Tarih:** 2026-08-03
-- **İlgili:** [0008](0008-smappservice-xpc.md), [0017](0017-distribution-channels.md) · `docs/reference/decisions.md` A4
+- **Status:** Accepted
+- **Date:** 2026-08-03
+- **Related:** [0008](0008-smappservice-xpc.md), [0017](0017-distribution-channels.md) · `docs/reference/decisions.md` A4
 
-## Bağlam
+## Context
 
-Proje sahibi, Developer ID sertifikasını şimdilik yapılandırmak istemedi ve şunu sordu: uygulama App Store'da yayınlanmayacağına, yalnızca GitHub deposundan DMG olarak sunulacağına göre sertifika zorunlu mu?
+The project owner did not want to configure the Developer ID certificate for now, and asked: given that the application will not be published on the App Store and will be offered only as a DMG from the GitHub repository, is the certificate mandatory?
 
-Soruda yaygın bir yanılgı var ve kaydedilmesi gerekiyor:
+The question carries a common misconception, and it needs to be recorded:
 
-> **Developer ID, App Store için değildir. Tam tersine, App Store *dışında* dağıtım için vardır.**
-> App Store dağıtımı bambaşka bir sertifika tipi kullanır (Mac App Distribution).
-> "GitHub'dan DMG" senaryosu, Developer ID'nin var oluş sebebinin ta kendisidir.
+> **Developer ID is not for the App Store. Quite the opposite: it exists for distribution *outside* the App Store.**
+> App Store distribution uses an entirely different certificate type (Mac App Distribution).
+> The "DMG from GitHub" scenario is the very reason Developer ID exists.
 
-Ayrıca ayrı bir teknik kısıt var: Apple, ayrıcalıklı yardımcı + XPC senaryosunda **"Sign to Run Locally" (ad-hoc imza) yaklaşımının desteklenmediğini** belirtiyor; çünkü ad-hoc imza, uygulama ile yardımcıyı güvenli biçimde tanımlayabilen bir kod imzası gereksinimi üretemiyor. Bu doğrudan [ADR 0008](0008-smappservice-xpc.md)'in G5 değişmezini (çift yönlü imza doğrulaması) etkiliyor.
+There is also a separate technical constraint: Apple states that the **"Sign to Run Locally" (ad-hoc signing) approach is not supported** in the privileged helper + XPC scenario, because an ad-hoc signature cannot produce a code signing requirement that can securely identify the application and the helper. This directly affects the G5 invariant of [ADR 0008](0008-smappservice-xpc.md) (two-way signature verification).
 
-## Karar
+## Decision
 
-**İmzalama kimliği P1–P7 için gerekli değildir; P8'in ön koşuludur.**
+**A signing identity is not required for P1–P7; it is a prerequisite of P8.**
 
-| Faz | İmzalama ihtiyacı |
+| Phase | Signing need |
 |---|---|
-| P1 · P2 (iskelet, ayrıcalıksız okuma) | **Hiçbiri.** Sensör ve fan okuma ayrıcalık gerektirmiyor ([ADR 0007](0007-privilege-split.md)) |
-| P3–P7 (daemon, kontrol, arayüz) | **Apple Development sertifikası.** Ücretsiz Apple hesabıyla alınabilir; kişisel Team ID üretir, XPC imza doğrulaması yerel makinede çalışır |
-| P8 (yayın) | **Developer ID + notarizasyon.** Aksi halde dağıtılabilir bir ürün yok |
+| P1 · P2 (skeleton, unprivileged reading) | **None.** Reading sensors and fans requires no privileges ([ADR 0007](0007-privilege-split.md)) |
+| P3–P7 (daemon, control, interface) | **An Apple Development certificate.** Available with a free Apple account; it produces a personal Team ID, and XPC signature verification works on the local machine |
+| P8 (release) | **Developer ID + notarisation.** Otherwise there is no distributable product |
 
-Manuel işler M03 ve M04 `OPEN` kalır ancak **yalnızca P8'i bloke eder** olarak işaretlenir. P1–P7 boyunca hiçbir işi durdurmazlar.
+Manual tasks M03 and M04 remain `OPEN` but are marked as **blocking P8 only**. They stop no work throughout P1–P7.
 
-## P8'de iki yol
+## Two paths at P8
 
-Karar P8'e geldiğinde verilecek. İkisinin sonuçları eşit değildir:
+The decision will be made when P8 arrives. The outcomes of the two are not equal:
 
-### Yol A — Developer ID + notarizasyon (önerilen)
+### Path A — Developer ID + notarisation (recommended)
 
-- Apple Developer Program üyeliği gerekir (yıllık ücretli)
-- Gatekeeper uyarısı yok, kurulum tek tık
-- `SMAppService` daemon kaydı ve XPC imza doğrulaması tasarlandığı gibi çalışır
-- Homebrew cask sorunsuz
-- **Blueprint ve tüm ADR'ler değişmeden geçerli kalır**
+- Requires Apple Developer Program membership (paid annually)
+- No Gatekeeper warning, single click installation
+- `SMAppService` daemon registration and XPC signature verification work as designed
+- The Homebrew cask works without friction
+- **The blueprint and all ADRs remain valid unchanged**
 
-### Yol B — imzasız / yalnızca development sertifikası
+### Path B — unsigned / development certificate only
 
-- Kullanıcı, DMG'yi açtıktan sonra Sistem Ayarları → Gizlilik ve Güvenlik'ten elle izin vermek zorunda. macOS 15'ten beri Control-tık kısayolu kaldırıldığı için adım sayısı arttı
-- **Ayrıcalıklı daemon güvenilir çalışmaz.** Apple'ın belirttiği kısıt nedeniyle XPC kod imzası gereksinimi uygulamayı ve yardımcıyı güvenli biçimde tanımlayamaz → G5 değişmezi karşılanamaz
-- Homebrew cask pratikte kullanılamaz
-- **Ürün fiilen ikiye bölünür:** izleme yarısı çalışır, fan kontrolü çalışmaz
+- After opening the DMG the user must grant permission by hand via System Settings → Privacy & Security. Since macOS 15 removed the Control-click shortcut, the number of steps has grown
+- **The privileged daemon does not work reliably.** Because of the constraint Apple states, the XPC code signing requirement cannot securely identify the application and the helper → the G5 invariant cannot be met
+- The Homebrew cask is unusable in practice
+- **The product effectively splits in two:** the monitoring half works, fan control does not
 
-Yol B seçilirse bu, ürün kapsamının temel bir değişimidir ve **yeni bir ADR ile** kaydedilmelidir: `docs/product/scope.md` fan kontrolünü "yalnızca kaynaktan derleyenler için" konumuna taşımalı, README bunu açıkça belirtmelidir.
+If Path B is chosen, that is a fundamental change of product scope and must be recorded **with a new ADR**: `docs/product/scope.md` must move fan control to a "build from source only" position, and the README must state it plainly.
 
-## Alternatifler
+## Alternatives
 
-| Aday | Neden reddedildi |
+| Candidate | Why rejected |
 |---|---|
-| Sertifikayı P1'de zorunlu tutmak | Gereksiz blokaj; P1–P2 imzasız tamamen çalışıyor |
-| Ad-hoc imzayla daemon dağıtmak | Apple desteklemiyor; G5 değişmezi karşılanamaz, güvenlik modeli çöker |
-| Kararı belirsiz bırakmak | P8'de sürpriz blokaj; bilinen bir bağımlılık kayda geçmeli |
+| Making the certificate mandatory at P1 | Needless blockage; P1–P2 work completely unsigned |
+| Shipping the daemon with an ad-hoc signature | Apple does not support it; the G5 invariant cannot be met and the security model collapses |
+| Leaving the decision open | A surprise blockage at P8; a known dependency must be put on record |
 
-## Sonuçlar
+## Consequences
 
-- ✅ P1–P7 boyunca hiçbir iş bloke değil
-- ✅ Bağımlılık ve maliyeti kayıt altında, P8'de sürpriz yok
-- ✅ Yol B'nin ürün üzerindeki etkisi önceden yazılı
-- ⚠️ Yol B seçilirse projenin ana özelliği (fan kontrolü) dağıtılamaz hale gelir
+- ✅ No work is blocked throughout P1–P7
+- ✅ The dependency and its cost are on record; no surprise at P8
+- ✅ Path B's impact on the product is written down in advance
+- ⚠️ If Path B is chosen, the project's main feature (fan control) becomes undistributable
 
-## Zorlama
+## Enforcement
 
-- `TODO.md` manuel işler tablosu: M03 ve M04 yalnızca P8 bağımlılığı olarak işaretli
-- `TODO.md` faz üstü blokaj **B4** zaten yerinde: notarizasyon başarısızsa sürüm yayınlanmaz
-- P8.09 sürüm kapıları kontrol listesi imzalama zincirini doğrular
-- P3'te bir doğrulama işi eklendi: development sertifikasıyla `SMAppService` kaydının ve XPC imza doğrulamasının gerçekten çalıştığı **ampirik olarak** kanıtlanacak (varsayılmayacak)
+- `TODO.md` manual tasks table: M03 and M04 are marked as P8 dependencies only
+- The `TODO.md` cross-phase blocker **B4** is already in place: if notarisation fails, no release ships
+- The P8.09 release gates checklist verifies the signing chain
+- A verification task was added in P3: that `SMAppService` registration and XPC signature verification actually work with a development certificate will be proven **empirically** (not assumed)
