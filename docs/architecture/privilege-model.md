@@ -27,26 +27,39 @@ README'de ve uygulama içinde yayınlanır:
 
 ## Kurulan dosyalar
 
-Ayrıcalıklı yardımcı iki konuma yazılır. Kesin yollar P3'te (daemon fazı) belirlenip buraya yazılacaktır; bundle kimliği `com.bubiapps.boreas.fanhelper` olacaktır.
+> **P3'te gerçek donanımda doğrulandı (2026-08-04).** P0 taslağındaki tablo, eski nesil
+> yardımcı kurulum akışının yollarını (`/Library/PrivilegedHelperTools/…`,
+> `/Library/LaunchDaemons/…`) varsayıyordu — **bulunan hata:** `SMAppService` bu
+> konumların hiçbirine yazmaz. Yardımcı kayıtlı ve çalışır durumdayken her iki dizinde
+> de bize ait hiçbir giriş olmadığı gösterildi (Run Log, 2026-08-04 P3 kayıtları).
 
-| Yol | Amaç |
-|---|---|
-| `/Library/PrivilegedHelperTools/<daemon-bundle-id>` | Ayrıcalıklı yardımcı ikilisi |
-| `/Library/LaunchDaemons/<daemon-bundle-id>.plist` | launchd tanımı |
-| `~/Library/Application Support/Boreas/` | Yapılandırma ve yerel veriler |
+| Konum | İçerik | Ne zaman yazılır |
+|---|---|---|
+| `Boreas.app/Contents/Library/LaunchDaemons/` içindeki yardımcı ikilisi ve launchd tanımı | `com.bubiapps.boreas.fanhelper` + `.plist` (`BundleProgram` paket içini gösterir) | Uygulama derlenirken — **kurulum hiçbir şey kopyalamaz** |
+| Sistemin arka plan öğeleri veritabanı | Kayıt ve onay durumu; Sistem Ayarları → Giriş Öğeleri altında görünür | `register()` çağrısında |
+| `~/Library/Application Support/Boreas/` | Yapılandırma ve yerel veriler | **Henüz yazılmıyor** — ilk yazan P5 olacak |
 
-Tam kaldırma adımları README'de ve `boreas uninstall --all` komutunda bulunur.
+Kurulum sistem klasörlerine dosya kopyalamadığı için kaldırma tek bir `unregister()`
+çağrısıdır; geride yalnızca silinecek kayıt vardır, yetim dosya sınıfı hiç doğmaz.
 
 ## Daemon kurulumu
 
 **`SMAppService.daemon(plistName:)`** kullanılır — eski `SMJobBless` akışı kullanılmaz.
 
-**Akış:**
-1. Kullanıcı arayüzden "Fan kontrolünü etkinleştir" der
-2. **Ne olacağı, hangi dosyaların nereye yazılacağı ve nasıl geri alınacağı açıkça gösterilir**
-3. Daemon kaydedilir; sistem yönetici kimlik doğrulaması ister
-4. macOS Sistem Ayarları onayı isteyebilir — uygulama bu durumu algılar ve doğrudan ilgili panele yönlendirir
-5. Bağlantı doğrulanır, sonuç bildirilir
+**Akış** (uygulamadaki karşılığı: `App/Sources/Helper/` — kurulum penceresi ve modeli):
+
+1. Kullanıcı menü çubuğu panelinden fan kontrolü kurulumunu açar. Kontrol edilebilir
+   fanı olmayan modelde bu giriş hiç gösterilmez; yardımcı kurulu değilken de bu bir
+   hata olarak sunulmaz (İ4)
+2. **Ne olacağı, hangi dosyaların nereye yazılacağı ve nasıl geri alınacağı, kurulum
+   düğmesinden önce aynı pencerede gösterilir**
+3. `register()` çağrılır. macOS 13+ akışında bu çoğunlukla `requiresApproval`
+   durumuna düşer — bu bir hata değil, belgelenmiş onay akışıdır
+4. Uygulama bu durumu algılar, tek düğmeyle doğrudan ilgili Sistem Ayarları paneline
+   götürür ve onay gelene kadar durumu düzenli aralıkla yoklar — onay gelince
+   kendiliğinden ilerler, "geri dönüp yenile" adımı yoktur
+5. Bağlantı uçtan uca kanıtlanır (nonce turu + fan dökümü, her iki yönde imza
+   doğrulamasıyla) ve sonuç kullanıcıya bildirilir
 
 **Kaldırma:** Arayüzde tek düğme + CLI'da `boreas uninstall --all` + README'de manuel adımlar.
 

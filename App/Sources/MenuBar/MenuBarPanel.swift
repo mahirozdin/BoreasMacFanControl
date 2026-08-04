@@ -7,6 +7,9 @@ import SwiftUI
 /// be seen working. Profiles, the curve editor and fan controls arrive in P6.
 struct MenuBarPanel: View {
     let model: MonitorModel
+    let setup: HelperSetupModel
+
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -125,15 +128,32 @@ struct MenuBarPanel: View {
 
     private var footer: some View {
         HStack {
-            Text(
-                String(
-                    localized: "panel.control.unavailable",
-                    defaultValue: "Fan control arrives in a later build",
-                    comment: "Placeholder while the privileged helper is not yet implemented"
-                )
-            )
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            // A Mac without a controllable fan gets no setup offer — the
+            // error-scenario table says exactly that, and a quiet footer is
+            // not an error state (invariant İ4).
+            if !model.fans.isEmpty {
+                Button {
+                    openWindow(id: HelperSetupView.windowID)
+                    // An LSUIElement app is never frontmost on its own; without
+                    // this the window opens behind whatever has focus.
+                    NSApplication.shared.activate(ignoringOtherApps: true)
+                } label: {
+                    Text(
+                        String(
+                            localized: "panel.fancontrol.button",
+                            defaultValue: "Fan Control…",
+                            comment: "Menu bar panel button that opens the fan control setup window"
+                        )
+                    )
+                }
+                .buttonStyle(.link)
+
+                if let status = setupStatus {
+                    Text(verbatim: status)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
 
             Spacer()
 
@@ -149,6 +169,30 @@ struct MenuBarPanel: View {
                 )
             }
             .buttonStyle(.link)
+        }
+    }
+
+    /// One-word helper status next to the setup button. Absence of the helper
+    /// is not worth a word: not installed is the normal starting state.
+    private var setupStatus: String? {
+        switch setup.installerState {
+        case .enabled:
+            return String(
+                localized: "panel.fancontrol.ready",
+                defaultValue: "ready",
+                comment: "Tiny status next to the fan control button when the helper is installed"
+            )
+        case .requiresApproval:
+            return String(
+                localized: "panel.fancontrol.approval",
+                defaultValue: "approval pending",
+                comment: """
+                    Tiny status next to the fan control button while System Settings \
+                    approval is pending
+                    """
+            )
+        case .notRegistered, .notFound, .unknown:
+            return nil
         }
     }
 
