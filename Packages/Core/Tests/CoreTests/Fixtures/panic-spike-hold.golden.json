@@ -1,0 +1,159 @@
+{
+ "name": "panic-spike-hold",
+ "_review": "Reviewed waypoints: steady 60 C sits at 2430 rpm; the 97 C spike jumps straight to 4900 with no slew (safety is never rate limited); the hold spans exactly 15 samples = 30 s after the spike although the input recovers immediately; the release descends at exactly -300 rpm per step.",
+ "fan": {
+  "id": 0,
+  "minimumRPM": 1000,
+  "maximumRPM": 4900
+ },
+ "profile": "Balanced",
+ "dtSeconds": 2.0,
+ "samples": [
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    97
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  }
+ ],
+ "expectedRPM": [
+  2430,
+  2430,
+  2430,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4900,
+  4600,
+  4300,
+  4000,
+  3700,
+  3400,
+  3100
+ ]
+}

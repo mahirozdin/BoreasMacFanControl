@@ -1,0 +1,342 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "config.schema.json",
+  "title": "Boreas configuration",
+  "description": "The on-disk configuration contract. Unknown fields are warnings, not errors (forward compatibility). Values outside a range are clamped by the loader where a safe clamp exists (sampling interval, watchdog timeout, panic threshold per ADR 0022) and refused where repair would hide a mistake (curves). A broken file never crashes the application: it falls back to the last valid configuration and the fans stay with the firmware (invariant G6).",
+  "type": "object",
+  "required": [
+    "schemaVersion"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Increased only with a migration function proven lossless by a test. A pre-migration backup is written automatically."
+    },
+    "general": {
+      "type": "object",
+      "properties": {
+        "samplingIntervalSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60,
+          "default": 2
+        }
+      },
+      "additionalProperties": true
+    },
+    "safety": {
+      "type": "object",
+      "properties": {
+        "panicTemperatureCelsius": {
+          "type": "number",
+          "minimum": 70,
+          "maximum": 95,
+          "description": "K3 trigger. The ceiling is the default (95): the threshold may be lowered, never raised (G2, ADR 0022)."
+        },
+        "watchdogTimeoutSeconds": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 60,
+          "description": "Locked range (G3); cannot be disabled."
+        }
+      },
+      "additionalProperties": true
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "binding"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "binding": {
+            "type": "object",
+            "required": [
+              "curve",
+              "input"
+            ],
+            "properties": {
+              "curve": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 16,
+                "description": "Control points, strictly increasing in celsius, non-decreasing in duty. Validated on load; an invalid curve is refused, never repaired silently.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "celsius",
+                    "duty"
+                  ],
+                  "properties": {
+                    "celsius": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 120
+                    },
+                    "duty": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "input": {
+                "type": "object",
+                "required": [
+                  "group"
+                ],
+                "properties": {
+                  "group": {
+                    "type": "string",
+                    "description": "A sensor group name, e.g. compute, compute.performance, graphics, storage."
+                  },
+                  "aggregate": {
+                    "enum": [
+                      "max",
+                      "mean",
+                      "p95"
+                    ],
+                    "default": "max"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "perFan": {
+            "type": "object",
+            "description": "Per-fan overrides, keyed by the fan id as a string (\"0\", \"1\", ...).",
+            "patternProperties": {
+              "^[0-9]+$": {
+                "type": "object",
+                "required": [
+                  "curve",
+                  "input"
+                ],
+                "properties": {
+                  "curve": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 16,
+                    "description": "Control points, strictly increasing in celsius, non-decreasing in duty. Validated on load; an invalid curve is refused, never repaired silently.",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "celsius",
+                        "duty"
+                      ],
+                      "properties": {
+                        "celsius": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 120
+                        },
+                        "duty": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "input": {
+                    "type": "object",
+                    "required": [
+                      "group"
+                    ],
+                    "properties": {
+                      "group": {
+                        "type": "string",
+                        "description": "A sensor group name, e.g. compute, compute.performance, graphics, storage."
+                      },
+                      "aggregate": {
+                        "enum": [
+                          "max",
+                          "mean",
+                          "p95"
+                        ],
+                        "default": "max"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "triggers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "type"
+              ],
+              "oneOf": [
+                {
+                  "properties": {
+                    "type": {
+                      "const": "powerSource"
+                    },
+                    "value": {
+                      "enum": [
+                        "adapter",
+                        "battery"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "const": "application"
+                    },
+                    "bundleIdentifier": {
+                      "type": "string"
+                    },
+                    "foregroundOnly": {
+                      "type": "boolean",
+                      "default": false
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "bundleIdentifier"
+                  ]
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "const": "timeWindow"
+                    },
+                    "startMinute": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1439
+                    },
+                    "endMinute": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1439
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "startMinute",
+                    "endMinute"
+                  ]
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "const": "batteryAtOrBelow"
+                    },
+                    "percent": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "percent"
+                  ]
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "const": "externalDisplay"
+                    },
+                    "connected": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "connected"
+                  ]
+                },
+                {
+                  "properties": {
+                    "type": {
+                      "const": "thermalStateAtLeast"
+                    },
+                    "value": {
+                      "enum": [
+                        "nominal",
+                        "fair",
+                        "serious",
+                        "critical"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            "description": "The profile activates when ANY trigger holds. Manual selection is not a trigger; it beats every trigger."
+          },
+          "priority": {
+            "type": "integer",
+            "default": 0
+          },
+          "smoothing": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.3,
+            "description": "EWMA alpha. 1 disables smoothing."
+          },
+          "hysteresis": {
+            "type": "number",
+            "minimum": 0,
+            "default": 3,
+            "description": "Band width in celsius. 0 disables the effect."
+          },
+          "slew": {
+            "type": "object",
+            "properties": {
+              "maxRisePerSecond": {
+                "type": "number",
+                "minimum": 0,
+                "default": 600
+              },
+              "maxFallPerSecond": {
+                "type": "number",
+                "minimum": 0,
+                "default": 150
+              }
+            },
+            "additionalProperties": false
+          },
+          "enginePaused": {
+            "type": "boolean",
+            "default": false,
+            "description": "True on the System profile: the firmware keeps the fans."
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

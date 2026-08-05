@@ -18,6 +18,7 @@ let package = Package(
         .testTarget(
             name: "CoreTests",
             dependencies: ["Core"],
+            resources: [.copy("Fixtures")],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
     ]

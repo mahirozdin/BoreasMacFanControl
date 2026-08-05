@@ -50,3 +50,20 @@ public struct RateLimit: Sendable, Hashable {
         return previousRPM
     }
 }
+
+/// Codable through the clamping initialiser, so decoded limits obey the
+/// same non-negative guarantee as constructed ones.
+extension RateLimit: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case maxRisePerSecond
+        case maxFallPerSecond
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            maxRisePerSecond: try container.decode(Double.self, forKey: .maxRisePerSecond),
+            maxFallPerSecond: try container.decode(Double.self, forKey: .maxFallPerSecond)
+        )
+    }
+}

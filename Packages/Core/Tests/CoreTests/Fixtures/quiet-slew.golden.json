@@ -1,0 +1,129 @@
+{
+ "name": "quiet-slew",
+ "_review": "Reviewed waypoints: Quiet's fall limit (100/s -> 200 per 2 s step) binds exactly on the descent 2418->1618; the rise is shaped by the alpha 0.2 smoothing and stays well inside the 600-per-step rise cap.",
+ "fan": {
+  "id": 0,
+  "minimumRPM": 1000,
+  "maximumRPM": 4900
+ },
+ "profile": "Quiet",
+ "dtSeconds": 2.0,
+ "samples": [
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    75
+   ]
+  },
+  {
+   "compute": [
+    75
+   ]
+  },
+  {
+   "compute": [
+    75
+   ]
+  },
+  {
+   "compute": [
+    75
+   ]
+  },
+  {
+   "compute": [
+    75
+   ]
+  },
+  {
+   "compute": [
+    75
+   ]
+  },
+  {
+   "compute": [
+    75
+   ]
+  },
+  {
+   "compute": [
+    75
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  }
+ ],
+ "expectedRPM": [
+  1163,
+  1163,
+  1163,
+  1358,
+  1514,
+  1699,
+  1913,
+  2084,
+  2221,
+  2331,
+  2418,
+  2418,
+  2218,
+  2018,
+  1818,
+  1618,
+  1538,
+  1495,
+  1461
+ ]
+}

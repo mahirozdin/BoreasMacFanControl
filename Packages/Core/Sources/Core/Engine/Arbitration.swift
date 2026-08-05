@@ -66,7 +66,7 @@ public enum Arbitration {
         // stable iteration order makes "earlier in the list" the tiebreak.
         var best: (profile: Profile, trigger: ProfileTrigger)?
         for profile in profiles {
-            guard let trigger = profile.trigger, trigger.holds(in: environment) else {
+            guard let trigger = profile.holdingTrigger(in: environment) else {
                 continue
             }
             if let current = best, current.profile.priority >= profile.priority {

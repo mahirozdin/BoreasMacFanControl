@@ -81,17 +81,17 @@ struct ArbitrationTests {
             Profile(
                 name: "Night",
                 binding: FanBinding(curve: BuiltInProfiles.quietCurve, input: input),
-                trigger: .timeWindow(startMinute: 0, endMinute: 24 * 60),
+                triggers: [.timeWindow(startMinute: 0, endMinute: 24 * 60)],
                 priority: 5),
             Profile(
                 name: "OnBattery",
                 binding: FanBinding(curve: BuiltInProfiles.quietCurve, input: input),
-                trigger: .powerSource(.battery),
+                triggers: [.powerSource(.battery)],
                 priority: 10),
             Profile(
                 name: "AlsoNight",
                 binding: FanBinding(curve: BuiltInProfiles.balancedCurve, input: input),
-                trigger: .timeWindow(startMinute: 0, endMinute: 24 * 60),
+                triggers: [.timeWindow(startMinute: 0, endMinute: 24 * 60)],
                 priority: 5),
             Profile(
                 name: BuiltInProfiles.defaultName,

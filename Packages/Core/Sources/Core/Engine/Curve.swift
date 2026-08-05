@@ -27,7 +27,11 @@ public struct Curve: Sendable, Hashable {
         case temperaturesNotStrictlyIncreasing(at: Int)
         case dutyDecreases(at: Int)
         case temperatureNotFinite(at: Int)
+        case temperatureOutOfRange(at: Int)
     }
+
+    /// The published schema's range for control point temperatures.
+    public static let temperatureRange: ClosedRange<Double> = 0...120
 
     public static let minimumPoints = 2
     public static let maximumPoints = 16
@@ -45,6 +49,9 @@ public struct Curve: Sendable, Hashable {
         for (index, point) in points.enumerated() {
             guard point.celsius.isFinite else {
                 throw ValidationError.temperatureNotFinite(at: index)
+            }
+            guard Self.temperatureRange.contains(point.celsius) else {
+                throw ValidationError.temperatureOutOfRange(at: index)
             }
             guard index > 0 else { continue }
             guard point.celsius > points[index - 1].celsius else {
@@ -100,9 +107,10 @@ public struct Curve: Sendable, Hashable {
     /// base curve would answer `band` degrees hotter.
     public func shiftedLeft(by band: Double) -> Curve {
         let shift = max(0, band)
-        // Shifting every x by the same amount preserves both monotonicity
-        // constraints, so the force-through here cannot actually throw; the
-        // fallback keeps the compiler honest without a force-try.
+        // Shifting preserves both monotonicity constraints, but a point
+        // closer to 0 than the band would leave the schema's temperature
+        // range. Such a curve keeps its base branch instead — no hysteresis
+        // beats an invalid curve, and the output stays monotone either way.
         let shifted = points.map { CurvePoint(celsius: $0.celsius - shift, duty: $0.duty) }
         return (try? Curve(points: shifted)) ?? self
     }

@@ -5,12 +5,10 @@ import Foundation
 public struct SensorInput: Sendable, Hashable, Codable {
     public let group: SensorGroup
     public let aggregate: SensorAggregate
-    public let smoothing: EWMA
 
-    public init(group: SensorGroup, aggregate: SensorAggregate = .max, smoothing: EWMA = .standard) {
+    public init(group: SensorGroup, aggregate: SensorAggregate = .max) {
         self.group = group
         self.aggregate = aggregate
-        self.smoothing = smoothing
     }
 }
 
@@ -25,9 +23,13 @@ public struct FanBinding: Sendable, Hashable, Codable {
     }
 }
 
-/// A named behaviour: curves, an optional trigger, a priority
+/// A named behaviour: curves, triggers, processing parameters, a priority
 /// (`docs/product/control-model.md`, profiles).
-public struct Profile: Sendable, Hashable, Codable {
+///
+/// Smoothing, hysteresis and the slew limits sit at the profile level — the
+/// blueprint's wire schema puts them there, and it reads right: a "Quiet"
+/// profile is quiet in how it *moves*, not only in where its curve sits.
+public struct Profile: Sendable, Hashable {
 
     /// Stable identifier. The built-in names double as localisation keys;
     /// user-created profiles carry whatever the user typed.
@@ -40,12 +42,23 @@ public struct Profile: Sendable, Hashable, Codable {
     /// its own sensor group.
     public let perFan: [Int: FanBinding]
 
-    /// The condition that activates this profile automatically. `nil` means
-    /// the profile is reachable only manually or as the default.
-    public let trigger: ProfileTrigger?
+    /// The conditions that activate this profile automatically. The profile
+    /// holds when **any** of them holds — the blueprint's own example binds
+    /// "Night Quiet" to a time window *or* battery power. Empty means the
+    /// profile is reachable only manually or as the default.
+    public let triggers: [ProfileTrigger]
 
     /// Higher wins among profiles whose trigger holds.
     public let priority: Int
+
+    /// Input smoothing for every curve in this profile.
+    public let smoothing: EWMA
+
+    /// The hysteresis band for every curve in this profile.
+    public let hysteresis: Hysteresis
+
+    /// The output slew limits for every fan in this profile.
+    public let slew: RateLimit
 
     /// The `System` profile: the engine does not drive at all and the
     /// firmware keeps the fans. Modelled as data, not a special case in the
@@ -56,20 +69,33 @@ public struct Profile: Sendable, Hashable, Codable {
         name: String,
         binding: FanBinding,
         perFan: [Int: FanBinding] = [:],
-        trigger: ProfileTrigger? = nil,
+        triggers: [ProfileTrigger] = [],
         priority: Int = 0,
+        smoothing: EWMA = .standard,
+        hysteresis: Hysteresis = .standard,
+        slew: RateLimit = .standard,
         enginePaused: Bool = false
     ) {
         self.name = name
         self.binding = binding
         self.perFan = perFan
-        self.trigger = trigger
+        self.triggers = triggers
         self.priority = priority
+        self.smoothing = smoothing
+        self.hysteresis = hysteresis
+        self.slew = slew
         self.enginePaused = enginePaused
     }
 
     public func binding(forFan fanID: Int) -> FanBinding {
         perFan[fanID] ?? binding
+    }
+
+    /// The first trigger that holds, or `nil` when none does. The specific
+    /// trigger is returned, not just a Bool, so arbitration can tell the
+    /// user *which* condition made this profile active.
+    public func holdingTrigger(in environment: ProfileTrigger.Environment) -> ProfileTrigger? {
+        triggers.first { $0.holds(in: environment) }
     }
 }
 
@@ -98,13 +124,17 @@ public enum BuiltInProfiles {
         return [
             Profile(
                 name: "Quiet",
-                binding: FanBinding(curve: quietCurve, input: input)),
+                binding: FanBinding(curve: quietCurve, input: input),
+                smoothing: EWMA(alpha: 0.2),
+                hysteresis: Hysteresis(band: 5),
+                slew: RateLimit(maxRisePerSecond: 300, maxFallPerSecond: 100)),
             Profile(
                 name: defaultName,
                 binding: FanBinding(curve: balancedCurve, input: input)),
             Profile(
                 name: "Performance",
-                binding: FanBinding(curve: performanceCurve, input: input)),
+                binding: FanBinding(curve: performanceCurve, input: input),
+                smoothing: EWMA(alpha: 0.4)),
             Profile(
                 name: "System",
                 binding: FanBinding(curve: balancedCurve, input: input),
@@ -122,5 +152,68 @@ public enum BuiltInProfiles {
         }
         // Unreachable for the literals above; the safe direction anyway.
         return Curve.fullSpeedFallback
+    }
+}
+
+/// The wire format keeps per-fan overrides as an object keyed by the fan
+/// id ("0", "1", …). Swift would otherwise encode an Int-keyed dictionary
+/// as a flat array, which no schema reader would forgive.
+extension Profile: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case binding
+        case perFan
+        case triggers
+        case priority
+        case smoothing
+        case hysteresis
+        case slew
+        case enginePaused
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let rawPerFan =
+            try container.decodeIfPresent([String: FanBinding].self, forKey: .perFan) ?? [:]
+        var perFan: [Int: FanBinding] = [:]
+        for (key, value) in rawPerFan {
+            guard let fanID = Int(key) else {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .perFan, in: container,
+                    debugDescription: "fan id \"\(key)\" is not a number")
+            }
+            perFan[fanID] = value
+        }
+        self.init(
+            name: try container.decode(String.self, forKey: .name),
+            binding: try container.decode(FanBinding.self, forKey: .binding),
+            perFan: perFan,
+            triggers: try container.decodeIfPresent([ProfileTrigger].self, forKey: .triggers)
+                ?? [],
+            priority: try container.decodeIfPresent(Int.self, forKey: .priority) ?? 0,
+            smoothing: try container.decodeIfPresent(EWMA.self, forKey: .smoothing) ?? .standard,
+            hysteresis: try container.decodeIfPresent(Hysteresis.self, forKey: .hysteresis)
+                ?? .standard,
+            slew: try container.decodeIfPresent(RateLimit.self, forKey: .slew) ?? .standard,
+            enginePaused: try container.decodeIfPresent(Bool.self, forKey: .enginePaused)
+                ?? false
+        )
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(binding, forKey: .binding)
+        if !perFan.isEmpty {
+            let keyed = Dictionary(uniqueKeysWithValues: perFan.map { (String($0.key), $0.value) })
+            try container.encode(keyed, forKey: .perFan)
+        }
+        if !triggers.isEmpty { try container.encode(triggers, forKey: .triggers) }
+        try container.encode(priority, forKey: .priority)
+        try container.encode(smoothing, forKey: .smoothing)
+        try container.encode(hysteresis, forKey: .hysteresis)
+        try container.encode(slew, forKey: .slew)
+        if enginePaused { try container.encode(enginePaused, forKey: .enginePaused) }
     }
 }

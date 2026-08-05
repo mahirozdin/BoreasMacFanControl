@@ -18,16 +18,18 @@
 ```
 {
   "schemaVersion": 1,
-  "general":   { samplingIntervalSeconds, temperatureUnit, launchAtLogin, language },
-  "safety":    { panicTemperatureCelsius, panicHoldSeconds, watchdogTimeoutSeconds },
-  "profiles":  [ { id, name, priority, triggers[], smoothing, slew, fanCurves[] } ],
-  "sensorOverrides": [ { match, displayName, group } ],
-  "notifications":   { enabled, suppressionWindowMinutes, rules[] },
-  "logging":         { enabled, format, path, rotation, fields[] }
+  "general":   { samplingIntervalSeconds, … },
+  "safety":    { panicTemperatureCelsius, watchdogTimeoutSeconds },
+  "profiles":  [ { name, binding, perFan, triggers[], priority,
+                   smoothing, hysteresis, slew, enginePaused } ]
 }
 ```
 
-The full example and the field descriptions live in `schema/config.schema.json` (to be written in P4). **No copy of the schema is kept in this file** — it would become a source of drift.
+Sections for later phases (`sensorOverrides`, `notifications`, `logging`) are
+added by the phase that implements them; unknown fields are already tolerated
+today. The field descriptions and ranges live in `schema/config.schema.json`
+(written in P5.10). **No copy of the schema is kept in this file** — it would
+become a source of drift.
 
 ## Validation rules
 

@@ -1,0 +1,171 @@
+{
+ "name": "ramp-plateau-descent",
+ "_review": "Reviewed waypoints: the ramp rises strictly monotonically 1260->4026; during the six +-1 C input wobbles the OUTPUT never reverses once - smoothing and hysteresis turn input chatter into a monotone approach (the literal constant plateau is proven at the unit level in HysteresisTests); the descent is capped at exactly -300 rpm per 2 s step where the 150/s fall limit binds (3749->1649).",
+ "fan": {
+  "id": 0,
+  "minimumRPM": 1000,
+  "maximumRPM": 4900
+ },
+ "profile": "Balanced",
+ "dtSeconds": 2.0,
+ "samples": [
+  {
+   "compute": [
+    40
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    50
+   ]
+  },
+  {
+   "compute": [
+    55
+   ]
+  },
+  {
+   "compute": [
+    60
+   ]
+  },
+  {
+   "compute": [
+    65
+   ]
+  },
+  {
+   "compute": [
+    70
+   ]
+  },
+  {
+   "compute": [
+    74
+   ]
+  },
+  {
+   "compute": [
+    78
+   ]
+  },
+  {
+   "compute": [
+    80
+   ]
+  },
+  {
+   "compute": [
+    79
+   ]
+  },
+  {
+   "compute": [
+    80.5
+   ]
+  },
+  {
+   "compute": [
+    79.2
+   ]
+  },
+  {
+   "compute": [
+    80.8
+   ]
+  },
+  {
+   "compute": [
+    79.5
+   ]
+  },
+  {
+   "compute": [
+    80.3
+   ]
+  },
+  {
+   "compute": [
+    72
+   ]
+  },
+  {
+   "compute": [
+    64
+   ]
+  },
+  {
+   "compute": [
+    56
+   ]
+  },
+  {
+   "compute": [
+    50
+   ]
+  },
+  {
+   "compute": [
+    45
+   ]
+  },
+  {
+   "compute": [
+    42
+   ]
+  },
+  {
+   "compute": [
+    40
+   ]
+  },
+  {
+   "compute": [
+    38
+   ]
+  },
+  {
+   "compute": [
+    38
+   ]
+  },
+  {
+   "compute": [
+    38
+   ]
+  }
+ ],
+ "expectedRPM": [
+  1260,
+  1338,
+  1471,
+  1641,
+  1854,
+  2124,
+  2411,
+  2690,
+  3043,
+  3361,
+  3557,
+  3735,
+  3825,
+  3931,
+  3973,
+  4026,
+  4026,
+  3749,
+  3449,
+  3149,
+  2849,
+  2549,
+  2249,
+  1949,
+  1649,
+  1506
+ ]
+}

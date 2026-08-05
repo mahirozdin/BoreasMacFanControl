@@ -6,7 +6,7 @@ import Foundation
 /// Manual selection is deliberately **not** a trigger: it is an input to
 /// arbitration that beats every trigger, and modelling it as a condition
 /// would let it lose.
-public enum ProfileTrigger: Sendable, Hashable, Codable {
+public enum ProfileTrigger: Sendable, Hashable {
 
     /// The machine runs on the given power source.
     case powerSource(PowerContext.Source)
@@ -96,6 +96,82 @@ extension ThermalPressure {
         case .fair: return 1
         case .serious: return 2
         case .critical: return 3
+        }
+    }
+}
+
+/// The published wire format: a type discriminator plus named fields, so
+/// the schema reads like configuration instead of like a compiler artefact.
+extension ProfileTrigger: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case value
+        case bundleIdentifier
+        case foregroundOnly
+        case startMinute
+        case endMinute
+        case percent
+        case connected
+    }
+
+    private enum Kind: String, Codable {
+        case powerSource
+        case application
+        case timeWindow
+        case batteryAtOrBelow
+        case externalDisplay
+        case thermalStateAtLeast
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        switch try container.decode(Kind.self, forKey: .type) {
+        case .powerSource:
+            self = .powerSource(try container.decode(PowerContext.Source.self, forKey: .value))
+        case .application:
+            self = .application(
+                bundleIdentifier: try container.decode(String.self, forKey: .bundleIdentifier),
+                foregroundOnly: try container.decodeIfPresent(Bool.self, forKey: .foregroundOnly)
+                    ?? false)
+        case .timeWindow:
+            self = .timeWindow(
+                startMinute: try container.decode(Int.self, forKey: .startMinute),
+                endMinute: try container.decode(Int.self, forKey: .endMinute))
+        case .batteryAtOrBelow:
+            self = .batteryAtOrBelow(percent: try container.decode(Int.self, forKey: .percent))
+        case .externalDisplay:
+            self = .externalDisplay(
+                connected: try container.decode(Bool.self, forKey: .connected))
+        case .thermalStateAtLeast:
+            self = .thermalStateAtLeast(
+                try container.decode(ThermalPressure.self, forKey: .value))
+        }
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .powerSource(let source):
+            try container.encode(Kind.powerSource, forKey: .type)
+            try container.encode(source, forKey: .value)
+        case .application(let bundleIdentifier, let foregroundOnly):
+            try container.encode(Kind.application, forKey: .type)
+            try container.encode(bundleIdentifier, forKey: .bundleIdentifier)
+            try container.encode(foregroundOnly, forKey: .foregroundOnly)
+        case .timeWindow(let start, let end):
+            try container.encode(Kind.timeWindow, forKey: .type)
+            try container.encode(start, forKey: .startMinute)
+            try container.encode(end, forKey: .endMinute)
+        case .batteryAtOrBelow(let percent):
+            try container.encode(Kind.batteryAtOrBelow, forKey: .type)
+            try container.encode(percent, forKey: .percent)
+        case .externalDisplay(let connected):
+            try container.encode(Kind.externalDisplay, forKey: .type)
+            try container.encode(connected, forKey: .connected)
+        case .thermalStateAtLeast(let level):
+            try container.encode(Kind.thermalStateAtLeast, forKey: .type)
+            try container.encode(level, forKey: .value)
         }
     }
 }
