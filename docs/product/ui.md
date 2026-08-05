@@ -1,6 +1,6 @@
 # User Interface
 
-> Last updated: 2026-07-31 — P0.17
+> Last updated: 2026-08-05 — P6.01
 > Source: blueprint §9
 
 ## Design language
@@ -18,6 +18,8 @@ The visual identity is designed from scratch. Binding decisions:
 | Animation | Only those that carry meaning; no decorative animation |
 
 > **Decision change (2026-08-03):** This table previously said "the fan blade cliché is avoided". The project owner explicitly asked for a fan motif, and that decision was applied. The cliché risk is answered by the originality of the geometry: wide swept blades, parametrically defined, with every number justified. Details in `Design/icon/README.md`.
+
+**Implementation (P6.01):** the colour decisions — ramp stops, anchor temperatures with their rationale, the fan fill floor — live as pure maths in [`Packages/Core/Sources/Core/Presentation/ColorScale.swift`](../../Packages/Core/Sources/Core/Presentation/ColorScale.swift), under property tests (continuity, monotone warmth, red exclusion, the banded-scale comparison that keeps the "why continuous" decision measurable). The SwiftUI realisation is [`App/Sources/Design/DesignSystem.swift`](../../App/Sources/Design/DesignSystem.swift); views take colours only from there. Visual evidence renders deterministically with the app's `--render-design <dir>` maintenance argument (both appearances, no screen recording permission).
 
 **Text principle:** All interface text is written from scratch. The Turkish text does not read like a translation — it is written thinking in Turkish, with the English written separately. → `docs/development/localization.md`
 

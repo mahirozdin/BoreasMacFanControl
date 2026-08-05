@@ -19,7 +19,7 @@ struct MenuBarPanel: View {
             if let problem = model.sensorProblem {
                 Label(problem, systemImage: "exclamationmark.triangle")
                     .font(.callout)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.warningAccent)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -177,9 +177,23 @@ struct MenuBarPanel: View {
             if let caption = controlCaption {
                 Text(verbatim: caption)
                     .font(.caption)
-                    .foregroundStyle(control.activeLayer == nil ? Color.secondary : Color.orange)
+                    .foregroundStyle(captionColor)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    /// Mirrors `controlCaption`'s precedence: whatever text is shown decides
+    /// the colour. Errors and panic are the two states allowed to wear red
+    /// (`docs/product/ui.md`); other safety overrides are warnings. The
+    /// pre-design-system code painted panic orange and errors grey, which
+    /// flattened both distinctions.
+    private var captionColor: Color {
+        if control.lastProblem != nil { return .panicAccent }
+        switch control.activeLayer {
+        case .panic: return .panicAccent
+        case .thermalCritical, .thermalSerious: return .warningAccent
+        case nil: return .secondary
         }
     }
 

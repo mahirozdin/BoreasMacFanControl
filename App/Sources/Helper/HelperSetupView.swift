@@ -133,7 +133,7 @@ struct HelperSetupView: View {
                 .fixedSize(horizontal: false, vertical: true)
             } icon: {
                 Image(systemName: "hourglass")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.warningAccent)
             }
             .font(.callout)
 
@@ -240,8 +240,11 @@ struct HelperSetupView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             } icon: {
+                // A failure is an error, and errors wear the product's one
+                // red (docs/product/ui.md) — this was orange before the
+                // design system drew that line.
                 Image(systemName: "exclamationmark.triangle")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.panicAccent)
             }
             .font(.callout)
 

@@ -57,6 +57,11 @@ enum HelperCommands {
             return true
         }
 
+        if let index = arguments.firstIndex(of: "--render-design"), index + 1 < arguments.count {
+            renderDesignEvidence(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
+            return true
+        }
+
         return false
     }
 
@@ -176,6 +181,40 @@ enum HelperCommands {
                 report("wrote \(url.path)")
             } catch {
                 report("write failed for \(entry.name): \(error)")
+            }
+        }
+    }
+
+    /// Renders the design-system swatch sheet in both appearances, same
+    /// rationale as `renderSetupEvidence`: deterministic, permission-free.
+    private static func renderDesignEvidence(into directory: URL) {
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        } catch {
+            report("cannot create \(directory.path): \(error)")
+            return
+        }
+
+        for darkAppearance in [false, true] {
+            let renderer = ImageRenderer(
+                content: DesignEvidenceView(darkAppearance: darkAppearance))
+            renderer.scale = 2
+
+            guard let cgImage = renderer.cgImage,
+                let data = NSBitmapImageRep(cgImage: cgImage)
+                    .representation(using: .png, properties: [:])
+            else {
+                report("render failed: \(darkAppearance ? "dark" : "light")")
+                continue
+            }
+
+            let url = directory.appendingPathComponent(
+                "design-\(darkAppearance ? "dark" : "light").png")
+            do {
+                try data.write(to: url)
+                report("wrote \(url.path)")
+            } catch {
+                report("write failed: \(error)")
             }
         }
     }
