@@ -36,7 +36,7 @@ The full example and the field descriptions live in `schema/config.schema.json` 
 | Curve points | Sorted ascending by temperature, duty ratio non-decreasing |
 | `duty` | `[0.0, 1.0]` |
 | Temperature | `[0, 120]` °C |
-| `panicTemperatureCelsius` | `[70, 105]` |
+| `panicTemperatureCelsius` | `[70, 95]` — the blueprint's `[70, 105]` allowed raising the threshold, which G2 forbids; see [ADR 0022](adr/0022-panic-threshold-ceiling.md) |
 | `watchdogTimeoutSeconds` | `[10, 60]` — **locked** |
 | `samplingIntervalSeconds` | `[1, 60]` |
 | Profile `id` | Unique |

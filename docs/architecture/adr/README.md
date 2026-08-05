@@ -32,6 +32,7 @@ Format: Michael Nygard — `Context` / `Decision` / `Alternatives` / `Consequenc
 | [0019](0019-signing-identity-deferred.md) | Signing identity deferred to P8 | Accepted | Release |
 | [0020](0020-compute-die-sensor-group.md) | A `compute` group for core sensors that cannot be attributed to a cluster | Accepted | Hardware |
 | [0021](0021-english-only-repository.md) | The repository is written in English | Accepted | Governance |
+| [0022](0022-panic-threshold-ceiling.md) | The panic threshold's ceiling is its default (95 °C) | Accepted | Safety |
 
 ## Writing a new ADR
 

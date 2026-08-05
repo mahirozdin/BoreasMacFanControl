@@ -196,6 +196,7 @@ any state --(watchdog / sleep / quit / error)--> RELEASING --> MONITORING
 | [0019](docs/architecture/adr/0019-signing-identity-deferred.md) | Signing identity deferred to the release phase | Accepted |
 | [0020](docs/architecture/adr/0020-compute-die-sensor-group.md) | A `compute` group for die sensors with no cluster | Accepted |
 | [0021](docs/architecture/adr/0021-english-only-repository.md) | The repository is written in English | Accepted |
+| [0022](docs/architecture/adr/0022-panic-threshold-ceiling.md) | The panic threshold's ceiling is its default (95 °C) | Accepted |
 
 ---
 
