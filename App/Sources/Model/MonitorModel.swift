@@ -37,6 +37,14 @@ public final class MonitorModel {
 
     public init() {}
 
+    /// Render support (`--render-panel`): a monitor frozen on fixed data,
+    /// never started. Follows the `--render-setup` precedent — deterministic
+    /// evidence needs deterministic inputs.
+    init(fixedForRendering readings: [SensorReading], fans: [FanState]) {
+        self.readings = readings
+        self.fans = fans
+    }
+
     public var hottest: SensorReading? {
         readings.max { $0.celsius < $1.celsius }
     }

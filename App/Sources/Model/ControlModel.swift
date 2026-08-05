@@ -4,13 +4,17 @@ import OSLog
 import Observation
 import SharedIPC
 
-/// Drives the fans at a user-chosen duty, with the safety chain always in
-/// the path and the state machine always in charge.
+/// Drives the fans — from the profile engine or from the manual drill duty —
+/// with the safety chain always in the path and the state machine always in
+/// charge.
 ///
-/// This is the manual-control scaffold of P4.08: one duty for all fans. The
-/// curve engine of P5 will replace the *source* of the requested duty; the
-/// cycle below — govern, transition, apply, heartbeat — is the shape the
-/// engine inherits.
+/// P4.08 built this as the manual-control scaffold and promised that the P5
+/// engine would replace the *source* of the requested duty while the cycle —
+/// govern, transition, apply, heartbeat — stayed. P6.02 keeps that promise:
+/// the menu bar profile picker feeds `select(profileName:until:)`, arbitration
+/// chooses the active profile, and `Engine.step` produces the targets. The
+/// manual path remains for the hardware drills (`--control-drill`, `make
+/// smoke`), which prove the plumbing without involving the engine.
 ///
 /// Every state transition goes through `ControlStateMachine` and is logged
 /// (P4.09). A transition the table refuses is logged as an error and not
@@ -19,9 +23,33 @@ import SharedIPC
 @Observable
 public final class ControlModel {
 
+    /// What produces the requested duty while the loop runs.
+    private enum Source {
+        /// The P4.08 slider / drill value, one duty for every fan.
+        case manualDuty
+        /// The P5 engine: arbitration picks a profile, `Engine.step` runs.
+        case engine
+    }
+
     public private(set) var state: ControlState = .monitoring
     public private(set) var activeLayer: SafetyLayer?
     public private(set) var lastProblem: String?
+
+    /// The built-in profiles, in arbitration order. Custom profiles arrive
+    /// with the configuration file work (P6.08).
+    public private(set) var profiles: [Profile] = BuiltInProfiles.all()
+
+    /// The user's explicit choice. Starts as `System` — firmware in charge —
+    /// so launching the app never takes the fans over by itself; automatic
+    /// engagement policy belongs to the configuration work, not to launch.
+    /// Modelled as an ordinary manual selection through arbitration rather
+    /// than a special "off" flag, the same way `System` itself is data.
+    public private(set) var manualSelection: ManualSelection? =
+        ManualSelection(profileName: "System")
+
+    /// The arbitration outcome the interface shows: which profile is active
+    /// and why. Recomputed on every selection and every engine cycle.
+    public private(set) var outcome: Arbitration.Outcome?
 
     /// The slider's value. Raw `Double` because SwiftUI binds to it; it
     /// becomes a clamped `Duty` at the moment of use, never before.
@@ -31,6 +59,9 @@ public final class ControlModel {
         state == .controlling || state == .panic
     }
 
+    private var source: Source = .engine
+    private var engineState: Engine.State = .initial
+    private var lastStepAt: Date?
     private let monitor: MonitorModel
     private var client: HelperClient?
     private var panicLock = PanicLock.released
@@ -38,24 +69,106 @@ public final class ControlModel {
     private let logger = Logger(subsystem: "com.bubiapps.boreas", category: "control")
 
     /// How often targets are re-evaluated and re-applied. Matches the
-    /// monitor's sampling cadence; the P5 engine may tighten it.
+    /// monitor's sampling cadence.
     private let cycleInterval: Duration = .seconds(2)
 
     public init(monitor: MonitorModel) {
         self.monitor = monitor
+        refreshOutcome()
     }
 
-    /// Turns manual control on. No-op unless currently monitoring.
+    /// Render support (`--render-panel`): freezes the model in a given
+    /// presentation state without ever touching the helper. The outcome is
+    /// produced by real arbitration on the given selection, so the render
+    /// cannot show a combination arbitration would never produce.
+    init(
+        fixedForRendering monitor: MonitorModel,
+        selection: ManualSelection,
+        state: ControlState,
+        layer: SafetyLayer?
+    ) {
+        self.monitor = monitor
+        self.manualSelection = selection
+        self.state = state
+        self.activeLayer = layer
+        refreshOutcome()
+    }
+
+    // MARK: - Profile selection (P6.02)
+
+    /// The menu bar picker's entry point: an explicit, possibly time-limited
+    /// profile choice. Selecting a driving profile starts the engine loop;
+    /// selecting `System` (or letting a timed override expire into it)
+    /// releases the fans to firmware.
+    public func select(profileName: String, until: Date? = nil) {
+        guard profiles.contains(where: { $0.name == profileName }) else {
+            logger.error("unknown profile selected: \(profileName, privacy: .public)")
+            return
+        }
+        manualSelection = ManualSelection(profileName: profileName, until: until)
+        refreshOutcome()
+        reconcile()
+    }
+
+    /// Recomputes the arbitration outcome for display and engagement
+    /// decisions. Cheap and pure — safe to call every cycle.
+    private func refreshOutcome() {
+        outcome = Arbitration.activeProfile(
+            among: profiles,
+            manual: manualSelection,
+            environment: currentEnvironment(),
+            now: Date()
+        )
+    }
+
+    /// Starts or stops the engine loop so it matches what arbitration wants.
+    /// The manual drill path is never started or stopped from here.
+    private func reconcile() {
+        let wantsEngine = !(outcome?.profile.enginePaused ?? true)
+        switch (wantsEngine, state) {
+        case (true, .monitoring):
+            engage(source: .engine)
+        case (false, .controlling), (false, .panic):
+            if source == .engine { disengage() }
+        default:
+            break
+        }
+    }
+
+    /// What the triggers can see right now. Foreground application and
+    /// display sensing arrive with the settings that let users bind them
+    /// (P6.08); the built-ins need none of them.
+    private func currentEnvironment() -> ProfileTrigger.Environment {
+        let now = Date()
+        let calendar = Calendar.current
+        let minute =
+            calendar.component(.hour, from: now) * 60 + calendar.component(.minute, from: now)
+        return ProfileTrigger.Environment(
+            power: monitor.power,
+            minuteOfDay: minute,
+            thermal: ThermalPressure(ProcessInfo.processInfo.thermalState)
+        )
+    }
+
+    // MARK: - Loop control
+
+    /// Turns manual (drill) control on. No-op unless currently monitoring.
+    /// The panel no longer calls this; `--control-drill` and `make smoke` do.
     public func engage() {
+        engage(source: .manualDuty)
+    }
+
+    private func engage(source: Source) {
         guard state == .monitoring, loop == nil else { return }
+        self.source = source
         lastProblem = nil
         loop = Task { [weak self] in
             await self?.run()
         }
     }
 
-    /// Turns manual control off. The loop notices, releases, and the state
-    /// machine walks releasing → monitoring.
+    /// Turns control off. The loop notices, releases, and the state machine
+    /// walks releasing → monitoring.
     public func disengage() {
         transition(on: .releaseRequested)
         loop?.cancel()
@@ -101,34 +214,49 @@ public final class ControlModel {
         }
         transition(on: .released)
         activeLayer = nil
+        engineState = .initial
+        lastStepAt = nil
         self.client = nil
         loop = nil
+
+        // A selection made while this release was still running could not
+        // start a loop (the machine refuses monitoring-only transitions), so
+        // it is honoured now. Only on a clean exit: after a failure the user
+        // re-selects deliberately — an automatic retry here would be a tight
+        // engage/fail loop against a helper that just said no.
+        if lastProblem == nil { reconcile() }
     }
 
     private func cycle(_ client: HelperClient) async {
         let fans = monitor.fans
         guard !fans.isEmpty else { return }
 
-        let verdict = SafetyChain.govern(
-            requested: Duty(manualDuty),
-            thermal: ThermalPressure(ProcessInfo.processInfo.thermalState),
-            hottestCelsius: monitor.hottest?.celsius,
-            lock: panicLock,
-            now: Date()
-        )
-        panicLock = verdict.lock
-        activeLayer = verdict.activeLayer
+        let targets: [FanTarget]
+        switch source {
+        case .manualDuty:
+            targets = manualTargets(fans: fans)
+        case .engine:
+            guard let stepped = engineTargets(fans: fans) else {
+                // Arbitration moved to a paused profile (a timed override
+                // expired, or the user picked System mid-cycle): leave
+                // through the normal release exit.
+                transition(on: .releaseRequested)
+                loop?.cancel()
+                return
+            }
+            targets = stepped
+        }
 
-        if verdict.activeLayer == .panic, state == .controlling {
+        if activeLayer == .panic, state == .controlling {
             transition(on: .panicRaised)
-        } else if verdict.activeLayer != .panic, state == .panic {
+        } else if activeLayer != .panic, state == .panic {
             transition(on: .panicCleared)
         }
 
         do {
             let outcome = try await client.requestTargets(
-                fanIDs: fans.map(\.id),
-                targetRPM: fans.map { verdict.duty.rpm(for: $0) }
+                fanIDs: targets.map(\.fanID),
+                targetRPM: targets.map(\.rpm)
             )
             if !outcome.accepted {
                 // The daemon's K4 refusing a target the app computed means a
@@ -145,6 +273,47 @@ public final class ControlModel {
             transition(on: .releaseRequested)
             loop?.cancel()
         }
+    }
+
+    /// The P4.08 path: one governed duty for every fan.
+    private func manualTargets(fans: [FanState]) -> [FanTarget] {
+        let verdict = SafetyChain.govern(
+            requested: Duty(manualDuty),
+            thermal: ThermalPressure(ProcessInfo.processInfo.thermalState),
+            hottestCelsius: monitor.hottest?.celsius,
+            lock: panicLock,
+            now: Date()
+        )
+        panicLock = verdict.lock
+        activeLayer = verdict.activeLayer
+        return fans.map { FanTarget(fanID: $0.id, rpm: verdict.duty.rpm(for: $0)) }
+    }
+
+    /// The P6.02 path: arbitration picks the profile, `Engine.step` runs the
+    /// documented pipeline. Returns `nil` when the active profile pauses the
+    /// engine — the caller releases.
+    private func engineTargets(fans: [FanState]) -> [FanTarget]? {
+        refreshOutcome()
+        guard let profile = outcome?.profile, !profile.enginePaused else { return nil }
+
+        let now = Date()
+        let readingsByGroup = Dictionary(grouping: monitor.readings, by: \.group)
+            .mapValues { $0.map(\.celsius) }
+        let input = Engine.Input(
+            profile: profile,
+            fans: fans,
+            readingsByGroup: readingsByGroup,
+            thermal: ThermalPressure(ProcessInfo.processInfo.thermalState),
+            now: now,
+            elapsedSeconds: lastStepAt.map { now.timeIntervalSince($0) } ?? 0
+        )
+        lastStepAt = now
+
+        let cycle = Engine.step(input, state: engineState)
+        engineState = cycle.state
+        panicLock = cycle.state.panicLock
+        activeLayer = cycle.activeLayer
+        return cycle.targets
     }
 
     private func transition(on event: ControlEvent) {

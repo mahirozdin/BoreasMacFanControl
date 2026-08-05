@@ -1,6 +1,6 @@
 # User Interface
 
-> Last updated: 2026-08-05 — P6.01
+> Last updated: 2026-08-05 — P6.02
 > Source: blueprint §9
 
 ## Design language
@@ -30,6 +30,8 @@ The visual identity is designed from scratch. Binding decisions:
 **Drop-down panel:** profile picker (one click switch + temporary override) · fans (name, RPM, fill) · temperatures (grouped, collapsible) · main window / settings / quit.
 
 The sampling loop does **not stop** while the panel is open.
+
+**Implementation (P6.02):** [`App/Sources/MenuBar/MenuBarPanel.swift`](../../App/Sources/MenuBar/MenuBarPanel.swift) with its sections in [`PanelSections.swift`](../../App/Sources/MenuBar/PanelSections.swift); profile selection drives the P5 engine through `ControlModel` (arbitration + `Engine.step`, safety chain always in the path). The footer's main-window and settings entries arrive with those windows (P6.04, P6.08). Render evidence: the app's `--render-panel <dir>` maintenance argument.
 
 ## Main window
 

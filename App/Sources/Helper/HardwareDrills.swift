@@ -192,15 +192,77 @@ enum HardwareDrills {
         exit(passed ? 0 : 1)
     }
 
-    /// One line of unprivileged truth: the fan's mode byte and actual speed.
-    /// The kill/freeze harnesses poll this to watch the helper hand the
-    /// hardware back without needing root or the helper itself.
-    static func printFanState(report: (String) -> Void) {
-        guard let smc = try? SMCConnection() else {
-            report("mode=? rpm=?")
-            return
+    /// P6.02 end to end on real hardware: selecting a profile in the model —
+    /// exactly what the menu bar picker calls — engages the engine, the fan
+    /// follows the profile's own curve at the machine's real temperature,
+    /// and selecting `System` hands the hardware back to firmware.
+    static func profileDrill(report: (String) -> Void) {
+        let monitor = MonitorModel()
+        let control = ControlModel(monitor: monitor)
+        let smc = try? SMCConnection()
+
+        func pump(_ seconds: Double) {
+            RunLoop.main.run(until: Date().addingTimeInterval(seconds))
         }
-        report("mode=\(modeByte(smc).map(String.init) ?? "?") rpm=\(Int(actualRPM(smc)))")
+        func hardware() -> (mode: String, rpm: Int) {
+            guard let smc else { return ("?", -1) }
+            return (modeByte(smc).map(String.init) ?? "?", Int(actualRPM(smc)))
+        }
+        func line(_ label: String) {
+            let state = hardware()
+            let active = control.outcome?.profile.name ?? "-"
+            report(
+                "\(label): state=\(control.state.rawValue) active=\(active) "
+                    + "mode=\(state.mode) rpm=\(state.rpm)")
+        }
+
+        monitor.start()
+        pump(3)
+        guard let fan = monitor.fans.first else {
+            report("no controllable fan")
+            exit(1)
+        }
+        guard let balanced = control.profiles.first(where: { $0.name == "Balanced" }) else {
+            report("no Balanced profile")
+            exit(1)
+        }
+
+        line("baseline")
+        let before = control.state
+        let startedFromSystem = control.outcome?.profile.enginePaused == true
+
+        control.select(profileName: "Balanced")
+        pump(9)
+        line("balanced selected")
+        let driving = hardware()
+        let engaged = control.state == .controlling
+
+        // The engine smooths the bound group's max, so after a few cycles the
+        // fan should sit near the curve's answer for the temperature right
+        // now. The tolerance covers smoothing still converging, the slew
+        // limiter, and the temperature drifting under a live load.
+        let computeMax =
+            monitor.readings
+            .filter { $0.group == .compute }
+            .map(\.celsius).max() ?? .nan
+        let expectedRPM = balanced.binding.curve.duty(at: computeMax).rpm(for: fan)
+        let followedCurve = abs(driving.rpm - expectedRPM) <= 300
+
+        control.select(profileName: "System")
+        pump(6)
+        line("system selected")
+        let after = hardware()
+
+        let passed =
+            before == .monitoring && startedFromSystem
+            && engaged && driving.mode == "1" && followedCurve
+            && control.state == .monitoring && after.mode == "0"
+
+        report(
+            "curve expected ~\(expectedRPM) rpm at \(String(format: "%.1f", computeMax)) °C, "
+                + "measured \(driving.rpm); released mode=\(after.mode)")
+        report(passed ? "PROFILE DRILL PASS" : "PROFILE DRILL FAIL")
+        exit(passed ? 0 : 1)
     }
 
     /// The full write-path drill on real hardware, in one reproducible run:
@@ -329,5 +391,21 @@ enum HardwareDrills {
         try await client.releaseToFirmware()
         out("second release: ok (idempotent over hardware)")
         return settled && modeAfter == 0
+    }
+}
+
+// Kept in an extension so the drill enum's own body stays inside the lint
+// budget; behaviour is identical.
+extension HardwareDrills {
+
+    /// One line of unprivileged truth: the fan's mode byte and actual speed.
+    /// The kill/freeze harnesses poll this to watch the helper hand the
+    /// hardware back without needing root or the helper itself.
+    static func printFanState(report: (String) -> Void) {
+        guard let smc = try? SMCConnection() else {
+            report("mode=? rpm=?")
+            return
+        }
+        report("mode=\(modeByte(smc).map(String.init) ?? "?") rpm=\(Int(actualRPM(smc)))")
     }
 }

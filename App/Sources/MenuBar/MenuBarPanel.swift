@@ -1,16 +1,33 @@
 import Core
 import SwiftUI
 
-/// The panel that opens from the menu bar.
+/// The panel that opens from the menu bar (P6.02).
 ///
-/// Scaffold for P2: it shows what the hardware layer reports so the reads can
-/// be seen working. Profiles, the curve editor and fan controls arrive in P6.
+/// Profile picker, fans with their fill, temperatures grouped and
+/// collapsible — each section its own view in `PanelSections.swift`. The
+/// P4.08 manual slider left the panel: the picker is the panel's control
+/// surface, and raw duty control returns as the control tab's manual
+/// override (P6.05). The sampling loop never stops while the panel is open;
+/// it belongs to the label, not to this view.
 struct MenuBarPanel: View {
     let model: MonitorModel
     let setup: HelperSetupModel
-    @Bindable var control: ControlModel
+    let control: ControlModel
 
     @Environment(\.openWindow) private var openWindow
+    private let initiallyExpanded: Set<SensorGroup>
+
+    init(
+        model: MonitorModel,
+        setup: HelperSetupModel,
+        control: ControlModel,
+        initiallyExpanded: Set<SensorGroup> = []
+    ) {
+        self.model = model
+        self.setup = setup
+        self.control = control
+        self.initiallyExpanded = initiallyExpanded
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -32,24 +49,21 @@ struct MenuBarPanel: View {
 
             if !model.fans.isEmpty {
                 Divider()
-                fanSection
-            }
-
-            if !model.fans.isEmpty, setup.installerState == .enabled {
+                ProfilePickerSection(control: control, setup: setup)
                 Divider()
-                manualControlSection
+                FanListSection(fans: model.fans)
             }
 
             if !model.readings.isEmpty {
                 Divider()
-                sensorSection
+                SensorGroupList(model: model, initiallyExpanded: initiallyExpanded)
             }
 
             Divider()
             footer
         }
         .padding(14)
-        .frame(width: 300)
+        .frame(width: 320)
     }
 
     private var header: some View {
@@ -66,170 +80,15 @@ struct MenuBarPanel: View {
             Spacer()
 
             if let hottest = model.hottest {
-                Text(verbatim: String(format: "%.1f °C", hottest.celsius))
-                    .monospacedDigit()
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private var fanSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            sectionTitle(
-                String(
-                    localized: "panel.section.fans",
-                    defaultValue: "Fans",
-                    comment: "Heading above the list of fans"
-                )
-            )
-            ForEach(model.fans) { fan in
-                HStack {
-                    Text(verbatim: fan.name)
-                    Spacer()
-                    if fan.isPoweredOff {
-                        Text(
-                            String(
-                                localized: "panel.fan.parked",
-                                defaultValue: "parked",
-                                comment: "Shown when the firmware has switched a fan off entirely"
-                            )
-                        )
+                HStack(spacing: 5) {
+                    Circle()
+                        .fill(Color.temperature(hottest.celsius))
+                        .frame(width: 8, height: 8)
+                    Text(verbatim: String(format: "%.1f °C", hottest.celsius))
+                        .monospacedDigit()
                         .foregroundStyle(.secondary)
-                    } else {
-                        Text(verbatim: "\(fan.currentRPM) rpm")
-                            .monospacedDigit()
-                            .foregroundStyle(.secondary)
-                    }
                 }
-                .font(.callout)
             }
-        }
-    }
-
-    private var sensorSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            sectionTitle(
-                String(
-                    localized: "panel.section.temperatures",
-                    defaultValue: "Temperatures",
-                    comment: "Heading above the grouped temperature list"
-                )
-            )
-            ForEach(model.grouped, id: \.group) { entry in
-                HStack {
-                    Text(verbatim: entry.group.rawValue)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    if let hottest = entry.readings.first {
-                        Text(verbatim: String(format: "%.1f °C", hottest.celsius))
-                            .monospacedDigit()
-                    }
-                    Text(verbatim: "(\(entry.readings.count))")
-                        .foregroundStyle(.tertiary)
-                }
-                .font(.callout)
-            }
-        }
-    }
-
-    /// P4.08: one duty for every fan, the safety chain always in the path.
-    /// The curve engine of P5 replaces the slider as the source of the
-    /// requested duty; the plumbing underneath stays.
-    private var manualControlSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                sectionTitle(
-                    String(
-                        localized: "panel.section.manual",
-                        defaultValue: "Manual fan control",
-                        comment: "Heading of the manual fan control section in the menu bar panel"
-                    )
-                )
-                Spacer()
-                Toggle(
-                    String(
-                        localized: "panel.manual.toggle",
-                        defaultValue: "On",
-                        comment: "Toggle that starts or stops driving the fans at the slider value"
-                    ),
-                    isOn: Binding(
-                        get: { control.isEngaged },
-                        set: { engaged in
-                            if engaged { control.engage() } else { control.disengage() }
-                        }
-                    )
-                )
-                .labelsHidden()
-                .toggleStyle(.switch)
-                .controlSize(.mini)
-            }
-
-            HStack(spacing: 8) {
-                Slider(value: $control.manualDuty, in: 0...1)
-                    .disabled(!control.isEngaged)
-                Text(verbatim: "\(Duty(control.manualDuty).percent)%")
-                    .font(.caption)
-                    .monospacedDigit()
-                    .foregroundStyle(.secondary)
-                    .frame(minWidth: 34, alignment: .trailing)
-            }
-
-            if let caption = controlCaption {
-                Text(verbatim: caption)
-                    .font(.caption)
-                    .foregroundStyle(captionColor)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-    }
-
-    /// Mirrors `controlCaption`'s precedence: whatever text is shown decides
-    /// the colour. Errors and panic are the two states allowed to wear red
-    /// (`docs/product/ui.md`); other safety overrides are warnings. The
-    /// pre-design-system code painted panic orange and errors grey, which
-    /// flattened both distinctions.
-    private var captionColor: Color {
-        if control.lastProblem != nil { return .panicAccent }
-        switch control.activeLayer {
-        case .panic: return .panicAccent
-        case .thermalCritical, .thermalSerious: return .warningAccent
-        case nil: return .secondary
-        }
-    }
-
-    /// Why the fans are doing what they are doing — the safety chain is
-    /// never allowed to act invisibly.
-    private var controlCaption: String? {
-        if let problem = control.lastProblem {
-            return problem
-        }
-        switch control.activeLayer {
-        case .panic:
-            return String(
-                localized: "panel.manual.layer.panic",
-                defaultValue: "Panic: a sensor crossed the panic threshold — full speed is locked",
-                comment: "Caption when the K3 panic layer is overriding the slider"
-            )
-        case .thermalCritical:
-            return String(
-                localized: "panel.manual.layer.critical",
-                defaultValue: "Thermal state critical — full speed is forced",
-                comment: "Caption when the K2 critical thermal state is overriding the slider"
-            )
-        case .thermalSerious:
-            return String(
-                localized: "panel.manual.layer.serious",
-                defaultValue: "Thermal state serious — the floor is raised to 55%",
-                comment: "Caption when the K2 serious thermal state raises the floor above the slider"
-            )
-        case nil:
-            return control.state == .controlling
-                ? String(
-                    localized: "panel.manual.driving",
-                    defaultValue: "Driving the fans at the slider value",
-                    comment: "Caption while manual control is active and no safety layer intervenes"
-                )
-                : nil
         }
     }
 
@@ -237,7 +96,8 @@ struct MenuBarPanel: View {
         HStack {
             // A Mac without a controllable fan gets no setup offer — the
             // error-scenario table says exactly that, and a quiet footer is
-            // not an error state (invariant I4).
+            // not an error state (invariant I4). Main window and settings
+            // entries arrive with the windows themselves (P6.04, P6.08).
             if !model.fans.isEmpty {
                 Button {
                     openWindow(id: HelperSetupView.windowID)
@@ -253,7 +113,8 @@ struct MenuBarPanel: View {
                         )
                     )
                 }
-                .buttonStyle(.link)
+                .buttonStyle(.plain)
+                .foregroundStyle(.tint)
 
                 if let status = setupStatus {
                     Text(verbatim: status)
@@ -275,7 +136,11 @@ struct MenuBarPanel: View {
                     )
                 )
             }
-            .buttonStyle(.link)
+            // Plain style with the tint colour, not `.link`: the link style
+            // is AppKit-backed and `ImageRenderer` draws it as a placeholder,
+            // which would falsify the render evidence. Visually identical.
+            .buttonStyle(.plain)
+            .foregroundStyle(.tint)
         }
     }
 
@@ -301,13 +166,5 @@ struct MenuBarPanel: View {
         case .notRegistered, .notFound, .unknown:
             return nil
         }
-    }
-
-    private func sectionTitle(_ text: String) -> some View {
-        Text(verbatim: text)
-            .font(.caption)
-            .fontWeight(.semibold)
-            .foregroundStyle(.secondary)
-            .textCase(.uppercase)
     }
 }

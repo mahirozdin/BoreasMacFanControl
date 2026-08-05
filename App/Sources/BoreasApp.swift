@@ -1,4 +1,5 @@
 import AppKit
+import Core
 import Foundation
 import HardwareKit
 import SharedIPC
@@ -62,6 +63,11 @@ enum HelperCommands {
             return true
         }
 
+        if let index = arguments.firstIndex(of: "--render-panel"), index + 1 < arguments.count {
+            renderPanelEvidence(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
+            return true
+        }
+
         return false
     }
 
@@ -94,6 +100,10 @@ enum HelperCommands {
         }
         if arguments.contains("--control-drill") {
             HardwareDrills.controlDrill(report: report)
+            return true
+        }
+        if arguments.contains("--profile-drill") {
+            HardwareDrills.profileDrill(report: report)
             return true
         }
 
@@ -185,6 +195,121 @@ enum HelperCommands {
         }
     }
 
+    /// One frozen panel state for the render evidence.
+    private struct PanelScene {
+        let name: String
+        let readings: [SensorReading]
+        let rpm: Int
+        let selection: ManualSelection
+        let state: ControlState
+        let layer: SafetyLayer?
+        let installer: HelperInstaller.State
+        let expanded: Set<SensorGroup>
+        let dark: Bool
+    }
+
+    /// The P6.02 states worth freezing: firmware in charge, the engine
+    /// driving (both appearances), panic, and no helper installed.
+    private static func panelScenes() -> [PanelScene] {
+        func reading(_ name: String, _ group: SensorGroup, _ celsius: Double) -> SensorReading {
+            SensorReading(rawName: name, displayName: name, group: group, celsius: celsius)
+        }
+        let normal: [SensorReading] = [
+            reading("PMU tdie5", .compute, 65.4),
+            reading("PMU tdie1", .compute, 63.8),
+            reading("PMU tdie2", .compute, 61.2),
+            reading("PMU tdev1", .compute, 58.9),
+            reading("GPU tdie0", .graphics, 57.6),
+            reading("GPU tdie1", .graphics, 55.1),
+            reading("PMU tdie9", .power, 52.3),
+            reading("DDR temp", .memory, 49.2),
+            reading("NAND CH0 temp", .storage, 41.8),
+        ]
+        var hot = normal
+        hot[0] = reading("PMU tdie5", .compute, 96.8)
+
+        return [
+            PanelScene(
+                name: "1-firmware", readings: normal, rpm: 1002,
+                selection: ManualSelection(profileName: "System"),
+                state: .monitoring, layer: nil, installer: .enabled,
+                expanded: [.compute], dark: false),
+            PanelScene(
+                name: "2-driving", readings: normal, rpm: 2755,
+                selection: ManualSelection(profileName: "Balanced"),
+                state: .controlling, layer: nil, installer: .enabled,
+                expanded: [.compute], dark: false),
+            PanelScene(
+                name: "3-driving-dark", readings: normal, rpm: 2755,
+                selection: ManualSelection(profileName: "Balanced"),
+                state: .controlling, layer: nil, installer: .enabled,
+                expanded: [.compute], dark: true),
+            PanelScene(
+                name: "4-panic", readings: hot, rpm: 4900,
+                selection: ManualSelection(profileName: "Balanced"),
+                state: .panic, layer: .panic, installer: .enabled,
+                expanded: [], dark: false),
+            PanelScene(
+                name: "5-not-installed", readings: normal, rpm: 998,
+                selection: ManualSelection(profileName: "System"),
+                state: .monitoring, layer: nil, installer: .notRegistered,
+                expanded: [], dark: false),
+        ]
+    }
+
+    /// Renders the menu bar panel in its P6.02 states on fixed data, same
+    /// rationale as `renderSetupEvidence`: deterministic, permission-free.
+    /// The control model in each scene runs real arbitration on the frozen
+    /// selection, so no render can show a state arbitration would refuse.
+    private static func renderPanelEvidence(into directory: URL) {
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        } catch {
+            report("cannot create \(directory.path): \(error)")
+            return
+        }
+
+        for scene in panelScenes() {
+            let fan = FanState(
+                id: 0, name: "Fan 0", currentRPM: scene.rpm,
+                minimumRPM: 1000, maximumRPM: 4900, isPoweredOff: false)
+            let monitor = MonitorModel(fixedForRendering: scene.readings, fans: [fan])
+            let control = ControlModel(
+                fixedForRendering: monitor,
+                selection: scene.selection,
+                state: scene.state,
+                layer: scene.layer)
+            let setup = HelperSetupModel()
+            setup.fixedInstallerStateForRendering = scene.installer
+
+            let view = MenuBarPanel(
+                model: monitor, setup: setup, control: control,
+                initiallyExpanded: scene.expanded
+            )
+            .background(scene.dark ? Color(white: 0.14) : Color(white: 0.97))
+            .environment(\.colorScheme, scene.dark ? .dark : .light)
+
+            let renderer = ImageRenderer(content: view)
+            renderer.scale = 2
+
+            guard let cgImage = renderer.cgImage,
+                let data = NSBitmapImageRep(cgImage: cgImage)
+                    .representation(using: .png, properties: [:])
+            else {
+                report("render failed: \(scene.name)")
+                continue
+            }
+
+            let url = directory.appendingPathComponent("panel-\(scene.name).png")
+            do {
+                try data.write(to: url)
+                report("wrote \(url.path)")
+            } catch {
+                report("write failed for \(scene.name): \(error)")
+            }
+        }
+    }
+
     /// Renders the design-system swatch sheet in both appearances, same
     /// rationale as `renderSetupEvidence`: deterministic, permission-free.
     private static func renderDesignEvidence(into directory: URL) {
@@ -246,9 +371,12 @@ struct BoreasApp: App {
     var body: some Scene {
         MenuBarExtra {
             MenuBarPanel(model: model, setup: setup, control: control)
-                .task { model.start() }
         } label: {
+            // The label is on screen from launch, so sampling starts here —
+            // the status item shows live numbers before the panel is ever
+            // opened, and the loop never depends on the panel being open.
             MenuBarLabel(model: model)
+                .task { model.start() }
         }
         .menuBarExtraStyle(.window)
 

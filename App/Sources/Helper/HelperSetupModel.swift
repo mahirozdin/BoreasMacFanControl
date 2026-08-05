@@ -43,8 +43,15 @@ public final class HelperSetupModel {
 
     public init() {}
 
+    /// Render support (`--render-panel`): pins `installerState` so the panel
+    /// evidence does not depend on what happens to be installed on the
+    /// rendering machine. Never set outside the render command.
+    var fixedInstallerStateForRendering: HelperInstaller.State?
+
     /// Raw installer state, for the short status line in the menu bar panel.
-    public var installerState: HelperInstaller.State { installer.state }
+    public var installerState: HelperInstaller.State {
+        fixedInstallerStateForRendering ?? installer.state
+    }
 
     /// Called when the setup window appears. Puts the phase in front of
     /// whatever state the machine is really in — the helper may have been
