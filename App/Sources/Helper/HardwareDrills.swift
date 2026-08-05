@@ -1,3 +1,4 @@
+import Core
 import Foundation
 import HardwareKit
 import SharedIPC
@@ -121,6 +122,74 @@ enum HardwareDrills {
         } catch {
             report("recon failed: \(error)")
         }
+    }
+
+    /// Drives the real `ControlModel` end to end, headless: engage, watch
+    /// the hardware follow the slider, move the slider, disengage, watch the
+    /// firmware take back. The state machine transitions run and are logged
+    /// on the way (P4.08/P4.09). The main run loop is pumped by hand because
+    /// the model is main-actor bound and there is no app run loop here.
+    static func controlDrill(report: (String) -> Void) {
+        let monitor = MonitorModel()
+        let control = ControlModel(monitor: monitor)
+        let smc = try? SMCConnection()
+
+        func pump(_ seconds: Double) {
+            RunLoop.main.run(until: Date().addingTimeInterval(seconds))
+        }
+        func hardware() -> (mode: String, rpm: Int) {
+            guard let smc else { return ("?", -1) }
+            return (modeByte(smc).map(String.init) ?? "?", Int(actualRPM(smc)))
+        }
+        func line(_ label: String) {
+            let state = hardware()
+            report("\(label): state=\(control.state.rawValue) mode=\(state.mode) rpm=\(state.rpm)")
+        }
+
+        monitor.start()
+        pump(3)
+        guard let fan = monitor.fans.first else {
+            report("no controllable fan")
+            exit(1)
+        }
+
+        line("baseline")
+        let before = control.state
+
+        control.manualDuty = 0.10
+        control.engage()
+        pump(7)
+        line("engaged at 10%")
+        if let problem = control.lastProblem {
+            report("problem: \(problem)")
+        }
+        let lowRPM = hardware().rpm
+        let modeWhileDriving = hardware().mode
+
+        control.manualDuty = 0.30
+        pump(6)
+        line("slider to 30%")
+        let highRPM = hardware().rpm
+
+        control.disengage()
+        pump(5)
+        line("disengaged")
+        let after = hardware()
+
+        let expectedLow = Duty(0.10).rpm(for: fan)
+        let expectedHigh = Duty(0.30).rpm(for: fan)
+        let followedLow = abs(lowRPM - expectedLow) <= 150
+        let followedHigh = abs(highRPM - expectedHigh) <= 150
+        let passed =
+            before == .monitoring && modeWhileDriving == "1"
+            && followedLow && followedHigh
+            && control.state == .monitoring && after.mode == "0"
+
+        report(
+            "expected \(expectedLow)/\(expectedHigh) rpm, measured \(lowRPM)/\(highRPM); "
+                + "back to monitoring=\(control.state == .monitoring)")
+        report(passed ? "CONTROL DRILL PASS" : "CONTROL DRILL FAIL")
+        exit(passed ? 0 : 1)
     }
 
     /// One line of unprivileged truth: the fan's mode byte and actual speed.

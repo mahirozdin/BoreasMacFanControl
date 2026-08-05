@@ -72,6 +72,10 @@ gate-coverage: ## Core line coverage >= 85% (blocking)
 bootstrap: ## Set up and verify the local development environment
 	@scripts/bootstrap.sh
 
+.PHONY: smoke
+smoke: ## Hardware smoke test on this Mac (see --with-sleep for the attended leg)
+	@scripts/smoke-test-hardware.sh
+
 .PHONY: generate
 generate: ## Generate the Xcode project from project.yml
 	@command -v xcodegen >/dev/null 2>&1 \

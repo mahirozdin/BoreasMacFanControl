@@ -8,6 +8,7 @@ import SwiftUI
 struct MenuBarPanel: View {
     let model: MonitorModel
     let setup: HelperSetupModel
+    @Bindable var control: ControlModel
 
     @Environment(\.openWindow) private var openWindow
 
@@ -32,6 +33,11 @@ struct MenuBarPanel: View {
             if !model.fans.isEmpty {
                 Divider()
                 fanSection
+            }
+
+            if !model.fans.isEmpty, setup.installerState == .enabled {
+                Divider()
+                manualControlSection
             }
 
             if !model.readings.isEmpty {
@@ -123,6 +129,93 @@ struct MenuBarPanel: View {
                 }
                 .font(.callout)
             }
+        }
+    }
+
+    /// P4.08: one duty for every fan, the safety chain always in the path.
+    /// The curve engine of P5 replaces the slider as the source of the
+    /// requested duty; the plumbing underneath stays.
+    private var manualControlSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                sectionTitle(
+                    String(
+                        localized: "panel.section.manual",
+                        defaultValue: "Manual fan control",
+                        comment: "Heading of the manual fan control section in the menu bar panel"
+                    )
+                )
+                Spacer()
+                Toggle(
+                    String(
+                        localized: "panel.manual.toggle",
+                        defaultValue: "On",
+                        comment: "Toggle that starts or stops driving the fans at the slider value"
+                    ),
+                    isOn: Binding(
+                        get: { control.isEngaged },
+                        set: { engaged in
+                            if engaged { control.engage() } else { control.disengage() }
+                        }
+                    )
+                )
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+            }
+
+            HStack(spacing: 8) {
+                Slider(value: $control.manualDuty, in: 0...1)
+                    .disabled(!control.isEngaged)
+                Text(verbatim: "\(Duty(control.manualDuty).percent)%")
+                    .font(.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .frame(minWidth: 34, alignment: .trailing)
+            }
+
+            if let caption = controlCaption {
+                Text(verbatim: caption)
+                    .font(.caption)
+                    .foregroundStyle(control.activeLayer == nil ? Color.secondary : Color.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    /// Why the fans are doing what they are doing — the safety chain is
+    /// never allowed to act invisibly.
+    private var controlCaption: String? {
+        if let problem = control.lastProblem {
+            return problem
+        }
+        switch control.activeLayer {
+        case .panic:
+            return String(
+                localized: "panel.manual.layer.panic",
+                defaultValue: "Panic: a sensor crossed the panic threshold — full speed is locked",
+                comment: "Caption when the K3 panic layer is overriding the slider"
+            )
+        case .thermalCritical:
+            return String(
+                localized: "panel.manual.layer.critical",
+                defaultValue: "Thermal state critical — full speed is forced",
+                comment: "Caption when the K2 critical thermal state is overriding the slider"
+            )
+        case .thermalSerious:
+            return String(
+                localized: "panel.manual.layer.serious",
+                defaultValue: "Thermal state serious — the floor is raised to 55%",
+                comment: "Caption when the K2 serious thermal state raises the floor above the slider"
+            )
+        case nil:
+            return control.state == .controlling
+                ? String(
+                    localized: "panel.manual.driving",
+                    defaultValue: "Driving the fans at the slider value",
+                    comment: "Caption while manual control is active and no safety layer intervenes"
+                )
+                : nil
         }
     }
 

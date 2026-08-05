@@ -87,6 +87,10 @@ enum HelperCommands {
             HardwareDrills.printFanState(report: report)
             return true
         }
+        if arguments.contains("--control-drill") {
+            HardwareDrills.controlDrill(report: report)
+            return true
+        }
 
         return false
     }
@@ -187,8 +191,12 @@ struct BoreasApp: App {
 
     @State private var model = MonitorModel()
     @State private var setup = HelperSetupModel()
+    @State private var control: ControlModel
 
     init() {
+        let monitor = MonitorModel()
+        _model = State(initialValue: monitor)
+        _control = State(initialValue: ControlModel(monitor: monitor))
         // Handled before any window exists so the commands can run from a
         // terminal without the menu bar item appearing.
         if MainActor.assumeIsolated({ HelperCommands.handleIfPresent() }) {
@@ -198,7 +206,7 @@ struct BoreasApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarPanel(model: model, setup: setup)
+            MenuBarPanel(model: model, setup: setup, control: control)
                 .task { model.start() }
         } label: {
             MenuBarLabel(model: model)

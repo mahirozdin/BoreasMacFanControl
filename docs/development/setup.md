@@ -44,6 +44,7 @@ make generate
 | `make gate-daemon` | Privileged surface boundaries |
 | `make gate-language` | The repository is written in English |
 | `make gate-coverage` | `Core` line coverage ≥ 85% |
+| `make smoke` | Hardware smoke test on a real Mac (P4.10; sleep leg attended-only) |
 | `make generate` | Generates the Xcode project from `project.yml` |
 | `make build` / `make test` / `make lint` | Build / test / lint the packages |
 | `make clean` | Removes build outputs |
