@@ -54,21 +54,47 @@ enum HelperCommands {
         }
 
         if let index = arguments.firstIndex(of: "--render-setup"), index + 1 < arguments.count {
-            renderSetupEvidence(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
+            RenderEvidence.setup(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
             return true
         }
 
         if let index = arguments.firstIndex(of: "--render-design"), index + 1 < arguments.count {
-            renderDesignEvidence(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
+            RenderEvidence.design(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
             return true
         }
 
         if let index = arguments.firstIndex(of: "--render-panel"), index + 1 < arguments.count {
-            renderPanelEvidence(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
+            RenderEvidence.panel(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
+            return true
+        }
+
+        if let index = arguments.firstIndex(of: "--render-status"), index + 1 < arguments.count {
+            RenderEvidence.status(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
+            return true
+        }
+
+        if let index = arguments.firstIndex(of: "--crowd-menubar"), index + 1 < arguments.count {
+            crowdMenuBar(seconds: Double(arguments[index + 1]) ?? 10)
             return true
         }
 
         return false
+    }
+
+    /// Floods the menu bar with throwaway status items so the running app
+    /// instance's visibility probe can be watched detecting a real squeeze.
+    /// The items die with this process; the bar heals itself.
+    private static func crowdMenuBar(seconds: Double) {
+        var items: [NSStatusItem] = []
+        for _ in 0..<40 {
+            let item = NSStatusBar.system.statusItem(withLength: 80)
+            item.button?.title = "▮▮▮▮"
+            items.append(item)
+        }
+        report("crowding the menu bar with \(items.count) items for \(Int(seconds))s")
+        RunLoop.main.run(until: Date().addingTimeInterval(seconds))
+        items.removeAll()
+        report("crowding done, items removed")
     }
 
     private static func handleDrills() -> Bool {
@@ -148,201 +174,6 @@ enum HelperCommands {
         }
     }
 
-    /// Renders the setup window in every phase to PNG files.
-    ///
-    /// Screenshots would need the screen recording permission, which this
-    /// project promises never to ask for (invariant I2). Rendering the view
-    /// directly produces the same evidence without any permission, and it is
-    /// deterministic, which a screenshot never is.
-    private static func renderSetupEvidence(into directory: URL) {
-        let phases: [(name: String, phase: HelperSetupModel.Phase)] = [
-            ("1-before-install", .idle),
-            ("2-awaiting-approval", .awaitingApproval),
-            ("3-verifying", .verifying),
-            ("4-ready", .ready(fanCount: 1)),
-            ("5-removed", .removed),
-            ("6-failed", .failed("Operation not permitted")),
-        ]
-
-        do {
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        } catch {
-            report("cannot create \(directory.path): \(error)")
-            return
-        }
-
-        for entry in phases {
-            let view = HelperSetupView(
-                model: HelperSetupModel(), fixedPhaseForRendering: entry.phase)
-            let renderer = ImageRenderer(content: view)
-            renderer.scale = 2
-
-            guard let cgImage = renderer.cgImage,
-                let data = NSBitmapImageRep(cgImage: cgImage)
-                    .representation(using: .png, properties: [:])
-            else {
-                report("render failed: \(entry.name)")
-                continue
-            }
-
-            let url = directory.appendingPathComponent("setup-\(entry.name).png")
-            do {
-                try data.write(to: url)
-                report("wrote \(url.path)")
-            } catch {
-                report("write failed for \(entry.name): \(error)")
-            }
-        }
-    }
-
-    /// One frozen panel state for the render evidence.
-    private struct PanelScene {
-        let name: String
-        let readings: [SensorReading]
-        let rpm: Int
-        let selection: ManualSelection
-        let state: ControlState
-        let layer: SafetyLayer?
-        let installer: HelperInstaller.State
-        let expanded: Set<SensorGroup>
-        let dark: Bool
-    }
-
-    /// The P6.02 states worth freezing: firmware in charge, the engine
-    /// driving (both appearances), panic, and no helper installed.
-    private static func panelScenes() -> [PanelScene] {
-        func reading(_ name: String, _ group: SensorGroup, _ celsius: Double) -> SensorReading {
-            SensorReading(rawName: name, displayName: name, group: group, celsius: celsius)
-        }
-        let normal: [SensorReading] = [
-            reading("PMU tdie5", .compute, 65.4),
-            reading("PMU tdie1", .compute, 63.8),
-            reading("PMU tdie2", .compute, 61.2),
-            reading("PMU tdev1", .compute, 58.9),
-            reading("GPU tdie0", .graphics, 57.6),
-            reading("GPU tdie1", .graphics, 55.1),
-            reading("PMU tdie9", .power, 52.3),
-            reading("DDR temp", .memory, 49.2),
-            reading("NAND CH0 temp", .storage, 41.8),
-        ]
-        var hot = normal
-        hot[0] = reading("PMU tdie5", .compute, 96.8)
-
-        return [
-            PanelScene(
-                name: "1-firmware", readings: normal, rpm: 1002,
-                selection: ManualSelection(profileName: "System"),
-                state: .monitoring, layer: nil, installer: .enabled,
-                expanded: [.compute], dark: false),
-            PanelScene(
-                name: "2-driving", readings: normal, rpm: 2755,
-                selection: ManualSelection(profileName: "Balanced"),
-                state: .controlling, layer: nil, installer: .enabled,
-                expanded: [.compute], dark: false),
-            PanelScene(
-                name: "3-driving-dark", readings: normal, rpm: 2755,
-                selection: ManualSelection(profileName: "Balanced"),
-                state: .controlling, layer: nil, installer: .enabled,
-                expanded: [.compute], dark: true),
-            PanelScene(
-                name: "4-panic", readings: hot, rpm: 4900,
-                selection: ManualSelection(profileName: "Balanced"),
-                state: .panic, layer: .panic, installer: .enabled,
-                expanded: [], dark: false),
-            PanelScene(
-                name: "5-not-installed", readings: normal, rpm: 998,
-                selection: ManualSelection(profileName: "System"),
-                state: .monitoring, layer: nil, installer: .notRegistered,
-                expanded: [], dark: false),
-        ]
-    }
-
-    /// Renders the menu bar panel in its P6.02 states on fixed data, same
-    /// rationale as `renderSetupEvidence`: deterministic, permission-free.
-    /// The control model in each scene runs real arbitration on the frozen
-    /// selection, so no render can show a state arbitration would refuse.
-    private static func renderPanelEvidence(into directory: URL) {
-        do {
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        } catch {
-            report("cannot create \(directory.path): \(error)")
-            return
-        }
-
-        for scene in panelScenes() {
-            let fan = FanState(
-                id: 0, name: "Fan 0", currentRPM: scene.rpm,
-                minimumRPM: 1000, maximumRPM: 4900, isPoweredOff: false)
-            let monitor = MonitorModel(fixedForRendering: scene.readings, fans: [fan])
-            let control = ControlModel(
-                fixedForRendering: monitor,
-                selection: scene.selection,
-                state: scene.state,
-                layer: scene.layer)
-            let setup = HelperSetupModel()
-            setup.fixedInstallerStateForRendering = scene.installer
-
-            let view = MenuBarPanel(
-                model: monitor, setup: setup, control: control,
-                initiallyExpanded: scene.expanded
-            )
-            .background(scene.dark ? Color(white: 0.14) : Color(white: 0.97))
-            .environment(\.colorScheme, scene.dark ? .dark : .light)
-
-            let renderer = ImageRenderer(content: view)
-            renderer.scale = 2
-
-            guard let cgImage = renderer.cgImage,
-                let data = NSBitmapImageRep(cgImage: cgImage)
-                    .representation(using: .png, properties: [:])
-            else {
-                report("render failed: \(scene.name)")
-                continue
-            }
-
-            let url = directory.appendingPathComponent("panel-\(scene.name).png")
-            do {
-                try data.write(to: url)
-                report("wrote \(url.path)")
-            } catch {
-                report("write failed for \(scene.name): \(error)")
-            }
-        }
-    }
-
-    /// Renders the design-system swatch sheet in both appearances, same
-    /// rationale as `renderSetupEvidence`: deterministic, permission-free.
-    private static func renderDesignEvidence(into directory: URL) {
-        do {
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        } catch {
-            report("cannot create \(directory.path): \(error)")
-            return
-        }
-
-        for darkAppearance in [false, true] {
-            let renderer = ImageRenderer(
-                content: DesignEvidenceView(darkAppearance: darkAppearance))
-            renderer.scale = 2
-
-            guard let cgImage = renderer.cgImage,
-                let data = NSBitmapImageRep(cgImage: cgImage)
-                    .representation(using: .png, properties: [:])
-            else {
-                report("render failed: \(darkAppearance ? "dark" : "light")")
-                continue
-            }
-
-            let url = directory.appendingPathComponent(
-                "design-\(darkAppearance ? "dark" : "light").png")
-            do {
-                try data.write(to: url)
-                report("wrote \(url.path)")
-            } catch {
-                report("write failed: \(error)")
-            }
-        }
-    }
 }
 
 /// Menu bar entry point.
@@ -356,6 +187,7 @@ struct BoreasApp: App {
     @State private var model = MonitorModel()
     @State private var setup = HelperSetupModel()
     @State private var control: ControlModel
+    @State private var visibility = StatusItemVisibilityModel()
 
     init() {
         let monitor = MonitorModel()
@@ -375,8 +207,14 @@ struct BoreasApp: App {
             // The label is on screen from launch, so sampling starts here —
             // the status item shows live numbers before the panel is ever
             // opened, and the loop never depends on the panel being open.
-            MenuBarLabel(model: model)
-                .task { model.start() }
+            MenuBarLabel(model: model, control: control)
+                .task {
+                    model.start()
+                    // The visibility monitor lives at app level: the label
+                    // itself is rendered to an image by MenuBarExtra, so
+                    // nothing inside it can ever measure a window.
+                    visibility.beginMonitoring()
+                }
         }
         .menuBarExtraStyle(.window)
 

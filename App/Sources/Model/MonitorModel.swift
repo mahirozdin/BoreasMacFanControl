@@ -23,6 +23,13 @@ public final class MonitorModel {
     /// Non-nil when readings come from a degraded path.
     public private(set) var degradedReason: String?
 
+    /// The hottest reading of each recent sample, oldest first — the status
+    /// item's mini chart. Ninety samples at the two-second cadence is three
+    /// minutes of shape, which is what a glance at the menu bar is for.
+    public private(set) var hottestHistory: [Double] = []
+
+    private static let historyLimit = 90
+
     public private(set) var isRunning = false
 
     private var sensors: LiveSensorSource?
@@ -37,12 +44,17 @@ public final class MonitorModel {
 
     public init() {}
 
-    /// Render support (`--render-panel`): a monitor frozen on fixed data,
-    /// never started. Follows the `--render-setup` precedent — deterministic
-    /// evidence needs deterministic inputs.
-    init(fixedForRendering readings: [SensorReading], fans: [FanState]) {
+    /// Render support (`--render-panel`, `--render-status`): a monitor
+    /// frozen on fixed data, never started. Follows the `--render-setup`
+    /// precedent — deterministic evidence needs deterministic inputs.
+    init(
+        fixedForRendering readings: [SensorReading],
+        fans: [FanState],
+        history: [Double] = []
+    ) {
         self.readings = readings
         self.fans = fans
+        self.hottestHistory = history
     }
 
     public var hottest: SensorReading? {
@@ -105,6 +117,13 @@ public final class MonitorModel {
         } catch {
             fans = []
             logger.error("fan read failed: \(String(describing: error), privacy: .public)")
+        }
+
+        if let hottest {
+            hottestHistory.append(hottest.celsius)
+            if hottestHistory.count > Self.historyLimit {
+                hottestHistory.removeFirst(hottestHistory.count - Self.historyLimit)
+            }
         }
     }
 }

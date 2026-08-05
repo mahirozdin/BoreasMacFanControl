@@ -1,6 +1,6 @@
 # User Interface
 
-> Last updated: 2026-08-05 — P6.02
+> Last updated: 2026-08-05 — P6.03
 > Source: blueprint §9
 
 ## Design language
@@ -26,6 +26,8 @@ The visual identity is designed from scratch. Binding decisions:
 ## Menu bar
 
 **Status item:** configurable content (primary/secondary temperature, fan RPM, mini chart) · horizontal or vertical · compact mode · active profile indicator · a visible but unobtrusive indicator while fan control is active · informing the user when space runs out (notch included).
+
+**Implementation (P6.03):** [`App/Sources/MenuBar/MenuBarLabel.swift`](../../App/Sources/MenuBar/MenuBarLabel.swift) reads its layout from the `statusItem.*` defaults keys in [`StatusItemStyle.swift`](../../App/Sources/MenuBar/StatusItemStyle.swift) (the P6.08 Appearance tab edits the same keys). The space warning's concealment *decision* is pure maths in [`Core/Presentation/StatusItemVisibility.swift`](../../Packages/Core/Sources/Core/Presentation/StatusItemVisibility.swift) under unit tests; [`StatusItemVisibilityMonitor.swift`](../../App/Sources/MenuBar/StatusItemVisibilityMonitor.swift) feeds it window-frame measurements (`MenuBarExtra` renders its label to an image, so measurement happens at app level, not in the label). Render evidence: `--render-status <dir>`; the crowded-bar leg is proven empirically with `--crowd-menubar`.
 
 **Drop-down panel:** profile picker (one click switch + temporary override) · fans (name, RPM, fill) · temperatures (grouped, collapsible) · main window / settings / quit.
 
