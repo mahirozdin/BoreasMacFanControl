@@ -83,6 +83,18 @@ public struct Curve: Sendable, Hashable {
         return last.duty
     }
 
+    /// The one hand-built curve that cannot fail validation: full duty
+    /// everywhere. Exists so unreachable fallbacks have somewhere safe to
+    /// land without a force-try.
+    public static let fullSpeedFallback: Curve = {
+        let points = [
+            CurvePoint(celsius: 0, duty: Duty(1)),
+            CurvePoint(celsius: 100, duty: Duty(1)),
+        ]
+        if let curve = try? Curve(points: points) { return curve }
+        fatalError("the constant full-speed curve failed its own validation")
+    }()
+
     /// The falling branch of the hysteresis pair: the same curve shifted
     /// left by `band` degrees, so at any temperature it answers what the
     /// base curve would answer `band` degrees hotter.
@@ -93,5 +105,28 @@ public struct Curve: Sendable, Hashable {
         // fallback keeps the compiler honest without a force-try.
         let shifted = points.map { CurvePoint(celsius: $0.celsius - shift, duty: $0.duty) }
         return (try? Curve(points: shifted)) ?? self
+    }
+}
+
+/// Codable through the validating initialiser: a curve decoded from a
+/// configuration file is either valid or a thrown `DecodingError` — the G6
+/// groundwork. There is no path that yields a decoded-but-invalid curve.
+extension Curve: Codable {
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let decoded = try container.decode([CurvePoint].self)
+        do {
+            try self.init(points: decoded)
+        } catch {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "invalid curve: \(error)"
+            )
+        }
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(points)
     }
 }

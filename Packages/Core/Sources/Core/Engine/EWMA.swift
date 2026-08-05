@@ -38,3 +38,17 @@ public struct EWMA: Sendable, Hashable {
         return alpha * sample + (1 - alpha) * previous
     }
 }
+
+/// Codable through the clamping initialiser, so a decoded alpha obeys the
+/// same `[0, 1]` guarantee as a constructed one.
+extension EWMA: Codable {
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.init(alpha: try container.decode(Double.self))
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(alpha)
+    }
+}

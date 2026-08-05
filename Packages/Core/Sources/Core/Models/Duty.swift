@@ -8,7 +8,7 @@ import Foundation
 /// of bug rather than testing for it.
 ///
 /// `0` is the hardware minimum, not "off". Boreas never stops a fan.
-public struct Duty: Sendable, Hashable, Comparable, Codable {
+public struct Duty: Sendable, Hashable, Comparable {
 
     public let value: Double
 
@@ -43,5 +43,20 @@ public struct Duty: Sendable, Hashable, Comparable, Codable {
     ///     rpm = minimum + (maximum - minimum) * duty
     public func rpm(for fan: FanState) -> Int {
         fan.minimumRPM + Int((Double(fan.span) * value).rounded())
+    }
+}
+
+/// Codable as a bare number, through the clamping initialiser: a duty
+/// decoded from a configuration file obeys the same [0, 1] guarantee as a
+/// constructed one, ambiguity resolving up included.
+extension Duty: Codable {
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.init(try container.decode(Double.self))
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
     }
 }
