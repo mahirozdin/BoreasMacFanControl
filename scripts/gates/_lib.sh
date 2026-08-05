@@ -40,17 +40,27 @@ require_tools() {
 }
 
 # ---------------------------------------------------------------------------
-# Tracked file list (newline separated). Optional exclusion regex.
+# Scannable file list (newline separated). Optional exclusion regex.
 # Bash 3.2 compatible: returns a newline separated string, not an array.
+#
+# SCOPE NOTE — tracked AND untracked-but-not-ignored:
+#   Plain `git ls-files` sees only what is already committed or staged. A
+#   brand-new file is invisible to every gate until AFTER it enters git
+#   history — exactly backwards for gates whose job is keeping violations
+#   OUT of the permanent record. It really happened: a new schema file
+#   carrying an off-allowlist domain passed gate-names untracked, was
+#   committed, and only turned the gate red in the next session.
+#   `--others --exclude-standard` closes that window; ignored build
+#   artifacts stay excluded.
 # ---------------------------------------------------------------------------
 tracked() {
   local pattern="${1:-}"
   local exclude="${2:-}"
   local out
   if [ -n "$pattern" ]; then
-    out=$(git ls-files -- $pattern 2>/dev/null || true)
+    out=$(git ls-files --cached --others --exclude-standard -- $pattern 2>/dev/null || true)
   else
-    out=$(git ls-files 2>/dev/null || true)
+    out=$(git ls-files --cached --others --exclude-standard 2>/dev/null || true)
   fi
   if [ -n "$exclude" ]; then
     out=$(printf '%s\n' "$out" | grep -vE "$exclude" || true)

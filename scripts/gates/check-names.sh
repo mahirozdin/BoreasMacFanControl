@@ -47,7 +47,7 @@ COUNT=$(printf '%s\n' "$FILES" | grep -c . || true)
 note "files scanned: $COUNT"
 
 if [ "$COUNT" -eq 0 ]; then
-  warn "no tracked files to scan — 'git add' may not have been run"
+  warn "no files to scan — empty repository or everything excluded"
 fi
 
 # NOTE: every text scan uses grep -I — binary files (PNG and so on) are
@@ -95,7 +95,7 @@ fi
 #    How to catch third party product references without keeping a name
 #    list: every external domain not on the allowlist asks for human review.
 # ---------------------------------------------------------------------------
-ALLOWED='(apple\.com|developer\.apple\.com|support\.apple\.com|github\.com|githubusercontent\.com|swift\.org|opensource\.org|spdx\.org|keepachangelog\.com|semver\.org|contributor-covenant\.org|brew\.sh|conventionalcommits\.org|www\.apache\.org|apache\.org|www\.apple\.com|www\.contributor-covenant\.org|www\.w3\.org|w3\.org|img\.shields\.io|shields\.io|localhost|127\.0\.0\.1|example\.org|example\.com|bubiapps\.com)'
+ALLOWED='(apple\.com|developer\.apple\.com|support\.apple\.com|github\.com|githubusercontent\.com|swift\.org|opensource\.org|spdx\.org|json-schema\.org|keepachangelog\.com|semver\.org|contributor-covenant\.org|brew\.sh|conventionalcommits\.org|www\.apache\.org|apache\.org|www\.apple\.com|www\.contributor-covenant\.org|www\.w3\.org|w3\.org|img\.shields\.io|shields\.io|localhost|127\.0\.0\.1|example\.org|example\.com|bubiapps\.com)'
 
 if [ "$COUNT" -gt 0 ]; then
   URLS=$(grep_files "$FILES" -IohE 'https?://[a-zA-Z0-9._-]+' || true)
