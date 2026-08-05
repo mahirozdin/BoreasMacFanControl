@@ -126,11 +126,13 @@ Three things, in the same change:
 2. `TODO.md` status summary table
 3. `TODO.md` run log entry plus `Next: P<n>.<nn>`
 
-Then commit:
+Then commit **and push** — finished work does not sit unpushed on one machine
+(project owner's standing instruction, 2026-08-05):
 
 ```bash
 git add -A
 git commit -m "<type>: <summary> (P<n>.<nn>)"
+git push
 ```
 
 ---
