@@ -1,6 +1,6 @@
 # Localisation
 
-> Last updated: 2026-08-10 — P6.11
+> Last updated: 2026-08-10 — P6.13
 > Source: blueprint §9.7 · Decision: [ADR 0016](../architecture/adr/0016-language-scope.md)
 
 ## Scope
@@ -35,6 +35,52 @@ Russian strings can run **30–50% longer** than English; Chinese is markedly sh
 
 CI checks this with a **pseudo-locale** (artificially lengthened strings) layout test.
 
+### Implementation (P6.13) — and the rule as it is actually enforced
+
+`make layout` → [`scripts/layout-test.sh`](../../scripts/layout-test.sh), and in CI as its own
+step after the app build. It runs in the *built application* rather than as a gate
+because only SwiftUI and AppKit can say how wide a string renders in the font it
+will really use.
+
+**The rule above is stated absolutely and enforced as a measurement, and the
+difference matters.** A sortable table needs its columns to line up, so the
+sensor table has five fixed widths and always will. Banning them outright would
+be a rule nobody could keep, so what is enforced is the thing the ban was
+protecting: **no fixed-width container may clip what it has to hold**, at the
+longest string any shipped language gives it, plus an expansion budget.
+
+| Quantity | Value | Why |
+|---|---|---|
+| Expansion budget (fails the build) | **1.4×** | Measured German/Russian expansion clusters here. Sizing for 2× spends width in every language on one that does not exist |
+| Diagnostic factor (reported only) | 2.0× | A container that clears 1.4 but not 2.0 has less headroom than another. That is not a defect, and failing on it teaches people to ignore the check |
+
+Both live in [`Core/Presentation/PseudoLocale.swift`](../../Packages/Core/Sources/Core/Presentation/PseudoLocale.swift)
+under test, with the expansion itself — which **preserves format specifiers**,
+unlike the platform's `-NSDoubleLocalizedStrings` (that turns `%lld` into `lld`).
+The flag is still used, for *renders a human looks at*: `LAYOUT_RENDER_DIR=<dir> make layout`
+writes the doubled interface in both languages.
+
+**The inventory of containers derives from the views' own declarations** —
+`SensorColumn.allCases` with `SensorTable.width(of:)`, and
+`CurvePointTable.temperatureColumnWidth` — so a column that is resized or renamed
+is re-measured without anybody remembering to update a list. The `localizationKey`
+those columns expose is derived from `rawValue` rather than written twice, and the
+drill checks the derivation still resolves to what the view shows, because a
+renamed key would otherwise make it measure the key text and pass.
+
+**What the first run found.** Three real violations, one of them live: Turkish
+**"Performans çekirdekleri" needed 144 pt of a 130 pt column**, so the group
+column was truncating in the shipped product, not merely at risk of it. English
+"Performance cores" and the Turkish "En yüksek" header cleared their columns but
+not the budget. The columns were re-sized *by measurement* — the group column
+took the width the sensor-name column gave up, since sensor names are raw keys,
+not localised, and already truncate in the middle by design.
+
+**A cost worth naming:** the group column is now the widest in the table, sized
+for a name that per [ADR 0020](../architecture/adr/0020-compute-die-sensor-group.md)
+may never appear on Apple Silicon at all. The width is reserved anyway — the
+layout is static and the group *can* occur.
+
 ## Translation maintenance
 
 - `TRANSLATORS.md` — responsible contributors per language
@@ -49,9 +95,18 @@ Interface text is written from scratch. Plain, direct, free of jargon.
 
 Tone: it also says what it cannot do. In this category, honesty is the strongest communication.
 
-## Gate
+## Gates
 
-`make gate-i18n` enforces: no hard coded user facing text · all 5 languages present in the catalogue · no string with an empty `comment` field.
+| Gate | What it holds |
+|---|---|
+| `make gate-i18n` | The catalogue rules — see [What the gate checks](#what-the-gate-checks) below |
+| `make layout` | Y3, the layout consequence — see [Implementation (P6.13)](#implementation-p613--and-the-rule-as-it-is-actually-enforced) above |
+
+> **Stale claim removed (P6.13):** this section used to say `gate-i18n` requires
+> "all 5 languages present in the catalogue". P6.11 replaced that rule — it would
+> have passed on a single translated string, and went red for the three languages
+> P7.06 owns — and the section below has described the real behaviour since. The
+> two contradicted each other for two tasks.
 
 
 ## How the catalogue is built (P6.11)

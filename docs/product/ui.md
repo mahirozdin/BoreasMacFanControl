@@ -88,6 +88,7 @@ looking at and forgotten in the one beside it:
 | No animation ignores `Reduce Motion` | `make gate-a11y` rule A3 | same |
 | Contrast meets the requirement its role carries | `ContrastTests`, and re-measured on the *drawn* colours | [`Core/Presentation/Contrast.swift`](../../Packages/Core/Sources/Core/Presentation/Contrast.swift) · `--a11y-drill` |
 | The menu bar item says what its tint means | `StatusItemAnnouncement` under test | [`Core/Presentation/StatusItemAnnouncement.swift`](../../Packages/Core/Sources/Core/Presentation/StatusItemAnnouncement.swift) |
+| No fixed-width container clips a translation (Y3) | `make layout`, in CI after the app build | [`scripts/layout-test.sh`](../../scripts/layout-test.sh) · [`docs/development/localization.md`](../development/localization.md) |
 
 The words for everything read aloud live in
 [`AccessibilityWording.swift`](../../App/Sources/Design/AccessibilityWording.swift),

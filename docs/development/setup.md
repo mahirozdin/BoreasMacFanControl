@@ -46,6 +46,7 @@ make generate
 | `make gate-language` | The repository is written in English |
 | `make gate-coverage` | `Core` line coverage ≥ 85% |
 | `make smoke` | Hardware smoke test on a real Mac (P4.10; sleep leg attended-only) |
+| `make layout` | Y3 — pseudo-locale overflow check; needs the app built (P6.13) |
 | `make generate` | Generates the Xcode project from `project.yml` |
 | `make build` / `make test` / `make lint` | Build / test / lint the packages |
 | `make clean` | Removes build outputs |
@@ -80,6 +81,7 @@ BOREAS=~/Library/Developer/Xcode/DerivedData/Boreas-*/Build/Products/Debug/Borea
 | `--shortcut-drill` | Global shortcuts register with **no accessibility permission** (P6.10) |
 | `--trigger-drill` | A trigger selects its profile, and a manual choice still overrides it (P6.14) |
 | `--a11y-drill` | The drawn colours are exactly Core's, and their measured contrast clears the requirement each role carries — in four appearances (P6.12) |
+| `--layout-drill` | No fixed-width text container clips its content in any shipped language, plus a 1.4× expansion budget (P6.13) |
 | **Render evidence — writes PNGs into a directory** | |
 | `--render-setup <dir>` | The helper setup window in every phase |
 | `--render-design <dir>` | The design system swatch sheet, both appearances |

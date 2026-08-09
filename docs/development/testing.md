@@ -29,6 +29,7 @@ automated check that cannot exist.
 | Contrast clears the requirement each role carries | `ContrastTests` + `--a11y-drill` in four appearances | yes |
 | The drawn colours are the ones `Core` decided | `--a11y-drill` | yes |
 | Nothing signalled by colour is missing from speech | `StatusItemAnnouncementTests` | yes |
+| No fixed-width container clips a translation (Y3) | `make layout` — measured in every bundled language at a 1.4× budget | yes |
 | The labels are *read in a sensible order*, and each flow is completable | VoiceOver, by hand | **no** |
 | `Reduce Transparency` is honoured | by hand — read-only system setting | **no** |
 

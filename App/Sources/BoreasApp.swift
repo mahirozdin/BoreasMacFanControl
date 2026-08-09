@@ -120,6 +120,7 @@ enum HelperCommands {
             ("--shortcut-drill", ShortcutDrill.run),
             ("--trigger-drill", TriggerDrill.run),
             ("--a11y-drill", AccessibilityDrill.run),
+            ("--layout-drill", LayoutDrill.run),
         ]
         for drill in drills where arguments.contains(drill.flag) {
             drill.run(report)

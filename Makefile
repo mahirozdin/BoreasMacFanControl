@@ -88,6 +88,10 @@ bootstrap: ## Set up and verify the local development environment
 smoke: ## Hardware smoke test on this Mac (see --with-sleep for the attended leg)
 	@scripts/smoke-test-hardware.sh
 
+.PHONY: layout
+layout: ## Y3 — pseudo-locale overflow check (needs the app built)
+	@scripts/layout-test.sh
+
 .PHONY: generate
 generate: ## Generate the Xcode project from project.yml
 	@command -v xcodegen >/dev/null 2>&1 \

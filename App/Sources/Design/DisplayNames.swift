@@ -10,6 +10,10 @@ import SwiftUI
 extension SensorGroup {
 
     /// The user-facing name of the group.
+    /// The catalogue key for `displayName`, derived from `rawValue` rather than
+    /// written twice — see `SensorColumn.localizationKey` for why.
+    var localizationKey: String { "group.\(rawValue)" }
+
     var displayName: String {
         switch self {
         case .compute:

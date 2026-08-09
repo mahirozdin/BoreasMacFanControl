@@ -19,6 +19,16 @@ enum SensorColumn: String, CaseIterable, Hashable {
     case maximum
     case mean
 
+    /// The catalogue key for `displayName`, derived from `rawValue` rather than
+    /// written twice.
+    ///
+    /// The P6.13 layout drill needs each header in *every* language, not just
+    /// the current one, and that means the key rather than the resolved string.
+    /// Deriving it keeps the same fact in one place — and the drill asserts the
+    /// derivation still resolves to `displayName`, so a renamed key fails loudly
+    /// instead of silently measuring the key text itself.
+    var localizationKey: String { "table.column.\(rawValue)" }
+
     var displayName: String {
         switch self {
         case .name:
@@ -147,11 +157,38 @@ struct SensorTable: View {
                 comment: "VoiceOver value of the sensor table column currently sorted downwards")
     }
 
+    /// Column widths, **set by measurement rather than by eye.**
+    ///
+    /// The P6.13 layout drill measures every header and every group name that
+    /// can land in these columns, in every shipped language, against a 1.4×
+    /// expansion budget (`Core.PseudoLocale.expansionFactor`) — and the numbers
+    /// it started from failed. Turkish "Performans çekirdekleri" needed 144 pt
+    /// of a 130 pt column, so the group column was **truncating in the shipped
+    /// product**, not merely at risk of it. English "Performance cores" cleared
+    /// 130 pt but not the budget, and the Turkish "En yüksek" header did the
+    /// same to the 70 pt numeric columns.
+    ///
+    /// The sensor name column gave up the width the group column needed: names
+    /// are raw sensor keys ("PMU tdie5", "NAND CH0 temp"), they are not
+    /// localised, and they already truncate in the middle by design.
+    ///
+    /// **The group column is the widest in the table, and that is a real cost.**
+    /// It is sized for "Performans çekirdekleri", a name that per
+    /// [ADR 0020](../../../docs/architecture/adr/0020-compute-die-sensor-group.md)
+    /// may never appear on Apple Silicon at all — the classifier cannot
+    /// attribute a `PMU tdie<n>` to a cluster. The width is reserved anyway:
+    /// the layout is static, the group *can* occur, and a column that clips is
+    /// a Y3 violation whether or not the case is common.
+    ///
+    /// Change one of these and run `--layout-drill`; it will say whether the new
+    /// number holds. The expansion pads with a representative letter, so the
+    /// measured width of a 1.4×-longer string is slightly more than 1.4× the
+    /// original — which is why these numbers are not simply the naturals × 1.4.
     static func width(of column: SensorColumn) -> CGFloat {
         switch column {
-        case .name: return 220
-        case .group: return 130
-        case .current, .maximum, .mean: return 70
+        case .name: return 200
+        case .group: return 215
+        case .current, .maximum, .mean: return 82
         }
     }
 

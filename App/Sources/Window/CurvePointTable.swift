@@ -18,6 +18,13 @@ struct CurvePointTable: View {
     let onChange: (Curve) -> Void
     let onBeginEdit: () -> Void
 
+    /// The two column widths, named so the P6.13 layout drill can measure the
+    /// headers against them rather than against numbers copied by hand — a
+    /// copied constant is one that goes stale the first time a column is
+    /// resized, and silently.
+    static let temperatureColumnWidth: CGFloat = 105
+    static let dutyColumnWidth: CGFloat = 76
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             header
@@ -53,14 +60,14 @@ struct CurvePointTable: View {
                     localized: "curve.table.temperature", defaultValue: "Temperature",
                     comment: "Numeric curve table column: a control point's temperature")
             )
-            .frame(width: 96, alignment: .leading)
+            .frame(width: Self.temperatureColumnWidth, alignment: .leading)
 
             Text(
                 String(
                     localized: "curve.table.duty", defaultValue: "Fan",
                     comment: "Numeric curve table column: a control point's fan duty")
             )
-            .frame(width: 76, alignment: .leading)
+            .frame(width: Self.dutyColumnWidth, alignment: .leading)
 
             Spacer(minLength: 0)
         }
@@ -80,7 +87,7 @@ struct CurvePointTable: View {
             )
             .labelsHidden()
             .monospacedDigit()
-            .frame(width: 96)
+            .frame(width: Self.temperatureColumnWidth)
             .accessibilityLabel(
                 String(
                     localized: "curve.table.temperature.accessibility",
@@ -96,7 +103,7 @@ struct CurvePointTable: View {
             )
             .labelsHidden()
             .monospacedDigit()
-            .frame(width: 76)
+            .frame(width: Self.dutyColumnWidth)
             .accessibilityLabel(
                 String(
                     localized: "curve.table.duty.accessibility",

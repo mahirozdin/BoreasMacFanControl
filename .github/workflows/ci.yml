@@ -117,6 +117,19 @@ jobs:
             -configuration Debug -destination 'platform=macOS,arch=arm64' \
             CODE_SIGNING_ALLOWED=NO build | xcbeautify --quieter
 
+      # ------------------------------------------------------------------
+      # P6.13 — invariant Y3. Runs here rather than in `make check` because
+      # only the built application can say how wide a string renders in the
+      # font it will actually use.
+      # ------------------------------------------------------------------
+      - name: Pseudo-locale layout test
+        if: steps.xcgen.outputs.ready == 'true'
+        run: |
+          APP=$(find ~/Library/Developer/Xcode/DerivedData -name Boreas.app -type d \
+            -path '*/Debug/*' 2>/dev/null | head -1)
+          if [ -z "$APP" ]; then echo "::error::built app not found"; exit 1; fi
+          APP="$APP" scripts/layout-test.sh
+
       - name: Build CLI
         if: steps.xcgen.outputs.ready == 'true'
         run: |
