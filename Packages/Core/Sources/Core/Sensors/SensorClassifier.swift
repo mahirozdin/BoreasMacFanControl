@@ -219,8 +219,35 @@ public struct SensorOverride: Sendable, Hashable, Codable {
     public let displayName: String?
     public let group: SensorGroup?
 
-    public init(displayName: String? = nil, group: SensorGroup? = nil) {
+    /// Kept out of the interface. Hiding is a *display* choice and never a
+    /// safety one: a hidden sensor is still read, still counted by its
+    /// group's aggregate, and still able to trigger the panic layer. The
+    /// alternative — letting a user switch off the sensor that would have
+    /// saved their machine — is not a setting worth offering.
+    public let hidden: Bool
+
+    public init(displayName: String? = nil, group: SensorGroup? = nil, hidden: Bool = false) {
         self.displayName = displayName
         self.group = group
+        self.hidden = hidden
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case displayName
+        case group
+        case hidden
+    }
+
+    /// Hand written because synthesised decoding does not fall back to a
+    /// property's default: a file written before `hidden` existed would
+    /// otherwise fail to decode, and the loader would report the whole
+    /// configuration as broken over a missing boolean.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            displayName: try container.decodeIfPresent(String.self, forKey: .displayName),
+            group: try container.decodeIfPresent(SensorGroup.self, forKey: .group),
+            hidden: try container.decodeIfPresent(Bool.self, forKey: .hidden) ?? false
+        )
     }
 }

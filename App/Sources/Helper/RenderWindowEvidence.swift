@@ -93,7 +93,7 @@ extension RenderEvidence {
                 rawName: "GPU tdie0", displayName: "GPU tdie0", group: .graphics,
                 celsius: graphics.last?.1 ?? 52),
             SensorReading(
-                rawName: "DDR temp", displayName: "DDR temp", group: .memory, celsius: 46.4),
+                rawName: "LPDDR temp", displayName: "LPDDR temp", group: .memory, celsius: 46.4),
             SensorReading(
                 rawName: "NAND CH0 temp", displayName: "NAND CH0 temp", group: .storage,
                 celsius: 41.5),
@@ -162,7 +162,7 @@ extension RenderEvidence {
 
     /// Renders one view to a PNG. The renderer is the same everywhere, so
     /// the evidence commands differ only in what they build.
-    private static func write(_ view: some View, to directory: URL, named name: String) {
+    static func write(_ view: some View, to directory: URL, named name: String) {
         let renderer = ImageRenderer(content: view)
         renderer.scale = 2
         guard let cgImage = renderer.cgImage,

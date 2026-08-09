@@ -35,9 +35,23 @@ public final class ControlModel {
     public private(set) var activeLayer: SafetyLayer?
     public private(set) var lastProblem: String?
 
-    /// The built-in profiles, in arbitration order. Custom profiles arrive
-    /// with the configuration file work (P6.08).
-    public private(set) var profiles: [Profile] = BuiltInProfiles.all()
+    /// The configuration this model reads its profiles and safety limits
+    /// from, when there is one.
+    ///
+    /// Optional on purpose: the hardware drills and the render fixtures
+    /// build a `ControlModel` too, and a drill that edited a profile would
+    /// otherwise write its test curve into the owner's real configuration
+    /// file. Without a store the profiles live in memory, which is exactly
+    /// what a measuring instrument wants.
+    ///
+    /// Module-internal rather than private: profile editing lives in
+    /// `ControlProfileEditing.swift` so this file stays inside the lint
+    /// budget, and `private` is file scoped.
+    let store: ConfigurationStore?
+
+    /// The profiles in arbitration order — from the configuration file when
+    /// there is one, the built-ins otherwise.
+    public internal(set) var profiles: [Profile] = BuiltInProfiles.all()
 
     /// The user's explicit choice. Starts as `System` — firmware in charge —
     /// so launching the app never takes the fans over by itself; automatic
@@ -80,9 +94,22 @@ public final class ControlModel {
     /// monitor's sampling cadence.
     private let cycleInterval: Duration = .seconds(2)
 
-    public init(monitor: MonitorModel) {
+    public init(monitor: MonitorModel, store: ConfigurationStore? = nil) {
         self.monitor = monitor
+        self.store = store
+        if let store {
+            profiles = store.configuration.profiles
+        }
         refreshOutcome()
+    }
+
+    /// Re-reads the profiles after the configuration changed underneath —
+    /// an import, a reset, or a settings edit.
+    public func reloadFromConfiguration() {
+        guard let store else { return }
+        profiles = store.configuration.profiles
+        refreshOutcome()
+        reconcile()
     }
 
     /// Render support (`--render-panel`): freezes the model in a given
@@ -96,6 +123,7 @@ public final class ControlModel {
         layer: SafetyLayer?
     ) {
         self.monitor = monitor
+        self.store = nil
         self.manualSelection = selection
         self.state = state
         self.activeLayer = layer
@@ -116,45 +144,6 @@ public final class ControlModel {
         manualSelection = ManualSelection(profileName: profileName, until: until)
         refreshOutcome()
         reconcile()
-    }
-
-    // MARK: - Profile editing (P6.06)
-
-    /// Replaces the active profile with an edited copy, in place.
-    ///
-    /// The engine reads the active profile fresh on every cycle, so an edit
-    /// reaches the fans within one tick — which is what makes the curve
-    /// editor an instrument rather than a drawing. Edits live in memory
-    /// only: writing them to the configuration file arrives with the
-    /// settings window, and pretending to persist would be worse than not
-    /// persisting.
-    ///
-    /// Per-fan overrides keep their own curves; the editor edits the
-    /// profile's default binding, and per-fan curves belong with profile
-    /// management (P6.08).
-    public func updateActiveProfile(
-        curve: Curve? = nil,
-        hysteresis: Hysteresis? = nil,
-        smoothing: EWMA? = nil,
-        slew: RateLimit? = nil
-    ) {
-        guard let active = outcome?.profile,
-            let index = profiles.firstIndex(where: { $0.name == active.name })
-        else { return }
-
-        let old = profiles[index]
-        let binding = curve.map { FanBinding(curve: $0, input: old.binding.input) } ?? old.binding
-        profiles[index] = Profile(
-            name: old.name,
-            binding: binding,
-            perFan: old.perFan,
-            triggers: old.triggers,
-            priority: old.priority,
-            smoothing: smoothing ?? old.smoothing,
-            hysteresis: hysteresis ?? old.hysteresis,
-            slew: slew ?? old.slew,
-            enginePaused: old.enginePaused)
-        refreshOutcome()
     }
 
     // MARK: - Manual duty override (P6.05)
@@ -187,11 +176,12 @@ public final class ControlModel {
 
     /// Recomputes the arbitration outcome for display and engagement
     /// decisions. Cheap and pure — safe to call every cycle.
-    private func refreshOutcome() {
+    func refreshOutcome() {
         outcome = Arbitration.activeProfile(
             among: profiles,
             manual: manualSelection,
             environment: currentEnvironment(),
+            defaultName: store?.configuration.defaultProfileName ?? BuiltInProfiles.defaultName,
             now: Date()
         )
     }
@@ -364,7 +354,8 @@ public final class ControlModel {
         let verdict = SafetyChain.govern(
             requested: Duty(manualDuty),
             thermal: ThermalPressure(ProcessInfo.processInfo.thermalState),
-            hottestCelsius: monitor.hottest?.celsius,
+            // Hidden sensors included, for the same reason as above.
+            hottestCelsius: monitor.allReadings.map(\.celsius).max(),
             lock: panicLock,
             now: Date()
         )
@@ -381,13 +372,20 @@ public final class ControlModel {
         guard let profile = outcome?.profile, !profile.enginePaused else { return nil }
 
         let now = Date()
-        let readingsByGroup = Dictionary(grouping: monitor.readings, by: \.group)
+        // `allReadings`, not `readings`: a sensor the user hid is still
+        // read, still counted by its group's aggregate and still able to
+        // trigger the panic layer. Hiding is a display choice, and the
+        // safety chain does not take display choices.
+        let readingsByGroup = Dictionary(grouping: monitor.allReadings, by: \.group)
             .mapValues { $0.map(\.celsius) }
         let input = Engine.Input(
             profile: profile,
             fans: fans,
             readingsByGroup: readingsByGroup,
             thermal: ThermalPressure(ProcessInfo.processInfo.thermalState),
+            // K3's threshold comes from the configuration; the type clamps
+            // it into [70, 95] whatever the file says (G2, ADR 0022).
+            panicThreshold: store?.configuration.safety.panicThreshold ?? .standard,
             now: now,
             elapsedSeconds: lastStepAt.map { now.timeIntervalSince($0) } ?? 0
         )

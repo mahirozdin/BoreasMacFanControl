@@ -12,7 +12,14 @@ import OSLog
 @Observable
 public final class MonitorModel {
 
+    /// What the interface shows: hidden sensors removed.
     public private(set) var readings: [SensorReading] = []
+
+    /// Every sensor read this cycle, hidden ones included. The settings
+    /// list needs it (a sensor you cannot see is a sensor you cannot
+    /// un-hide) and so does the safety chain, whose panic input is the
+    /// hottest reading *anywhere*.
+    public private(set) var allReadings: [SensorReading] = []
     public private(set) var fans: [FanState] = []
     public private(set) var power: PowerContext = .desktop
 
@@ -67,11 +74,21 @@ public final class MonitorModel {
     private var task: Task<Void, Never>?
     private let logger = Logger(subsystem: "com.bubiapps.boreas", category: "ui")
 
-    /// How often the hardware is sampled. Two seconds keeps the display close
-    /// to live while leaving the process essentially idle in between.
-    private let interval: Duration = .seconds(2)
+    /// The configuration this model reads its sampling interval and sensor
+    /// overrides from, when there is one. Optional for the same reason as
+    /// `ControlModel`'s: drills and render fixtures build a monitor too.
+    private let store: ConfigurationStore?
 
-    public init() {}
+    /// How often the hardware is sampled. Two seconds keeps the display close
+    /// to live while leaving the process essentially idle in between; the
+    /// configuration may widen or narrow it, and the type clamps it.
+    private var interval: Duration {
+        .seconds(store?.configuration.general.samplingIntervalSeconds ?? 2)
+    }
+
+    public init(store: ConfigurationStore? = nil) {
+        self.store = store
+    }
 
     /// Render support (`--render-panel`, `--render-status`): a monitor
     /// frozen on fixed data, never started. Follows the `--render-setup`
@@ -83,7 +100,9 @@ public final class MonitorModel {
         groupHistory: [SensorGroup: [(Date, Double)]] = [:],
         fanHistory: [Int: [(Date, Double)]] = [:]
     ) {
+        self.store = nil
         self.readings = readings
+        self.allReadings = readings
         self.fans = fans
         for (time, value) in history {
             overallHistory.record(value, at: time)
@@ -186,7 +205,7 @@ public final class MonitorModel {
         do {
             if sensors == nil { sensors = try LiveSensorSource() }
             if let sensors {
-                readings = try await sensors.snapshot()
+                readings = applyOverrides(to: try await sensors.snapshot())
                 degradedReason = await sensors.degradedReason
                 sensorProblem = nil
             }
@@ -194,6 +213,7 @@ public final class MonitorModel {
             // Degrade rather than fail: fans and power are still shown, and the
             // user is told exactly what is missing.
             readings = []
+            allReadings = []
             sensorProblem = String(
                 localized: "monitor.sensors.unavailable",
                 defaultValue: "Temperature sensors are not responding on this Mac.",
@@ -213,6 +233,29 @@ public final class MonitorModel {
         }
 
         recordHistory(at: Date())
+    }
+
+    /// Re-derives every reading through the classifier with the user's
+    /// corrections applied (P6.08).
+    ///
+    /// Applied here rather than deeper down because these readings feed the
+    /// engine as well as the interface: a sensor re-filed into another
+    /// group must change which curve can bind to it, not merely what the
+    /// list says. Hidden sensors are dropped from the *published* list only
+    /// after `allReadings` has kept a copy — the safety chain's panic input
+    /// is the hottest reading anywhere, and hiding is a display choice.
+    private func applyOverrides(to raw: [SensorReading]) -> [SensorReading] {
+        let overrides = store?.configuration.sensorOverrides ?? [:]
+        guard !overrides.isEmpty else {
+            allReadings = raw
+            return raw
+        }
+        let corrected = raw.map {
+            SensorClassifier.makeReading(
+                rawName: $0.rawName, celsius: $0.celsius, overrides: overrides)
+        }
+        allReadings = corrected
+        return corrected.filter { !(overrides[$0.rawName]?.hidden ?? false) }
     }
 
     /// Files this sample into every series and statistic.

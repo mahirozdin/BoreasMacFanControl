@@ -30,6 +30,7 @@ enum HelperCommands {
             ("--render-panel", RenderEvidence.panel),
             ("--render-status", RenderEvidence.status),
             ("--render-window", RenderEvidence.window),
+            ("--render-settings", RenderEvidence.settings),
         ]
         for command in commands {
             if let index = arguments.firstIndex(of: command.flag), index + 1 < arguments.count {
@@ -98,50 +99,28 @@ enum HelperCommands {
         report("crowding done, items removed")
     }
 
+    /// A table rather than a chain of `if`s: eleven drills as branches is
+    /// eleven paths through one function, which is what the complexity
+    /// budget is objecting to. Adding a drill is now a row.
     private static func handleDrills() -> Bool {
         let arguments = CommandLine.arguments
-
-        if arguments.contains("--helper-ping") {
-            pingHelper(report: report)
+        let drills: [(flag: String, run: ((String) -> Void) -> Void)] = [
+            ("--helper-ping", pingHelper),
+            ("--pump-heartbeats", HardwareDrills.pumpHeartbeats),
+            ("--helper-release", HardwareDrills.releaseThreeTimes),
+            ("--fan-keys", HardwareDrills.dumpFanKeys),
+            ("--takeover-drill", HardwareDrills.takeoverDrill),
+            ("--fan-state", HardwareDrills.printFanState),
+            ("--control-drill", HardwareDrills.controlDrill),
+            ("--profile-drill", HardwareDrills.profileDrill),
+            ("--override-drill", HardwareDrills.overrideDrill),
+            ("--curve-drill", HardwareDrills.curveDrill),
+            ("--config-drill", ConfigurationDrill.run),
+        ]
+        for drill in drills where arguments.contains(drill.flag) {
+            drill.run(report)
             return true
         }
-        if arguments.contains("--pump-heartbeats") {
-            HardwareDrills.pumpHeartbeats(report: report)
-            return true
-        }
-        if arguments.contains("--helper-release") {
-            HardwareDrills.releaseThreeTimes(report: report)
-            return true
-        }
-        if arguments.contains("--fan-keys") {
-            HardwareDrills.dumpFanKeys(report: report)
-            return true
-        }
-        if arguments.contains("--takeover-drill") {
-            HardwareDrills.takeoverDrill(report: report)
-            return true
-        }
-        if arguments.contains("--fan-state") {
-            HardwareDrills.printFanState(report: report)
-            return true
-        }
-        if arguments.contains("--control-drill") {
-            HardwareDrills.controlDrill(report: report)
-            return true
-        }
-        if arguments.contains("--profile-drill") {
-            HardwareDrills.profileDrill(report: report)
-            return true
-        }
-        if arguments.contains("--override-drill") {
-            HardwareDrills.overrideDrill(report: report)
-            return true
-        }
-        if arguments.contains("--curve-drill") {
-            HardwareDrills.curveDrill(report: report)
-            return true
-        }
-
         return false
     }
 
@@ -197,11 +176,20 @@ struct BoreasApp: App {
     @State private var setup = HelperSetupModel()
     @State private var control: ControlModel
     @State private var visibility = StatusItemVisibilityModel()
+    @State private var store: ConfigurationStore
 
     init() {
-        let monitor = MonitorModel()
+        // The configuration is read before anything reads it: the models
+        // take their sampling interval, sensor corrections, profiles and
+        // panic threshold from the store, and a missing file is the normal
+        // first run rather than an error.
+        let configuration = ConfigurationStore()
+        MainActor.assumeIsolated { configuration.load() }
+        _store = State(initialValue: configuration)
+
+        let monitor = MonitorModel(store: configuration)
         _model = State(initialValue: monitor)
-        _control = State(initialValue: ControlModel(monitor: monitor))
+        _control = State(initialValue: ControlModel(monitor: monitor, store: configuration))
         // Handled before any window exists so the commands can run from a
         // terminal without the menu bar item appearing.
         if MainActor.assumeIsolated({ HelperCommands.handleIfPresent() }) {
@@ -237,6 +225,19 @@ struct BoreasApp: App {
         ) {
             MainWindow(model: model, control: control, setup: setup)
         }
+        .defaultPosition(.center)
+
+        Window(
+            String(
+                localized: "settings.window.title",
+                defaultValue: "Boreas Settings",
+                comment: "Title of the settings window"
+            ),
+            id: SettingsWindow.windowID
+        ) {
+            SettingsWindow(store: store, model: model, control: control, setup: setup)
+        }
+        .windowResizability(.contentSize)
         .defaultPosition(.center)
 
         Window(

@@ -75,16 +75,29 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
     public var safety: Safety
     public var profiles: [Profile]
 
+    /// Per-sensor corrections, keyed by the sensor's raw hardware name
+    /// (P6.08). Optional and additive: a file written before this section
+    /// existed decodes to an empty dictionary, which is why adding it needs
+    /// no schema version bump.
+    public var sensorOverrides: [String: SensorOverride]
+
+    /// The name of the profile arbitration falls back to.
+    public var defaultProfileName: String
+
     public init(
         schemaVersion: Int = ConfigurationFile.currentSchemaVersion,
         general: General = General(),
         safety: Safety = Safety(),
-        profiles: [Profile] = BuiltInProfiles.all()
+        profiles: [Profile] = BuiltInProfiles.all(),
+        sensorOverrides: [String: SensorOverride] = [:],
+        defaultProfileName: String = BuiltInProfiles.defaultName
     ) {
         self.schemaVersion = schemaVersion
         self.general = general
         self.safety = safety
         self.profiles = profiles
+        self.sensorOverrides = sensorOverrides
+        self.defaultProfileName = defaultProfileName
     }
 
     /// The defaults this build starts from.
@@ -95,6 +108,8 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         case general
         case safety
         case profiles
+        case sensorOverrides
+        case defaultProfileName
     }
 
     /// Missing sections mean their defaults — a minimal file is a valid
@@ -112,7 +127,11 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
                     ?? General(),
                 safety: try container.decodeIfPresent(Safety.self, forKey: .safety) ?? Safety(),
                 profiles: try container.decodeIfPresent([Profile].self, forKey: .profiles)
-                    ?? BuiltInProfiles.all()
+                    ?? BuiltInProfiles.all(),
+                sensorOverrides: try container.decodeIfPresent(
+                    [String: SensorOverride].self, forKey: .sensorOverrides) ?? [:],
+                defaultProfileName: try container.decodeIfPresent(
+                    String.self, forKey: .defaultProfileName) ?? BuiltInProfiles.defaultName
             )
         } else {
             // A foreign version: do not try to interpret the rest.
@@ -127,6 +146,14 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
 public struct ConfigurationProblem: Sendable, Hashable, Error {
     public let fieldPath: String
     public let detail: String
+
+    /// Public so the application layer can report a problem the decoder
+    /// never saw — an unreadable file, for one, which fails before there
+    /// is anything to decode.
+    public init(fieldPath: String, detail: String) {
+        self.fieldPath = fieldPath
+        self.detail = detail
+    }
 
     static func from(_ error: any Error) -> ConfigurationProblem {
         guard let decoding = error as? DecodingError else {

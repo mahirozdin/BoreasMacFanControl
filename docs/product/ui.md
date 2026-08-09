@@ -1,6 +1,6 @@
 # User Interface
 
-> Last updated: 2026-08-05 — P6.06, P6.07
+> Last updated: 2026-08-05 — P6.08
 > Source: blueprint §9
 
 ## Design language
@@ -56,11 +56,13 @@ The product's signature interface.
 - Ready-made templates · undo/redo
 - Live parameters in the side panel (hysteresis, smoothing, rise/fall rate) reflect instantly in the chart
 
-**Implementation (P6.06, P6.07):** the monotonicity constraint is enforced by **clamping the input**, not by validating the result — the editing operations in [`Core/Engine/CurveEditing.swift`](../../Packages/Core/Sources/Core/Engine/CurveEditing.swift) are total, so an invalid curve is unrepresentable rather than merely rejected, and 10 000 hostile edits are thrown at them in the tests. The plot ([`CurveEditor.swift`](../../App/Sources/Window/CurveEditor.swift)) contributes the gesture and nothing else. The numeric table ([`CurvePointTable.swift`](../../App/Sources/Window/CurvePointTable.swift)) edits the same curve through the same operations, so the two entry points cannot disagree about what is legal. Edits reach the running engine within one cycle (`ControlModel.updateActiveProfile`) and are **not persisted** — the configuration file arrives with the settings window. Proven on hardware by `--curve-drill`.
+**Implementation (P6.06, P6.07):** the monotonicity constraint is enforced by **clamping the input**, not by validating the result — the editing operations in [`Core/Engine/CurveEditing.swift`](../../Packages/Core/Sources/Core/Engine/CurveEditing.swift) are total, so an invalid curve is unrepresentable rather than merely rejected, and 10 000 hostile edits are thrown at them in the tests. The plot ([`CurveEditor.swift`](../../App/Sources/Window/CurveEditor.swift)) contributes the gesture and nothing else. The numeric table ([`CurvePointTable.swift`](../../App/Sources/Window/CurvePointTable.swift)) edits the same curve through the same operations, so the two entry points cannot disagree about what is legal. Edits reach the running engine within one cycle (`ControlModel.updateActiveProfile`) and, since P6.08, are written to the configuration file. Proven on hardware by `--curve-drill`.
 
 ## Settings
 
 Tabs: **General · Appearance · Sensors · Control · Notifications · Recording · Advanced**
+
+**Implementation (P6.08):** [`App/Sources/Settings/`](../../App/Sources/Settings/), with persistence in [`ConfigurationStore.swift`](../../App/Sources/Model/ConfigurationStore.swift) — see [`docs/architecture/configuration.md`](../architecture/configuration.md). Five tabs are built: **Notifications and Recording are deliberately absent rather than present and inert**, because their subsystems arrive in P7.01 and P7.02 and a tab full of switches that change nothing is what the honesty rule exists to prevent. Those two tasks own their tabs. The watchdog timeout appears in Control as a fact, not a control → [ADR 0023](../architecture/adr/0023-watchdog-timeout-not-user-settable.md). Profile *triggers* are shown but not editable: a trigger editor needs one interface per kind and is its own piece of work. Evidence: `--render-settings` for the tabs, `--config-drill` for persistence.
 
 ## Accessibility — not negotiable
 

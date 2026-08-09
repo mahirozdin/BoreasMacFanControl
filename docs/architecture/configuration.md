@@ -1,6 +1,6 @@
 # Configuration
 
-> Last updated: 2026-07-31 — P0.21
+> Last updated: 2026-08-05 — P6.08
 > Source: blueprint §10 · Decision: [ADR 0013](adr/0013-json-config-zero-deps.md)
 
 ## Format and location
@@ -18,12 +18,35 @@
 ```
 {
   "schemaVersion": 1,
-  "general":   { samplingIntervalSeconds, … },
-  "safety":    { panicTemperatureCelsius, watchdogTimeoutSeconds },
-  "profiles":  [ { name, binding, perFan, triggers[], priority,
-                   smoothing, hysteresis, slew, enginePaused } ]
+  "general":           { samplingIntervalSeconds, … },
+  "safety":            { panicTemperatureCelsius, watchdogTimeoutSeconds },
+  "defaultProfileName": "Balanced",
+  "profiles":          [ { name, binding, perFan, triggers[], priority,
+                           smoothing, hysteresis, slew, enginePaused } ],
+  "sensorOverrides":   { "<raw sensor name>": { displayName, group, hidden } }
 }
 ```
+
+> **`safety.watchdogTimeoutSeconds` is read-only in this build.** The helper
+> reads no configuration (M5) and the XPC surface is exactly four methods
+> (M4), so there is no path by which a different value could reach the
+> component that enforces it; the helper derives its own timeout from the
+> shared heartbeat constants. Editing the field by hand changes nothing. The
+> settings window shows it as a fact rather than a control.
+> → [ADR 0023](adr/0023-watchdog-timeout-not-user-settable.md)
+
+> **`sensorOverrides.hidden` is a display choice, never a safety one.** A
+> hidden sensor is still read, still counted by its group's aggregate, and
+> still able to trigger the panic layer. `defaultProfileName` and
+> `sensorOverrides` are both optional: a file without them is valid, which
+> is why adding them in P6.08 needed no version bump.
+
+**Who reads and writes it:** `App/Sources/Model/ConfigurationStore.swift`
+does the disk work — atomic writes, coalesced so a slider drag writes once,
+and `config.backup.json` refreshed before every write. What a document
+*means* stays in `Core.ConfigurationLoader`, so a broken file behaves the
+same in the application as it does in the tests. Proven end to end by the
+application's `--config-drill`.
 
 Sections for later phases (`sensorOverrides`, `notifications`, `logging`) are
 added by the phase that implements them; unknown fields are already tolerated

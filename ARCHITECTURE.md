@@ -197,6 +197,7 @@ any state --(watchdog / sleep / quit / error)--> RELEASING --> MONITORING
 | [0020](docs/architecture/adr/0020-compute-die-sensor-group.md) | A `compute` group for die sensors with no cluster | Accepted |
 | [0021](docs/architecture/adr/0021-english-only-repository.md) | The repository is written in English | Accepted |
 | [0022](docs/architecture/adr/0022-panic-threshold-ceiling.md) | The panic threshold's ceiling is its default (95 °C) | Accepted |
+| [0023](docs/architecture/adr/0023-watchdog-timeout-not-user-settable.md) | The watchdog timeout is not user settable | Accepted |
 
 ---
 

@@ -38,7 +38,7 @@
           "type": "number",
           "minimum": 10,
           "maximum": 60,
-          "description": "Locked range (G3); cannot be disabled."
+          "description": "Locked range (G3); cannot be disabled. READ ONLY in this build: the helper reads no configuration (M5) and the XPC surface is exactly four methods (M4), so there is no way to deliver a different timeout to it. The helper derives its own timeout from the shared heartbeat constants. See ADR 0023."
         }
       },
       "additionalProperties": true
@@ -335,6 +335,32 @@
           }
         },
         "additionalProperties": true
+      }
+    },
+    "defaultProfileName": {
+      "type": "string",
+      "description": "The profile arbitration falls back to when no trigger holds and nothing is selected manually."
+    },
+    "sensorOverrides": {
+      "type": "object",
+      "description": "Per-sensor corrections keyed by the sensor's raw hardware name. Optional and additive: a file without this section is valid.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "Replaces the normalised name shown in the interface."
+          },
+          "group": {
+            "type": "string",
+            "description": "Re-files the sensor into another group, which also changes which curves can bind to it."
+          },
+          "hidden": {
+            "type": "boolean",
+            "description": "Keeps the sensor out of the interface. It is still read, still counted by its group's aggregate and still able to trigger the panic layer - hiding is a display choice, never a safety one."
+          }
+        },
+        "additionalProperties": false
       }
     }
   },

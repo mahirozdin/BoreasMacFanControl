@@ -111,10 +111,24 @@ struct MenuBarPanel: View {
             .buttonStyle(.plain)
             .foregroundStyle(.tint)
 
+            Button {
+                openWindow(id: SettingsWindow.windowID)
+                NSApplication.shared.activate(ignoringOtherApps: true)
+            } label: {
+                Text(
+                    String(
+                        localized: "panel.settings.button",
+                        defaultValue: "Settings",
+                        comment: "Menu bar panel button that opens the settings window"
+                    )
+                )
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.tint)
+
             // A Mac without a controllable fan gets no setup offer — the
             // error-scenario table says exactly that, and a quiet footer is
-            // not an error state (invariant I4). The settings entry arrives
-            // with the settings window (P6.08).
+            // not an error state (invariant I4).
             if !model.fans.isEmpty {
                 Button {
                     openWindow(id: HelperSetupView.windowID)
