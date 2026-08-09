@@ -25,11 +25,15 @@ struct ControlContent: View {
     let model: MonitorModel
     let control: ControlModel
     let setup: HelperSetupModel
+    /// Frozen "now" for the render evidence; live otherwise.
+    var now: Date = Date()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             ProfilePickerSection(control: control, setup: setup)
             ActivationExplanation(control: control)
+            Divider()
+            CurveEditorSection(model: model, control: control, now: now)
             Divider()
             SafetyChainStatus(control: control)
             Divider()

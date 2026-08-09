@@ -1,6 +1,6 @@
 # User Interface
 
-> Last updated: 2026-08-05 — P6.04, P6.05
+> Last updated: 2026-08-05 — P6.06, P6.07
 > Source: blueprint §9
 
 ## Design language
@@ -55,6 +55,8 @@ The product's signature interface.
 - **Numeric editing:** every point can also be entered from a table (accessibility + precision)
 - Ready-made templates · undo/redo
 - Live parameters in the side panel (hysteresis, smoothing, rise/fall rate) reflect instantly in the chart
+
+**Implementation (P6.06, P6.07):** the monotonicity constraint is enforced by **clamping the input**, not by validating the result — the editing operations in [`Core/Engine/CurveEditing.swift`](../../Packages/Core/Sources/Core/Engine/CurveEditing.swift) are total, so an invalid curve is unrepresentable rather than merely rejected, and 10 000 hostile edits are thrown at them in the tests. The plot ([`CurveEditor.swift`](../../App/Sources/Window/CurveEditor.swift)) contributes the gesture and nothing else. The numeric table ([`CurvePointTable.swift`](../../App/Sources/Window/CurvePointTable.swift)) edits the same curve through the same operations, so the two entry points cannot disagree about what is legal. Edits reach the running engine within one cycle (`ControlModel.updateActiveProfile`) and are **not persisted** — the configuration file arrives with the settings window. Proven on hardware by `--curve-drill`.
 
 ## Settings
 

@@ -137,6 +137,10 @@ enum HelperCommands {
             HardwareDrills.overrideDrill(report: report)
             return true
         }
+        if arguments.contains("--curve-drill") {
+            HardwareDrills.curveDrill(report: report)
+            return true
+        }
 
         return false
     }

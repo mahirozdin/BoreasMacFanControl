@@ -103,6 +103,42 @@ public final class MonitorModel {
         }
     }
 
+    /// The recent operating points — temperature against the duty the fan
+    /// was actually running at — for the curve editor's trail (P6.06).
+    ///
+    /// This is the layer that lets a user compare the curve they drew with
+    /// what the machine did: smoothing, hysteresis and the rate limiter all
+    /// sit between the two, so the cloud sits *near* the curve rather than
+    /// on it, and that gap is the information.
+    ///
+    /// The two series are recorded in the same sampling pass and therefore
+    /// share timestamps, but each thins independently once it fills, so the
+    /// pairing is by nearest time rather than by index.
+    public func operatingTrail(
+        group: SensorGroup,
+        fanID: Int,
+        seconds: TimeInterval,
+        now: Date
+    ) -> [(celsius: Double, duty: Double)] {
+        guard let fan = fans.first(where: { $0.id == fanID }), fan.span > 0,
+            let temperatures = groupHistory[group]?.window(seconds, endingAt: now),
+            let speeds = fanHistory[fanID]?.window(seconds, endingAt: now),
+            !speeds.isEmpty
+        else { return [] }
+
+        return temperatures.compactMap { sample in
+            let nearest = speeds.min {
+                abs($0.time.timeIntervalSince(sample.time))
+                    < abs($1.time.timeIntervalSince(sample.time))
+            }
+            guard let nearest,
+                abs(nearest.time.timeIntervalSince(sample.time)) <= 1.5
+            else { return nil }
+            let duty = (nearest.value - Double(fan.minimumRPM)) / Double(fan.span)
+            return (sample.value, Swift.min(1, Swift.max(0, duty)))
+        }
+    }
+
     /// Clears the session peaks and averages behind the sensor table's
     /// "highest" and "average" columns. The chart history is a separate
     /// record and is deliberately left alone — the action resets the

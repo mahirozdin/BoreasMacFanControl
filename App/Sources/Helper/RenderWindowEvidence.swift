@@ -24,23 +24,25 @@ extension RenderEvidence {
     /// shows a real cause and its real effect. A hand-drawn fan line could
     /// look right while proving nothing about the alignment the tab exists
     /// to demonstrate.
-    private static func windowFixture() -> WindowFixture {
-        let step = 2.0
-        let count = 1_200
-        let fan = FanState(
-            id: 0, name: "Fan 0", currentRPM: 2_310,
-            minimumRPM: 1_000, maximumRPM: 4_900, isPoweredOff: false)
+    /// Forty minutes of series, one entry every two seconds.
+    ///
+    /// The fan series goes through the **rate limiter**, not straight off
+    /// the curve: the engine's own output lags its target, and that lag is
+    /// exactly what the curve editor's trail layer exists to show. A
+    /// fixture sitting perfectly on the curve would prove the layer draws,
+    /// and nothing about what it means.
+    private static func windowSeries(fan: FanState) -> [SensorGroup: [(Date, Double)]] {
         let curve = BuiltInProfiles.all().first { $0.name == "Balanced" }?.binding.curve
-
         var compute: [(Date, Double)] = []
         var graphics: [(Date, Double)] = []
         var memory: [(Date, Double)] = []
         var storage: [(Date, Double)] = []
         var fanSpeeds: [(Date, Double)] = []
+        var previousRPM: Int?
 
-        for index in 0..<count {
-            let time = fixedNow.addingTimeInterval(Double(index - count + 1) * step)
-            let phase = Double(index) / Double(count)
+        for index in 0..<windowSampleCount {
+            let time = fixedNow.addingTimeInterval(Double(index - windowSampleCount + 1) * windowStep)
+            let phase = Double(index) / Double(windowSampleCount)
             let hump = Swift.max(0, Foundation.sin(phase * .pi * 2.2))
             // A load that arrives late, so the default five minute window
             // shows a rise and the fan answering it rather than an idle
@@ -54,9 +56,32 @@ extension RenderEvidence {
             memory.append((time, 45 + 2 * hump + 3 * finale + wobble))
             storage.append((time, 41.5 + wobble))
             if let curve {
-                fanSpeeds.append((time, Double(curve.duty(at: hot).rpm(for: fan))))
+                let target = curve.duty(at: hot).rpm(for: fan)
+                let limited = RateLimit.standard.limit(
+                    previousRPM: previousRPM, targetRPM: target, elapsedSeconds: windowStep)
+                previousRPM = limited
+                fanSpeeds.append((time, Double(limited)))
             }
         }
+        // The fan rides in under `uncategorized`, which no fixture group
+        // uses, purely so one function can return both kinds of series.
+        return [
+            .compute: compute, .graphics: graphics, .memory: memory,
+            .storage: storage, .uncategorized: fanSpeeds,
+        ]
+    }
+
+    private static let windowStep = 2.0
+    private static let windowSampleCount = 1_200
+
+    private static func windowFixture() -> WindowFixture {
+        let fan = FanState(
+            id: 0, name: "Fan 0", currentRPM: 2_310,
+            minimumRPM: 1_000, maximumRPM: 4_900, isPoweredOff: false)
+        let series = windowSeries(fan: fan)
+        let compute = series[.compute] ?? []
+        let graphics = series[.graphics] ?? []
+        let fanSpeeds = series[.uncategorized] ?? []
 
         let readings = [
             SensorReading(
@@ -85,10 +110,7 @@ extension RenderEvidence {
 
         let monitor = MonitorModel(
             fixedForRendering: readings, fans: [displayFan],
-            groupHistory: [
-                .compute: compute, .graphics: graphics,
-                .memory: memory, .storage: storage,
-            ],
+            groupHistory: series.filter { $0.key != .uncategorized },
             fanHistory: [0: fanSpeeds])
         let control = ControlModel(
             fixedForRendering: monitor,
@@ -128,7 +150,8 @@ extension RenderEvidence {
             write(monitoring, to: directory, named: "window-monitoring-\(suffix)")
 
             let controlTab = ControlContent(
-                model: fixture.monitor, control: fixture.control, setup: fixture.setup
+                model: fixture.monitor, control: fixture.control, setup: fixture.setup,
+                now: fixedNow
             )
             .frame(width: 860)
             .background(background)

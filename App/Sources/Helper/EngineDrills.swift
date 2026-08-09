@@ -7,6 +7,88 @@ import SharedIPC
 /// inside the lint budget. Same instrument, same rules.
 extension HardwareDrills {
 
+    /// P6.06 on real hardware: an edited curve reaches the fans.
+    ///
+    /// The curve editor is only an instrument if what it draws changes what
+    /// the machine does within a cycle or two. Here the drill edits the
+    /// active profile exactly as a drag would — `updateActiveProfile` is
+    /// the call the editor makes — and watches the fan move to the new
+    /// curve's answer for the temperature the machine is actually at.
+    static func curveDrill(report: (String) -> Void) {
+        let monitor = MonitorModel()
+        let control = ControlModel(monitor: monitor)
+        let smc = try? SMCConnection()
+
+        func pump(_ seconds: Double) {
+            RunLoop.main.run(until: Date().addingTimeInterval(seconds))
+        }
+        func hardware() -> (mode: String, rpm: Int) {
+            guard let smc else { return ("?", -1) }
+            return (modeByte(smc).map(String.init) ?? "?", Int(actualRPM(smc)))
+        }
+        func computeMax() -> Double {
+            monitor.readings.filter { $0.group == .compute }.map(\.celsius).max() ?? .nan
+        }
+        func line(_ label: String) {
+            let state = hardware()
+            report(
+                "\(label): state=\(control.state.rawValue) "
+                    + "mode=\(state.mode) rpm=\(state.rpm)")
+        }
+
+        monitor.start()
+        pump(3)
+        guard let fan = monitor.fans.first else {
+            report("no controllable fan")
+            exit(1)
+        }
+
+        control.select(profileName: "Balanced")
+        pump(9)
+        line("stock Balanced curve")
+        let stock = hardware()
+
+        // A deliberately steeper curve around wherever the machine sits, so
+        // the change is unambiguous at the temperature it is actually at
+        // rather than one it might reach.
+        let here = computeMax()
+        guard
+            let steep = try? Curve(points: [
+                CurvePoint(celsius: Swift.max(0, here - 12), duty: Duty(0.55)),
+                CurvePoint(celsius: Swift.min(120, here + 12), duty: Duty(0.95)),
+            ])
+        else {
+            report("could not build the test curve")
+            exit(1)
+        }
+
+        control.updateActiveProfile(curve: steep)
+        // Long enough for a cycle to notice and for the rate limiter to
+        // carry the fan the whole way: 600 rpm/s over a ~2000 rpm rise.
+        pump(16)
+        line("after editing the curve")
+        let edited = hardware()
+        let expected = steep.duty(at: computeMax()).rpm(for: fan)
+
+        control.select(profileName: "System")
+        pump(6)
+        line("system selected")
+        let released = hardware()
+
+        let passed =
+            stock.mode == "1" && edited.mode == "1"
+            && abs(edited.rpm - expected) <= 350
+            && edited.rpm > stock.rpm + 400
+            && released.mode == "0"
+
+        report(
+            "stock \(stock.rpm) rpm → edited \(edited.rpm) rpm "
+                + "(curve expects ~\(expected) at \(String(format: "%.1f", here)) °C); "
+                + "released mode=\(released.mode)")
+        report(passed ? "CURVE DRILL PASS" : "CURVE DRILL FAIL")
+        exit(passed ? 0 : 1)
+    }
+
     /// P6.05 on real hardware: a timed manual override takes the wheel,
     /// and when it expires the **engine** takes it back — not the firmware.
     ///
