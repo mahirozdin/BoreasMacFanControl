@@ -1,6 +1,6 @@
 # Localisation
 
-> Last updated: 2026-07-31 — P0.25
+> Last updated: 2026-08-10 — P6.11
 > Source: blueprint §9.7 · Decision: [ADR 0016](../architecture/adr/0016-language-scope.md)
 
 ## Scope
@@ -52,3 +52,54 @@ Tone: it also says what it cannot do. In this category, honesty is the strongest
 ## Gate
 
 `make gate-i18n` enforces: no hard coded user facing text · all 5 languages present in the catalogue · no string with an empty `comment` field.
+
+
+## How the catalogue is built (P6.11)
+
+`App/Resources/Localizable.xcstrings`, and it is **generated from the
+compiler's own extraction** rather than parsed out of the Swift:
+
+```bash
+make build-app   # or any Xcode build; SWIFT_EMIT_LOC_STRINGS is on
+make strings     # merges the extraction into the catalogue
+make strings-check   # fails if the catalogue is out of date
+```
+
+Every user facing string is a `String(localized:defaultValue:comment:)`
+call, sometimes spread over five lines with a multiline default. A regular
+expression over that would be wrong on the day somebody formats a call
+differently, and wrong quietly. The compiler already writes a
+`.stringsdata` file per source file carrying the key, the comment and the
+English value; `scripts/build-string-catalog.py` merges those in, keeps
+existing translations, and marks a translation `needs_review` when the
+English underneath it changed.
+
+## What the gate checks
+
+`make gate-i18n` reads the catalogue and enforces:
+
+| Rule | Check |
+|---|---|
+| Y1 | No hard coded user facing text in `App/Sources` |
+| Y2 | Every string carries a translator comment |
+| Y4 | **Every language present covers every string** — no half translated language ships |
+| Honesty rule | No diagnostic wording names a fault, **in any language** |
+
+The completeness rule replaced a `grep` for five language codes that would
+have passed with a single translated string, and that went red for the
+three languages P7.06 owns. It now checks what is true rather than
+asserting a future: `en` and `tr` must exist, and anything else added has
+to be complete from the day it appears.
+
+**Where user facing text may not live:** `Packages/Core`. Core has no
+bundle of its own in this application and the gate does not scan it, so
+strings there are invisible twice over — which is exactly what happened to
+two dozen diagnostic sentences until the Turkish render exposed them. Core
+returns *values* (`DiagnosticFinding`, `DiagnosticCause`); the application
+supplies the words.
+
+**Turkish is not a translation.** It is written thinking in Turkish, and
+interpolated values never take a suffix — `"Bitiş: %@"` rather than
+`"%@'e kadar"` — because Turkish suffixes agree with the sound of the word
+before them, and nothing can make that agree with a number formatted at
+runtime.

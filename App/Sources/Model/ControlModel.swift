@@ -24,7 +24,11 @@ import SharedIPC
 public final class ControlModel {
 
     /// What produces the requested duty while the loop runs.
-    private enum Source {
+    ///
+    /// Module-internal, like `store` and for the same reason: the manual
+    /// override lives in `ControlOverride.swift` to keep this file inside
+    /// the lint budget, and `private` is file scoped.
+    enum Source {
         /// The P4.08 slider / drill value, one duty for every fan.
         case manualDuty
         /// The P5 engine: arbitration picks a profile, `Engine.step` runs.
@@ -53,13 +57,17 @@ public final class ControlModel {
     /// there is one, the built-ins otherwise.
     public internal(set) var profiles: [Profile] = BuiltInProfiles.all()
 
-    /// The user's explicit choice. Starts as `System` — firmware in charge —
-    /// so launching the app never takes the fans over by itself; automatic
-    /// engagement policy belongs to the configuration work, not to launch.
-    /// Modelled as an ordinary manual selection through arbitration rather
-    /// than a special "off" flag, the same way `System` itself is data.
-    public private(set) var manualSelection: ManualSelection? =
-        ManualSelection(profileName: "System")
+    /// The user's explicit choice, or `nil` for "let the triggers decide".
+    ///
+    /// It starts as `nil` — and that is *not* the same as it once being a
+    /// standing `System` selection. Arbitration's first rule is that a
+    /// manual choice beats everything, so a permanent manual selection is
+    /// a permanent veto on every trigger: with one in place the trigger
+    /// editor would produce triggers that could never fire. What keeps
+    /// launch from taking the fans over is the configuration's *fallback*
+    /// being `System`, which is a setting the user can change, rather than
+    /// a hidden selection they cannot see or clear.
+    public private(set) var manualSelection: ManualSelection?
 
     /// The arbitration outcome the interface shows: which profile is active
     /// and why. Recomputed on every selection and every engine cycle.
@@ -72,7 +80,7 @@ public final class ControlModel {
     /// When a manual duty override gives way to the engine again, or `nil`
     /// for "until further notice". The blueprint's own example is "back to
     /// automatic in 30 minutes".
-    public private(set) var dutyOverrideUntil: Date?
+    public internal(set) var dutyOverrideUntil: Date?
 
     /// Whether the slider, rather than the engine, is deciding right now.
     public var isDutyOverridden: Bool { source == .manualDuty }
@@ -93,7 +101,7 @@ public final class ControlModel {
         state == .controlling || state == .panic
     }
 
-    private var source: Source = .engine
+    var source: Source = .engine
     private var engineState: Engine.State = .initial
     private var lastStepAt: Date?
     private let monitor: MonitorModel
@@ -158,30 +166,10 @@ public final class ControlModel {
         reconcile()
     }
 
-    // MARK: - Manual duty override (P6.05)
-
-    /// Hands the requested duty to the slider instead of the engine, for a
-    /// while.
-    ///
-    /// Expiry returns control to the *engine*, not to the firmware: the
-    /// user asked to take the wheel for half an hour, not to stop cooling
-    /// afterwards. The safety chain is in the path either way, so an
-    /// override can raise the fans but never hold them below what K1–K3
-    /// demand.
-    public func overrideDuty(_ duty: Double, until: Date?) {
-        manualDuty = duty
-        dutyOverrideUntil = until
-        source = .manualDuty
-        if state == .monitoring {
-            engage(source: .manualDuty)
-        }
-    }
-
-    /// Gives the engine back the wheel. If the active profile pauses the
-    /// engine, the loop releases to firmware instead of idling engaged.
-    public func clearDutyOverride() {
-        dutyOverrideUntil = nil
-        source = .engine
+    /// Hands the choice back to the triggers, and to the configured
+    /// fallback when none of them holds (P6.14).
+    public func selectAutomatic() {
+        manualSelection = nil
         refreshOutcome()
         reconcile()
     }
@@ -193,14 +181,19 @@ public final class ControlModel {
             among: profiles,
             manual: manualSelection,
             environment: currentEnvironment(),
-            defaultName: store?.configuration.defaultProfileName ?? BuiltInProfiles.defaultName,
+            // "System" when there is no configuration, not the default
+            // *curve* profile: a model built without a store — a drill, a
+            // render fixture — must behave like a fresh install and take
+            // nothing over. Falling back to a driving profile here made
+            // every drill engage the engine before it was asked to.
+            defaultName: store?.configuration.defaultProfileName ?? "System",
             now: Date()
         )
     }
 
     /// Starts or stops the engine loop so it matches what arbitration wants.
     /// The manual drill path is never started or stopped from here.
-    private func reconcile() {
+    func reconcile() {
         let wantsEngine = !(outcome?.profile.enginePaused ?? true)
         switch (wantsEngine, state) {
         case (true, .monitoring):
@@ -235,7 +228,7 @@ public final class ControlModel {
         engage(source: .manualDuty)
     }
 
-    private func engage(source: Source) {
+    func engage(source: Source) {
         guard state == .monitoring, loop == nil else { return }
         self.source = source
         lastProblem = nil

@@ -188,16 +188,16 @@ struct DiagnosticRow: View {
                         .foregroundStyle(tint)
                 }
 
-                Text(verbatim: finding.observation)
+                Text(verbatim: finding.finding.text)
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 if !finding.possibleCauses.isEmpty {
-                    labelledList(causesTitle, items: finding.possibleCauses)
+                    labelledList(causesTitle, items: finding.possibleCauses.map(\.text))
                 }
                 if !finding.nextSteps.isEmpty {
-                    labelledList(stepsTitle, items: finding.nextSteps)
+                    labelledList(stepsTitle, items: finding.nextSteps.map(\.text))
                 }
             }
             Spacer(minLength: 0)

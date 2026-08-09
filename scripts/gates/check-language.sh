@@ -32,7 +32,16 @@ require_tools git grep xargs
 #   - the frozen blueprint is a historical record and is never edited
 #   - README translations exist on purpose (ADR 0016)
 #   - this gate names the characters it looks for
-EXCLUDE_RE='^(BLUEPRINT\.md|docs/blueprint/|README\.(tr|ru|es|zh-Hans)\.md|scripts/gates/check-language\.sh|TRANSLATORS\.md)'
+#   - the String Catalog is *where translations live*. H6 is about the
+#     language the project is worked in — documents, comments, commits —
+#     not about the product's own translated strings, and a rule that
+#     forbade Turkish inside the Turkish translations would forbid the
+#     product from being translated at all. The catalogue is not
+#     unchecked: `make gate-i18n` reads it far more closely than this
+#     gate could, including that every string has an English comment for
+#     the translator (Y2). Added in P6.11.
+#   - the P6.11 catalogue builder names the languages it merges
+EXCLUDE_RE='^(BLUEPRINT\.md|docs/blueprint/|README\.(tr|ru|es|zh-Hans)\.md|scripts/gates/check-language\.sh|scripts/gates/check-catalog\.py|TRANSLATORS\.md|App/Resources/.*\.xcstrings)'
 
 FILES=$(tracked "" "$EXCLUDE_RE")
 COUNT=$(printf '%s\n' "$FILES" | grep -c . || true)

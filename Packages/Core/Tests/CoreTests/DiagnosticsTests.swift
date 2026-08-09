@@ -35,24 +35,6 @@ struct DiagnosticsTests {
 
     // MARK: - The rule itself
 
-    @Test("no finding ever names a fault")
-    func neverNamesAFault() {
-        // The words the honesty rule exists to keep out of the product.
-        // `docs/operations/diagnostics.md`: a false "faulty" sends someone
-        // to an unnecessary repair, and in this category a wrong diagnosis
-        // costs more than no diagnosis.
-        let forbidden = ["faulty", "broken", "defective", "failed", "damaged", "dead"]
-        for finding in allFindings {
-            let text =
-                ([finding.observation] + finding.possibleCauses + finding.nextSteps)
-                .joined(separator: " ")
-                .lowercased()
-            for word in forbidden {
-                #expect(!text.contains(word), "\"\(word)\" appears in: \(finding.observation)")
-            }
-        }
-    }
-
     @Test("an accusation is never made without an explanation beside it")
     func attentionAlwaysCarriesCauses() {
         for finding in allFindings where finding.verdict == .needsAttention {
@@ -64,24 +46,30 @@ struct DiagnosticsTests {
 
     @Test("needsAttention without a cause degrades to indeterminate")
     func causelessAttentionDegrades() {
-        let refused = Diagnostic.needsAttention("Something is odd.", possibleCauses: [])
+        let refused = Diagnostic.needsAttention(.fanBalanceUnreadable, possibleCauses: [])
         #expect(refused.verdict == .indeterminate)
         #expect(refused.possibleCauses.isEmpty)
     }
 
-    @Test("every finding says what was measured")
-    func everyFindingObserves() {
-        for finding in allFindings {
-            #expect(!finding.observation.isEmpty)
-        }
-    }
-
-    @Test("only needsAttention carries causes")
+    @Test("only needsAttention carries causes or steps")
     func onlyAttentionCarriesCauses() {
         for finding in allFindings where finding.verdict != .needsAttention {
             #expect(finding.possibleCauses.isEmpty)
+            #expect(finding.nextSteps.isEmpty)
         }
     }
+
+    @Test("a raised concern always suggests something to try")
+    func attentionCarriesSteps() {
+        for finding in allFindings where finding.verdict == .needsAttention {
+            #expect(!finding.nextSteps.isEmpty)
+        }
+    }
+
+    // The vocabulary half of the honesty rule — that no wording ever names
+    // a fault — moved to `make gate-i18n` in P6.11, where it runs over the
+    // String Catalog in **every** language. A Swift test could only ever
+    // have checked the English, and a translation can break the rule too.
 
     // MARK: - The checks
 
@@ -116,7 +104,7 @@ struct DiagnosticsTests {
         let finding = DiagnosticChecks.fanBalance(speeds: [1_800])
         #expect(finding.verdict == .notApplicable)
         // The coverage limit stated rather than hidden (R8).
-        #expect(finding.observation.contains("single fan"))
+        #expect(finding.finding == .fanBalanceSingleFan)
     }
 
     @Test("sensor validity distinguishes nothing-to-say from something-to-say")
@@ -133,7 +121,7 @@ struct DiagnosticsTests {
         #expect(stuck.verdict == .needsAttention)
         // A parked cluster is the *first* explanation offered, because on
         // Apple Silicon it is the most likely one.
-        #expect(stuck.possibleCauses.first?.contains("parked") == true)
+        #expect(stuck.possibleCauses.first == .parkedCluster)
     }
 
     @Test("thermal history reports the system's own verdict, and only after a minute")

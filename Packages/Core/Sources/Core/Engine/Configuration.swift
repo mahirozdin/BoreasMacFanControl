@@ -96,7 +96,11 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         safety: Safety = Safety(),
         profiles: [Profile] = BuiltInProfiles.all(),
         sensorOverrides: [String: SensorOverride] = [:],
-        defaultProfileName: String = BuiltInProfiles.defaultName,
+        // Not `BuiltInProfiles.defaultName`: the *fallback* is what runs
+        // when nothing else does, and a fresh install falling back to a
+        // driving profile would take the fans over before anyone asked.
+        // The user chooses when that changes.
+        defaultProfileName: String = "System",
         shortcuts: [HotKeyAction: HotKey] = [:]
     ) {
         self.schemaVersion = schemaVersion
@@ -140,7 +144,7 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
                 sensorOverrides: try container.decodeIfPresent(
                     [String: SensorOverride].self, forKey: .sensorOverrides) ?? [:],
                 defaultProfileName: try container.decodeIfPresent(
-                    String.self, forKey: .defaultProfileName) ?? BuiltInProfiles.defaultName,
+                    String.self, forKey: .defaultProfileName) ?? "System",
                 // A shortcut the model refuses takes the whole section
                 // down with it rather than being silently dropped: a
                 // configuration that says one thing and does another is

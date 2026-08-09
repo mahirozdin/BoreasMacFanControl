@@ -19,6 +19,23 @@ struct MonitoringCharts: View {
     /// Frozen "now" for the render evidence; live otherwise.
     let now: Date
 
+    /// Chart mark labels. VoiceOver reads these, so they are user facing
+    /// text like any other — and the String Catalog gate caught them
+    /// sitting in the catalogue with no translator comment, because a bare
+    /// literal handed to `.value(_:_:)` is extracted without one.
+    static let timeLabel = String(
+        localized: "chart.mark.time", defaultValue: "Time",
+        comment: "Chart axis label for time, read aloud by VoiceOver")
+    static let temperatureLabel = String(
+        localized: "chart.mark.temperature", defaultValue: "Temperature",
+        comment: "Chart axis label for temperature, read aloud by VoiceOver")
+    static let speedLabel = String(
+        localized: "chart.mark.speed", defaultValue: "Speed",
+        comment: "Chart axis label for fan speed, read aloud by VoiceOver")
+    static let groupLabel = String(
+        localized: "chart.mark.group", defaultValue: "Group",
+        comment: "Chart series label naming the sensor group, read by VoiceOver")
+
     private var domain: ClosedRange<Date> {
         now.addingTimeInterval(-window.span)...now
     }
@@ -42,13 +59,13 @@ struct MonitoringCharts: View {
             ForEach(Array(visibleGroups.enumerated()), id: \.element) { index, group in
                 ForEach(sampleRange(model.groupHistory[group]), id: \.time) { sample in
                     LineMark(
-                        x: .value("Time", sample.time),
-                        y: .value("Temperature", sample.value)
+                        x: .value(Self.timeLabel, sample.time),
+                        y: .value(Self.temperatureLabel, sample.value)
                     )
                     .foregroundStyle(Color.series(index))
                     .interpolationMethod(.monotone)
                 }
-                .foregroundStyle(by: .value("Group", group.displayName))
+                .foregroundStyle(by: .value(Self.groupLabel, group.displayName))
             }
         }
         .chartXScale(domain: domain)
@@ -79,8 +96,8 @@ struct MonitoringCharts: View {
             ForEach(model.fans) { fan in
                 ForEach(sampleRange(model.fanHistory[fan.id]), id: \.time) { sample in
                     LineMark(
-                        x: .value("Time", sample.time),
-                        y: .value("Speed", sample.value)
+                        x: .value(Self.timeLabel, sample.time),
+                        y: .value(Self.speedLabel, sample.value)
                     )
                     // Fans stay neutral: hue belongs to temperature
                     // (docs/product/ui.md), and a fan chart with its own

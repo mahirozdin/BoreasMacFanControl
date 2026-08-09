@@ -1,6 +1,6 @@
 # User Interface
 
-> Last updated: 2026-08-10 — P6.09
+> Last updated: 2026-08-10 — P6.11, P6.14
 > Source: blueprint §9
 
 ## Design language
@@ -63,6 +63,8 @@ The product's signature interface.
 ## Settings
 
 Tabs: **General · Appearance · Sensors · Control · Notifications · Recording · Advanced**
+
+**Implementation (P6.14):** profile triggers are editable — [`TriggerEditor.swift`](../../App/Sources/Settings/TriggerEditor.swift) and [`TriggerRow.swift`](../../App/Sources/Settings/TriggerRow.swift), one editor per kind, under the profile each belongs to. The picker gained an **Auto** choice: arbitration's first rule is that a manual choice beats everything, so without a way back to automatic every trigger would have been vetoed forever. The shipped fallback is `System`, so a fresh install still takes nothing over.
 
 **Implementation (P6.08):** [`App/Sources/Settings/`](../../App/Sources/Settings/), with persistence in [`ConfigurationStore.swift`](../../App/Sources/Model/ConfigurationStore.swift) — see [`docs/architecture/configuration.md`](../architecture/configuration.md). Five tabs are built: **Notifications and Recording are deliberately absent rather than present and inert**, because their subsystems arrive in P7.01 and P7.02 and a tab full of switches that change nothing is what the honesty rule exists to prevent. Those two tasks own their tabs. The watchdog timeout appears in Control as a fact, not a control → [ADR 0023](../architecture/adr/0023-watchdog-timeout-not-user-settable.md). Profile *triggers* are shown but not editable: a trigger editor needs one interface per kind and is its own piece of work. Evidence: `--render-settings` for the tabs, `--config-drill` for persistence.
 

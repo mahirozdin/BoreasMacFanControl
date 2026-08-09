@@ -34,6 +34,10 @@ struct ProfilePickerSection: View {
             )
 
             HStack(spacing: 6) {
+                // "Automatic" first, because it is the state that lets the
+                // triggers decide — and without it a manual choice would
+                // be a permanent veto on every one of them (P6.14).
+                automaticChip
                 ForEach(control.profiles, id: \.name) { profile in
                     profileChip(profile)
                 }
@@ -52,6 +56,40 @@ struct ProfilePickerSection: View {
                     .foregroundStyle(.tertiary)
             }
         }
+    }
+
+    private var automaticChip: some View {
+        let isActive = control.manualSelection == nil
+        return Button {
+            control.selectAutomatic()
+        } label: {
+            HStack(spacing: 3) {
+                if isActive {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 8, weight: .bold))
+                }
+                Text(
+                    String(
+                        localized: "panel.profile.automatic", defaultValue: "Auto",
+                        comment: "Profile picker choice that lets the triggers decide")
+                )
+                .font(.caption)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                isActive ? Color.accentColor.opacity(0.20) : Color.primary.opacity(0.05),
+                in: Capsule()
+            )
+            .overlay(
+                Capsule().strokeBorder(isActive ? Color.accentColor : Color.clear, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .help(
+            String(
+                localized: "panel.profile.automatic.help",
+                defaultValue: "Let the profile triggers decide",
+                comment: "Tooltip of the automatic choice in the profile picker"))
     }
 
     /// Selection is marked with a checkmark as well as colour — colour never
@@ -148,11 +186,18 @@ struct ProfilePickerSection: View {
                 )
             }
             if control.outcome?.profile.enginePaused == true {
-                return String(
-                    localized: "panel.profile.firmware",
-                    defaultValue: "The firmware is controlling the fans",
-                    comment: "Caption while the System profile leaves the fans with the firmware"
-                )
+                return control.manualSelection == nil
+                    ? String(
+                        localized: "panel.profile.firmware.automatic",
+                        defaultValue:
+                            "No trigger holds, so the fans stay with the firmware",
+                        comment:
+                            "Caption in automatic mode when nothing has selected a driving profile")
+                    : String(
+                        localized: "panel.profile.firmware",
+                        defaultValue: "The firmware is controlling the fans",
+                        comment:
+                            "Caption while the System profile leaves the fans with the firmware")
             }
             return nil
         }

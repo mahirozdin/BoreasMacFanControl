@@ -118,6 +118,7 @@ enum HelperCommands {
             ("--config-drill", ConfigurationDrill.run),
             ("--diagnostics-drill", HardwareDrills.diagnosticsDrill),
             ("--shortcut-drill", ShortcutDrill.run),
+            ("--trigger-drill", TriggerDrill.run),
         ]
         for drill in drills where arguments.contains(drill.flag) {
             drill.run(report)
@@ -188,7 +189,10 @@ struct BoreasApp: App {
         // panic threshold from the store, and a missing file is the normal
         // first run rather than an error.
         let configuration = ConfigurationStore()
-        MainActor.assumeIsolated { configuration.load() }
+        MainActor.assumeIsolated {
+            configuration.load()
+            configuration.flushOnTermination()
+        }
         _store = State(initialValue: configuration)
 
         let monitor = MonitorModel(store: configuration)

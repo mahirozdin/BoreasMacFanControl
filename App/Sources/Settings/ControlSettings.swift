@@ -30,7 +30,17 @@ struct ControlSettings: View {
                 }
 
                 ForEach(store.configuration.profiles, id: \.name) { profile in
-                    profileRow(profile)
+                    VStack(alignment: .leading, spacing: 4) {
+                        profileRow(profile)
+                        // The triggers sit under the profile they belong
+                        // to rather than in a list of their own: a trigger
+                        // means nothing without the profile it activates.
+                        TriggerEditor(
+                            store: store, control: control, profileName: profile.name
+                        )
+                        .padding(.leading, 16)
+                    }
+                    .padding(.bottom, 6)
                 }
             }
 
@@ -100,12 +110,6 @@ struct ControlSettings: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .frame(width: 210, alignment: .leading)
-
-            Text(verbatim: triggerSummary(profile))
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-                .lineLimit(1)
-                .truncationMode(.tail)
 
             Spacer(minLength: 0)
         }

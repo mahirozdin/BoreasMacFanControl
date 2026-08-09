@@ -53,6 +53,14 @@ gate-privacy: ## P1/P2 — telemetry SDKs and unexpected network use
 	@$(GATES)/check-privacy.sh
 
 .PHONY: gate-i18n
+## strings: rebuild the String Catalog from the compiler's own extraction
+strings:
+	@python3 scripts/build-string-catalog.py
+
+## strings-check: fail if the catalogue is out of date with the source
+strings-check:
+	@python3 scripts/build-string-catalog.py --check
+
 gate-i18n: ## Y1/Y2 — hard coded user facing text
 	@$(GATES)/check-i18n.sh
 

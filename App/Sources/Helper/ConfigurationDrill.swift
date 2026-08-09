@@ -91,3 +91,86 @@ enum ConfigurationDrill {
         exit(passed ? 0 : 1)
     }
 }
+
+/// The P6.14 drill: a trigger created the way the editor creates one is a
+/// trigger arbitration actually honours.
+///
+/// It exists because building the editor exposed something the editor
+/// alone could not have shown: the application used to hold a standing
+/// manual `System` selection, and arbitration's first rule is that a
+/// manual choice beats everything. Every trigger anyone created would have
+/// been vetoed forever, silently. So the drill checks the *whole* path —
+/// automatic mode, the trigger firing, and the manual veto still winning
+/// when a user does choose.
+@MainActor
+enum TriggerDrill {
+
+    static func run(report: (String) -> Void) {
+        let directory = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            .appendingPathComponent("boreas-trigger-drill-\(ProcessInfo.processInfo.processIdentifier)")
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        var passed = true
+        func check(_ label: String, _ condition: Bool) {
+            report("  \(condition ? "ok  " : "FAIL") \(label)")
+            passed = passed && condition
+        }
+
+        let store = ConfigurationStore(directory: directory)
+        store.load()
+        let monitor = MonitorModel(store: store)
+        let control = ControlModel(monitor: monitor, store: store)
+
+        // 1. Out of the box nothing is taken over, and nothing is selected
+        //    — the state that lets triggers work at all.
+        check("no standing manual selection", control.manualSelection == nil)
+        check(
+            "the shipped fallback leaves the fans with the firmware",
+            control.outcome?.profile.enginePaused == true)
+
+        // 2. A trigger, added exactly as the editor adds one. This machine
+        //    is a desktop, so "plugged in" is a condition that holds.
+        store.update { configuration in
+            guard let index = configuration.profiles.firstIndex(where: { $0.name == "Quiet" })
+            else { return }
+            let old = configuration.profiles[index]
+            configuration.profiles[index] = Profile(
+                name: old.name, binding: old.binding, perFan: old.perFan,
+                triggers: [.powerSource(.adapter)], priority: 5,
+                smoothing: old.smoothing, hysteresis: old.hysteresis,
+                slew: old.slew, enginePaused: old.enginePaused)
+        }
+        control.reloadFromConfiguration()
+
+        let chosen = control.outcome
+        check("the trigger selected its profile", chosen?.profile.name == "Quiet")
+        if case .trigger(let trigger) = chosen?.reason {
+            check("and the reason names the trigger", trigger == .powerSource(.adapter))
+        } else {
+            check("and the reason names the trigger", false)
+        }
+
+        // 3. A manual choice still beats it — rule 1, unchanged.
+        control.select(profileName: "Performance")
+        check("a manual choice overrides the trigger", control.outcome?.profile.name == "Performance")
+
+        // 4. And going back to automatic hands the decision to the trigger
+        //    again. Without this the manual choice would be permanent.
+        control.selectAutomatic()
+        check("automatic returns the decision to the trigger", control.outcome?.profile.name == "Quiet")
+
+        // 5. It survives a restart, because it went through the store.
+        //    The flush is what the application does on termination — the
+        //    write is coalesced, and this drill is the reason that exit
+        //    exists at all.
+        store.save(immediately: true)
+        let second = ConfigurationStore(directory: directory)
+        second.load()
+        let reloaded = second.configuration.profiles.first { $0.name == "Quiet" }
+        check("the trigger was persisted", reloaded?.triggers == [.powerSource(.adapter)])
+        check("the priority was persisted", reloaded?.priority == 5)
+
+        report(passed ? "TRIGGER DRILL PASS" : "TRIGGER DRILL FAIL")
+        exit(passed ? 0 : 1)
+    }
+}

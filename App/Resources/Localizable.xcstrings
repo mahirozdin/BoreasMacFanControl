@@ -1,0 +1,5892 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "chart.axis.fan": {
+      "comment": "Y axis label of the fan speed chart",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "rpm"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dev/dk"
+          }
+        }
+      }
+    },
+    "chart.axis.temperature": {
+      "comment": "Y axis label of the temperature chart",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "°C"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "°C"
+          }
+        }
+      }
+    },
+    "chart.fan.accessibility": {
+      "comment": "VoiceOver label for the fan speed time series chart",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan speed over the last %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son %@ içindeki fan hızı"
+          }
+        }
+      }
+    },
+    "chart.mark.group": {
+      "comment": "Chart series label naming the sensor group, read by VoiceOver",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grup"
+          }
+        }
+      }
+    },
+    "chart.mark.speed": {
+      "comment": "Chart axis label for fan speed, read aloud by VoiceOver",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speed"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hız"
+          }
+        }
+      }
+    },
+    "chart.mark.temperature": {
+      "comment": "Chart axis label for temperature, read aloud by VoiceOver",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperature"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıcaklık"
+          }
+        }
+      }
+    },
+    "chart.mark.time": {
+      "comment": "Chart axis label for time, read aloud by VoiceOver",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaman"
+          }
+        }
+      }
+    },
+    "chart.series.toggle.help": {
+      "comment": "Tooltip on a chart legend entry that toggles its series",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show or hide this series"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu seriyi göster ya da gizle"
+          }
+        }
+      }
+    },
+    "chart.temperature.accessibility": {
+      "comment": "VoiceOver label for the temperature time series chart",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperature over the last %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son %@ içindeki sıcaklık"
+          }
+        }
+      }
+    },
+    "chart.window.label": {
+      "comment": "Accessibility label of the chart time window chips",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chart time window"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grafik zaman aralığı"
+          }
+        }
+      }
+    },
+    "control.mapping.nofans": {
+      "comment": "Shown in the fan mapping list on a machine with no fans",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac reports no controllable fan."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu Mac denetlenebilir bir fan bildirmiyor."
+          }
+        }
+      }
+    },
+    "control.override.duration": {
+      "comment": "Label of the manual override duration picker",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Süre"
+          }
+        }
+      }
+    },
+    "control.override.forever": {
+      "comment": "Manual override duration choice with no time limit",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Until I stop"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ben durdurana kadar"
+          }
+        }
+      }
+    },
+    "control.override.indefinite": {
+      "comment": "Caption while an open-ended manual override is running",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are driving the fans until you hand them back."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanları siz sürüyorsunuz; direksiyonu bırakana kadar böyle kalır."
+          }
+        }
+      }
+    },
+    "control.override.minutes": {
+      "comment": "Manual override duration choice in minutes",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld minutes"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dakika"
+          }
+        }
+      }
+    },
+    "control.override.start": {
+      "comment": "Button that starts driving the fans at the slider value",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take Over"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devral"
+          }
+        }
+      }
+    },
+    "control.override.stop": {
+      "comment": "Button that hands control back to the curve engine",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to Automatic"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomatiğe Dön"
+          }
+        }
+      }
+    },
+    "control.override.until": {
+      "comment": "Caption while a timed manual override is running",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to automatic at %@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomatiğe dönüş: %@"
+          }
+        }
+      }
+    },
+    "control.safety.acting": {
+      "comment": "Status of a safety chain layer that is currently overriding the output",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "acting now"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "şu an müdahale ediyor"
+          }
+        }
+      }
+    },
+    "control.safety.armed": {
+      "comment": "Status of a safety chain layer that is active but not intervening",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "armed"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "kurulu"
+          }
+        }
+      }
+    },
+    "control.safety.k1": {
+      "comment": "Safety chain layer K1",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "K1 — Fan floor"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "K1 — Fan tabanı"
+          }
+        }
+      }
+    },
+    "control.safety.k1.detail": {
+      "comment": "What safety chain layer K1 does",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Output never goes below the hardware minimum."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çıkış hiçbir zaman donanım alt sınırının altına inmez."
+          }
+        }
+      }
+    },
+    "control.safety.k2": {
+      "comment": "Safety chain layer K2",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "K2 — Thermal state"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "K2 — Termal durum"
+          }
+        }
+      }
+    },
+    "control.safety.k2.detail": {
+      "comment": "What safety chain layer K2 does",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serious raises the floor to 55%, critical forces 100%."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ciddi durumda taban %55'e çıkar, kritik durumda %100 zorlanır."
+          }
+        }
+      }
+    },
+    "control.safety.k3": {
+      "comment": "Safety chain layer K3",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "K3 — Panic threshold"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "K3 — Panik eşiği"
+          }
+        }
+      }
+    },
+    "control.safety.k3.detail": {
+      "comment": "What safety chain layer K3 does, with the threshold temperature",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Above %lld °C: full speed, held for 30 seconds."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld °C üstünde: tam hız, 30 saniye kilitli."
+          }
+        }
+      }
+    },
+    "control.safety.k4": {
+      "comment": "Safety chain layer K4",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "K4 — Helper guard"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "K4 — Yardımcı süzgeci"
+          }
+        }
+      }
+    },
+    "control.safety.k4.detail": {
+      "comment": "What safety chain layer K4 does",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The helper refuses any speed the hardware does not accept."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yardımcı, donanımın kabul etmediği hiçbir hızı geçirmez."
+          }
+        }
+      }
+    },
+    "control.safety.k5": {
+      "comment": "Safety chain layer K5",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "K5 — Watchdog"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "K5 — Watchdog"
+          }
+        }
+      }
+    },
+    "control.safety.k5.detail": {
+      "comment": "What safety chain layer K5 does, with the permitted timeout range",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No heartbeat for %lld to %lld seconds hands the fans back."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld–%lld saniye kalp atışı gelmezse fanlar geri verilir."
+          }
+        }
+      }
+    },
+    "control.section.mapping": {
+      "comment": "Heading of the per-fan sensor mapping list in the control tab",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan inputs"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan girişleri"
+          }
+        }
+      }
+    },
+    "control.section.override": {
+      "comment": "Heading of the manual fan override section in the control tab",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual override"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elle devralma"
+          }
+        }
+      }
+    },
+    "control.section.safety": {
+      "comment": "Heading of the safety chain status list in the control tab",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Safety chain"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güvenlik zinciri"
+          }
+        }
+      }
+    },
+    "control.why.fallback": {
+      "comment": "Explains that the default profile is active by fallback",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is active because no other profile's condition holds."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ etkin, çünkü başka hiçbir profilin koşulu sağlanmıyor."
+          }
+        }
+      }
+    },
+    "control.why.manual": {
+      "comment": "Explains that the active profile was chosen by the user",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is active because you selected it."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ etkin, çünkü onu siz seçtiniz."
+          }
+        }
+      }
+    },
+    "control.why.manual.timed": {
+      "comment": "Explains a user-selected profile that expires at a given time",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is active because you selected it, until %@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ etkin, çünkü onu siz seçtiniz. Bitiş: %@"
+          }
+        }
+      }
+    },
+    "control.why.none": {
+      "comment": "Shown in the control tab when there is no profile to activate",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No profile is configured."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanımlı profil yok."
+          }
+        }
+      }
+    },
+    "control.why.trigger": {
+      "comment": "Explains which trigger condition activated the profile",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is active because %@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ etkin, çünkü %@."
+          }
+        }
+      }
+    },
+    "curve.editor.accessibility": {
+      "comment": "VoiceOver label for the curve editor plot",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan curve editor"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan eğrisi düzenleyici"
+          }
+        }
+      }
+    },
+    "curve.hint": {
+      "comment": "One-line instructions under the curve editor",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag a point to reshape · double-click to add · right-click a point to remove"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noktayı sürükleyerek eğriyi değiştirin · çift tıkla ekleyin · noktaya sağ tıklayıp silin"
+          }
+        }
+      }
+    },
+    "curve.none": {
+      "comment": "Shown in the curve editor when no profile is active",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No profile is active, so there is no curve to edit."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etkin profil yok, dolayısıyla düzenlenecek eğri de yok."
+          }
+        }
+      }
+    },
+    "curve.param.fall": {
+      "comment": "Curve parameter: how fast the fan may slow down, in rpm per second",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fall limit"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düşüş sınırı"
+          }
+        }
+      }
+    },
+    "curve.param.hysteresis": {
+      "comment": "Curve parameter: the width of the no-reaction band, in degrees",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hysteresis"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Histerezis"
+          }
+        }
+      }
+    },
+    "curve.param.rise": {
+      "comment": "Curve parameter: how fast the fan may speed up, in rpm per second",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rise limit"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yükseliş sınırı"
+          }
+        }
+      }
+    },
+    "curve.param.smoothing": {
+      "comment": "Curve parameter: the EWMA factor applied to the input temperature",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smoothing"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yumuşatma"
+          }
+        }
+      }
+    },
+    "curve.point.delete": {
+      "comment": "Context menu entry that removes a curve control point",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Point"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noktayı Sil"
+          }
+        }
+      }
+    },
+    "curve.point.help": {
+      "comment": "Tooltip on a curve control point: its temperature and duty",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld °C at %lld%%"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld °C için %%%lld"
+          }
+        }
+      }
+    },
+    "curve.redo": {
+      "comment": "Tooltip of the curve editor redo button",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yinele"
+          }
+        }
+      }
+    },
+    "curve.section": {
+      "comment": "Heading of the curve editor section in the control tab",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan curve"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan eğrisi"
+          }
+        }
+      }
+    },
+    "curve.table.add": {
+      "comment": "Button that adds a control point from the numeric table",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Point"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nokta Ekle"
+          }
+        }
+      }
+    },
+    "curve.table.duty": {
+      "comment": "Numeric curve table column: a control point's fan duty",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan"
+          }
+        }
+      }
+    },
+    "curve.table.duty.accessibility": {
+      "comment": "VoiceOver label for a curve point's duty field",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Point %lld fan speed in percent"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld. noktanın fan hızı, yüzde olarak"
+          }
+        }
+      }
+    },
+    "curve.table.remove.accessibility": {
+      "comment": "VoiceOver label for the button removing a curve point",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove point %lld"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld. noktayı kaldır"
+          }
+        }
+      }
+    },
+    "curve.table.temperature": {
+      "comment": "Numeric curve table column: a control point's temperature",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperature"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıcaklık"
+          }
+        }
+      }
+    },
+    "curve.table.temperature.accessibility": {
+      "comment": "VoiceOver label for a curve point's temperature field",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Point %lld temperature in degrees Celsius"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld. noktanın sıcaklığı, Santigrat derece"
+          }
+        }
+      }
+    },
+    "curve.template.help": {
+      "comment": "Tooltip on a curve editor template button",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start from this built-in curve"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu hazır eğriden başla"
+          }
+        }
+      }
+    },
+    "curve.undo": {
+      "comment": "Tooltip of the curve editor undo button",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geri al"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.airflow": {
+      "comment": "Possible explanation for thermal pressure",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restricted airflow around the machine"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makinenin çevresinde hava akışının kısıtlı olması"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.connection": {
+      "comment": "Possible explanation for a fan not following its command",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fan or cable that is not connected as firmly as it was"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eskisi kadar sıkı oturmayan bir fan ya da kablo"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.differentparts": {
+      "comment": "Possible explanation for two fans running at different speeds",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The fans are cooling different parts of the machine and are meant to differ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanların makinenin farklı bölümlerini soğutuyor ve farklı dönmeleri gerekiyor olması"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.dust": {
+      "comment": "Possible explanation for a fan not following its command",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dust in the fan or the vents, which makes a fan slower than its command"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fandaki ya da havalandırmadaki toz — fanı komutunun gerisinde bırakır"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.firmware": {
+      "comment": "Possible explanation for a fan not following its command",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The firmware overriding the requested speed for its own reasons"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Donanım yazılımının, kendi gerekçeleriyle istenen hızı geçersiz kılması"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.hardware": {
+      "comment": "Possible explanation of last resort, phrased without accusing",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something wrong with the hardware itself"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Donanımın kendisinde bir sorun olması"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.heavywork": {
+      "comment": "Possible explanation for thermal pressure",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sustained heavy work, which is the ordinary reason"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sürekli ağır iş — olağan gerekçe budur"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.notresponding": {
+      "comment": "Possible explanation for two fans running at different speeds",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fan that is not responding to its command"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komutuna yanıt vermeyen bir fan"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.obstruction": {
+      "comment": "Possible explanation for two fans running at different speeds",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dust or an obstruction on the slower fan"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yavaş fanın üzerinde toz ya da bir engel"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.parked": {
+      "comment": "Possible explanation for an unmoving sensor reading",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A cluster the system has parked, which reports a fixed value by design"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistemin park ettiği bir küme — tasarımı gereği sabit bir değer bildirir"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.quietcurve": {
+      "comment": "Possible explanation for thermal pressure",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fan curve that is quieter than this workload wants"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu iş yüküne göre fazla sessiz kalan bir fan eğrisi"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.stopped": {
+      "comment": "Possible explanation for an odd sensor reading",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A sensor that has stopped reporting"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bildirmeyi bırakmış bir sensör"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.unknownsensor": {
+      "comment": "Possible explanation for an odd sensor reading",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A sensor this build does not understand yet"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sürümün henüz tanımadığı bir sensör"
+          }
+        }
+      }
+    },
+    "diagnostics.causes": {
+      "comment": "Heading above the list of possible explanations",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This could be:"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şunlar olabilir:"
+          }
+        }
+      }
+    },
+    "diagnostics.check.balance": {
+      "comment": "Diagnostic check: whether multiple fans run together",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan balance"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan dengesi"
+          }
+        }
+      }
+    },
+    "diagnostics.check.response": {
+      "comment": "Diagnostic check: whether the fans follow their targets",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan response"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan yanıtı"
+          }
+        }
+      }
+    },
+    "diagnostics.check.sensors": {
+      "comment": "Diagnostic check: whether the sensors report sensible values",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensor validity"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensör geçerliliği"
+          }
+        }
+      }
+    },
+    "diagnostics.check.thermal": {
+      "comment": "Diagnostic check: time spent under thermal pressure",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thermal history"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termal geçmiş"
+          }
+        }
+      }
+    },
+    "diagnostics.checks": {
+      "comment": "Heading above the diagnostic check results",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checks"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontroller"
+          }
+        }
+      }
+    },
+    "diagnostics.finding.balance.apart": {
+      "comment": "Fan balance check: one fan runs much faster than another",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One fan is running %lld rpm faster than another."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir fan diğerinden %lld dev/dk daha hızlı dönüyor."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.balance.single": {
+      "comment": "Fan balance check: does not apply on a single fan Mac",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac has a single fan, so there is nothing to compare it against."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu Mac'te tek fan var, dolayısıyla karşılaştırılacak bir şey yok."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.balance.together": {
+      "comment": "Fan balance check: the fans run together",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The fans are within %lld rpm of each other."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanlar birbirinden en çok %lld dev/dk ayrı."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.balance.unreadable": {
+      "comment": "Fan balance check: no speeds to compare",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No fan speeds were readable."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiçbir fan hızı okunamadı."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.response.deviating": {
+      "comment": "Fan response check: the fans are not following their commands closely",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The fans sat %lld rpm from their target on average, and as much as %lld rpm away."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanlar hedeflerinden ortalama %lld dev/dk, en fazla da %lld dev/dk uzakta kaldı."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.response.nodata": {
+      "comment": "Fan response check: not enough evidence yet",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The fans have not been driven long enough this session to judge how they respond."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanlar bu oturumda, nasıl yanıt verdiklerine hükmedilecek kadar uzun sürülmedi."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.response.tracking": {
+      "comment": "Fan response check: the fans are following their commands",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The fans followed their targets to within %lld rpm on average."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanlar hedeflerini ortalama %lld dev/dk yaklaşıklıkla izledi."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.sensors.both": {
+      "comment": "Sensor validity check: both out of range and unmoving readings",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some sensors are reporting oddly — outside anything physical: %@; unchanged all session: %@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bazı sensörler tuhaf bildiriyor — fiziksel olmayan değerler: %@; oturum boyunca hiç değişmeyenler: %@."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.sensors.healthy": {
+      "comment": "Sensor validity check: every sensor looks normal",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All %lld sensors are reporting plausible, changing values."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld sensörün tamamı makul ve değişen değerler bildiriyor."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.sensors.outofrange": {
+      "comment": "Sensor validity check: readings outside the plausible range",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some sensors are reporting values outside anything physical: %@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bazı sensörler fiziksel olarak mümkün olmayan değerler bildiriyor: %@."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.sensors.stuck": {
+      "comment": "Sensor validity check: readings that never move",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some sensors have not changed all session: %@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bazı sensörler oturum boyunca hiç değişmedi: %@."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.sensors.unreadable": {
+      "comment": "Sensor validity check: nothing to judge",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sensor is being read right now."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şu anda okunan sensör yok."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.thermal.calm": {
+      "comment": "Thermal history check: the system never reported pressure",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system reported no thermal pressure this session. Peak temperature: %@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem bu oturumda termal baskı bildirmedi. En yüksek sıcaklık: %@."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.thermal.nopeak": {
+      "comment": "Stands in for a peak temperature that was never recorded",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not recorded"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "kaydedilmedi"
+          }
+        }
+      }
+    },
+    "diagnostics.finding.thermal.pressure": {
+      "comment": "Thermal history check: the system reported pressure during the session",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system reported serious pressure for %lld s and critical pressure for %lld s this session. Peak temperature: %@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem bu oturumda %lld sn ciddi, %lld sn kritik baskı bildirdi. En yüksek sıcaklık: %@."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.thermal.short": {
+      "comment": "Thermal history check: not enough time observed",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The session is too short to say anything about thermal history."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oturum, termal geçmiş hakkında bir şey söyleyemeyecek kadar kısa."
+          }
+        }
+      }
+    },
+    "diagnostics.honesty": {
+      "comment": "States plainly what the diagnostics can and cannot know",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These are observations, not verdicts. Boreas can measure what the hardware reports; it cannot see inside your Mac, so it never tells you something is faulty — it tells you what it measured and what could explain it."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bunlar gözlem, hüküm değil. Boreas donanımın bildirdiğini ölçebilir; Mac'inizin içini göremez. Bu yüzden size bir şeyin arızalı olduğunu asla söylemez — ne ölçtüğünü ve bunu nelerin açıklayabileceğini söyler."
+          }
+        }
+      }
+    },
+    "diagnostics.pending.detail": {
+      "comment": "Explains which diagnostic checks are missing and why",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery health and storage health are not among the checks above. They need hardware readings this build does not take yet, and neither can be verified on the Mac this was developed on. They are listed here so their absence is visible rather than implied."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pil sağlığı ve depolama sağlığı yukarıdaki kontroller arasında değil. Bu sürümün henüz almadığı donanım okumalarını gerektiriyorlar ve ikisi de bu uygulamanın geliştirildiği Mac'te doğrulanamıyor. Yoklukları ima edilmesin diye burada adlarıyla anılıyorlar."
+          }
+        }
+      }
+    },
+    "diagnostics.pending.title": {
+      "comment": "Heading above the checks this build does not perform",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not checked yet"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz kontrol edilmiyor"
+          }
+        }
+      }
+    },
+    "diagnostics.step.earlierprofile": {
+      "comment": "Suggested next step",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try a profile that engages the fans earlier"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanları daha erken devreye sokan bir profil deneyin"
+          }
+        }
+      }
+    },
+    "diagnostics.step.idle": {
+      "comment": "Suggested next step",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check whether the difference persists when the machine is idle"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fark, makine boştayken de sürüyor mu bakın"
+          }
+        }
+      }
+    },
+    "diagnostics.step.report": {
+      "comment": "Suggested next step",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report the sensor with the unknown-sensor issue template"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensörü bilinmeyen sensör konu şablonuyla bildirin"
+          }
+        }
+      }
+    },
+    "diagnostics.step.underload": {
+      "comment": "Suggested next step",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compare with the machine under load, when parked clusters wake up"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makineyi yük altındayken karşılaştırın; park etmiş kümeler o zaman uyanır"
+          }
+        }
+      }
+    },
+    "diagnostics.step.vents": {
+      "comment": "Suggested next step",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check that the vents are clear"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Havalandırmaların açık olduğunu kontrol edin"
+          }
+        }
+      }
+    },
+    "diagnostics.step.watchload": {
+      "comment": "Suggested next step",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch whether the deviation changes with load or stays constant"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sapmanın yükle değişip değişmediğine, yoksa sabit mi kaldığına bakın"
+          }
+        }
+      }
+    },
+    "diagnostics.steps": {
+      "comment": "Heading above the list of suggested next steps",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You could try:"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şunu deneyebilirsiniz:"
+          }
+        }
+      }
+    },
+    "diagnostics.summary": {
+      "comment": "Heading above the discovered system and hardware summary",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu Mac"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.chip": {
+      "comment": "Summary row: the processor this Mac reports",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chip"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yonga"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.fans": {
+      "comment": "Summary row: how many fans the hardware reports",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fans found"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bulunan fan"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.fans.none": {
+      "comment": "Shown on a Mac with no controllable fan",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "none"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "yok"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.helper": {
+      "comment": "Summary row: whether the privileged helper is installed",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan control helper"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan kontrol yardımcısı"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.power": {
+      "comment": "Summary row: mains or battery",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Power"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güç"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.power.adapter": {
+      "comment": "Power source: plugged in",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mains"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "prizde"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.power.battery": {
+      "comment": "Power source: on battery, charge unknown",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "battery"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pilde"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.power.batterypercent": {
+      "comment": "Power source: on battery with a known charge",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "battery, %lld%%"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pilde, %%%lld"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.sensors": {
+      "comment": "Summary row: how many sensors answered",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensors found"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bulunan sensör"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.sensors.all": {
+      "comment": "Shown when every sensor was classified",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld, all recognised"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld, hepsi tanındı"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.sensors.none": {
+      "comment": "Shown when no sensor can be read",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "none answering"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "yanıt veren yok"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.sensors.some": {
+      "comment": "Shown when some sensors could not be classified",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld, of which %lld unrecognised"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld, bunların %lld tanesi tanınmadı"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.session": {
+      "comment": "Summary row: how long this run has been observing",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oturum"
+          }
+        }
+      }
+    },
+    "diagnostics.summary.system": {
+      "comment": "Summary row: the operating system version",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS"
+          }
+        }
+      }
+    },
+    "diagnostics.verdict.attention": {
+      "comment": "Diagnostic verdict: something measurable is off",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "worth a look"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "bakmaya değer"
+          }
+        }
+      }
+    },
+    "diagnostics.verdict.healthy": {
+      "comment": "Diagnostic verdict: the check found nothing to report",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nothing unusual"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "olağandışı bir şey yok"
+          }
+        }
+      }
+    },
+    "diagnostics.verdict.indeterminate": {
+      "comment": "Diagnostic verdict: the check cannot say yet",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not enough evidence"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "yeterli kanıt yok"
+          }
+        }
+      }
+    },
+    "diagnostics.verdict.notapplicable": {
+      "comment": "Diagnostic verdict: the check cannot apply to this Mac",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "does not apply"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "geçerli değil"
+          }
+        }
+      }
+    },
+    "group.airflow": {
+      "comment": "Sensor group: air intake and exhaust temperatures",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Airflow"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hava akışı"
+          }
+        }
+      }
+    },
+    "group.battery": {
+      "comment": "Sensor group: battery temperatures",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pil"
+          }
+        }
+      }
+    },
+    "group.chassis": {
+      "comment": "Sensor group: enclosure and skin temperatures",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chassis"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kasa"
+          }
+        }
+      }
+    },
+    "group.compute": {
+      "comment": "Sensor group: die temperatures not tied to one CPU cluster",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compute"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İşlemci"
+          }
+        }
+      }
+    },
+    "group.compute.efficiency": {
+      "comment": "Sensor group: efficiency CPU cluster temperatures",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efficiency cores"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verimlilik çekirdekleri"
+          }
+        }
+      }
+    },
+    "group.compute.performance": {
+      "comment": "Sensor group: performance CPU cluster temperatures",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Performance cores"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Performans çekirdekleri"
+          }
+        }
+      }
+    },
+    "group.graphics": {
+      "comment": "Sensor group: GPU temperatures",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Graphics"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grafik"
+          }
+        }
+      }
+    },
+    "group.memory": {
+      "comment": "Sensor group: RAM temperatures",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memory"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bellek"
+          }
+        }
+      }
+    },
+    "group.power": {
+      "comment": "Sensor group: power delivery and charger temperatures",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Power"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güç"
+          }
+        }
+      }
+    },
+    "group.storage": {
+      "comment": "Sensor group: SSD and NAND temperatures",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Storage"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depolama"
+          }
+        }
+      }
+    },
+    "group.uncategorized": {
+      "comment": "Sensor group for sensors the classifier does not recognise yet",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uncategorized"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sınıflandırılmamış"
+          }
+        }
+      }
+    },
+    "group.wireless": {
+      "comment": "Sensor group: radio module temperatures",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wireless"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kablosuz"
+          }
+        }
+      }
+    },
+    "layer.k2.critical": {
+      "comment": "Safety chain layer K2 while the system reports critical thermal pressure",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thermal state: critical"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termal durum: kritik"
+          }
+        }
+      }
+    },
+    "layer.k2.serious": {
+      "comment": "Safety chain layer K2 while the system reports serious thermal pressure",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thermal state: serious"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termal durum: ciddi"
+          }
+        }
+      }
+    },
+    "layer.k3": {
+      "comment": "Safety chain layer K3, triggered by a sensor above the panic threshold",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panic threshold"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panik eşiği"
+          }
+        }
+      }
+    },
+    "monitor.sensors.unavailable": {
+      "comment": "Shown when no sensor backend answers; the rest of the app keeps working",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperature sensors are not responding on this Mac."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu Mac'te sıcaklık sensörleri yanıt vermiyor."
+          }
+        }
+      }
+    },
+    "monitoring.filter.placeholder": {
+      "comment": "Placeholder of the sensor table filter field",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filter"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Süz"
+          }
+        }
+      }
+    },
+    "monitoring.reset": {
+      "comment": "Button that clears the session peak and average columns",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Highest"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En Yüksekleri Sıfırla"
+          }
+        }
+      }
+    },
+    "monitoring.section.sensors": {
+      "comment": "Heading above the sensor table in the monitoring tab",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensors"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensörler"
+          }
+        }
+      }
+    },
+    "panel.fan.parked": {
+      "comment": "Shown when the firmware has switched a fan off entirely",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "parked"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "durdurulmuş"
+          }
+        }
+      }
+    },
+    "panel.fancontrol.approval": {
+      "comment": "Tiny status next to the fan control button while System Settings approval is pending",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "approval pending"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "onay bekliyor"
+          }
+        }
+      }
+    },
+    "panel.fancontrol.button": {
+      "comment": "Menu bar panel button that opens the fan control setup window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan Control…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan Kontrolü…"
+          }
+        }
+      }
+    },
+    "panel.fancontrol.ready": {
+      "comment": "Tiny status next to the fan control button when the helper is installed",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ready"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "hazır"
+          }
+        }
+      }
+    },
+    "panel.mainwindow.button": {
+      "comment": "Menu bar panel button that opens the main window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Main Window"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ana Pencere"
+          }
+        }
+      }
+    },
+    "panel.manual.layer.critical": {
+      "comment": "Caption when the K2 critical thermal state is overriding the engine",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thermal state critical — full speed is forced"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termal durum kritik — tam hız zorlanıyor"
+          }
+        }
+      }
+    },
+    "panel.manual.layer.panic": {
+      "comment": "Caption when the K3 panic layer is overriding the engine",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panic: a sensor crossed the panic threshold — full speed is locked"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panik: bir sensör panik eşiğini aştı — tam hız kilitli"
+          }
+        }
+      }
+    },
+    "panel.manual.layer.serious": {
+      "comment": "Caption when the K2 serious thermal state raises the floor",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thermal state serious — the floor is raised to 55%"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termal durum ciddi — taban %55'e çıkarıldı"
+          }
+        }
+      }
+    },
+    "panel.profile.automatic": {
+      "comment": "Profile picker choice that lets the triggers decide",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oto"
+          }
+        }
+      }
+    },
+    "panel.profile.automatic.help": {
+      "comment": "Tooltip of the automatic choice in the profile picker",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Let the profile triggers decide"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kararı profil tetikleyicilerine bırak"
+          }
+        }
+      }
+    },
+    "panel.profile.driving": {
+      "comment": "Caption while the engine follows the named profile's curve",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Driving the fans on the %@ curve"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanlar %@ eğrisiyle sürülüyor"
+          }
+        }
+      }
+    },
+    "panel.profile.firmware": {
+      "comment": "Caption while the System profile leaves the fans with the firmware",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The firmware is controlling the fans"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanları donanım yazılımı yönetiyor"
+          }
+        }
+      }
+    },
+    "panel.profile.firmware.automatic": {
+      "comment": "Caption in automatic mode when nothing has selected a driving profile",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No trigger holds, so the fans stay with the firmware"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiçbir tetikleyici sağlanmıyor, fanlar donanım yazılımında kalıyor"
+          }
+        }
+      }
+    },
+    "panel.profile.override": {
+      "comment": "Context menu entry that activates a profile temporarily for the given number of minutes",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For %lld minutes"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dakika boyunca"
+          }
+        }
+      }
+    },
+    "panel.profile.until": {
+      "comment": "Shown while a profile override with an end time is active",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporary override until %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geçici geçersiz kılma — bitiş: %@"
+          }
+        }
+      }
+    },
+    "panel.quit": {
+      "comment": "Button that closes the application",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çık"
+          }
+        }
+      }
+    },
+    "panel.section.fans": {
+      "comment": "Heading above the list of fans",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fans"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanlar"
+          }
+        }
+      }
+    },
+    "panel.section.profile": {
+      "comment": "Heading above the profile picker in the menu bar panel",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profil"
+          }
+        }
+      }
+    },
+    "panel.section.temperatures": {
+      "comment": "Heading above the grouped temperature list",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperatures"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıcaklıklar"
+          }
+        }
+      }
+    },
+    "panel.settings.button": {
+      "comment": "Menu bar panel button that opens the settings window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlar"
+          }
+        }
+      }
+    },
+    "panel.title": {
+      "comment": "Product name at the top of the menu bar panel",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boreas"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boreas"
+          }
+        }
+      }
+    },
+    "profile.balanced": {
+      "comment": "Built-in profile: the default curve",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balanced"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dengeli"
+          }
+        }
+      }
+    },
+    "profile.performance": {
+      "comment": "Built-in profile: cools earlier and harder",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Performance"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Performans"
+          }
+        }
+      }
+    },
+    "profile.quiet": {
+      "comment": "Built-in profile: trades peak temperature for silence",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quiet"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessiz"
+          }
+        }
+      }
+    },
+    "profile.system": {
+      "comment": "Built-in profile: the engine pauses and firmware keeps the fans",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem"
+          }
+        }
+      }
+    },
+    "settings.advanced.export": {
+      "comment": "Button that writes the configuration to a chosen file",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dışa Aktar…"
+          }
+        }
+      }
+    },
+    "settings.advanced.export.done": {
+      "comment": "Confirms a successful configuration export",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuration exported."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yapılandırma dışa aktarıldı."
+          }
+        }
+      }
+    },
+    "settings.advanced.export.failed": {
+      "comment": "Reports a failed configuration export",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The configuration could not be written there."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yapılandırma oraya yazılamadı."
+          }
+        }
+      }
+    },
+    "settings.advanced.helper.help": {
+      "comment": "Explains what the privileged helper is for",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading temperatures never needs the helper. It exists only to write fan speeds, and removing it leaves a fully working monitor."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıcaklık okumak için yardımcıya hiç gerek yok. O yalnızca fan hızı yazmak için var; kaldırdığınızda elinizde tam çalışan bir izleyici kalır."
+          }
+        }
+      }
+    },
+    "settings.advanced.helper.open": {
+      "comment": "Button opening the helper install and removal window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan Control…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan Kontrolü…"
+          }
+        }
+      }
+    },
+    "settings.advanced.import": {
+      "comment": "Button that loads a configuration from a chosen file",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İçe Aktar…"
+          }
+        }
+      }
+    },
+    "settings.advanced.import.done": {
+      "comment": "Confirms a successful configuration import",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuration imported."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yapılandırma içe aktarıldı."
+          }
+        }
+      }
+    },
+    "settings.advanced.import.failed": {
+      "comment": "Reports a refused configuration import",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That file was refused; nothing changed."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O dosya kabul edilmedi; hiçbir şey değişmedi."
+          }
+        }
+      }
+    },
+    "settings.advanced.location": {
+      "comment": "Label of the configuration file path row",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konum"
+          }
+        }
+      }
+    },
+    "settings.advanced.migrated": {
+      "comment": "Reports that the configuration was migrated on load",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This configuration was upgraded from version %lld. The original is beside it as config.backup.json."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu yapılandırma %lld sürümünden yükseltildi. Özgün hâli yanında, config.backup.json olarak duruyor."
+          }
+        }
+      }
+    },
+    "settings.advanced.problem": {
+      "comment": "Reports that the configuration file could not be used",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The configuration file was refused at %@ and the last valid settings are in use."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yapılandırma dosyası %@ alanında reddedildi; son geçerli ayarlar kullanılıyor."
+          }
+        }
+      }
+    },
+    "settings.advanced.reset": {
+      "comment": "Label of the reset row",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore defaults"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varsayılanlara dön"
+          }
+        }
+      }
+    },
+    "settings.advanced.reset.button": {
+      "comment": "Button that resets the whole configuration",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Defaults"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varsayılanlara Dön"
+          }
+        }
+      }
+    },
+    "settings.advanced.reset.done": {
+      "comment": "Confirms that the configuration was reset",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings restored to defaults."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlar varsayılanlara döndürüldü."
+          }
+        }
+      }
+    },
+    "settings.advanced.reset.help": {
+      "comment": "Explains what resetting to defaults does",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restores every setting, profile and curve to the built-in defaults. The previous file is kept as config.backup.json."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her ayarı, profili ve eğriyi yerleşik varsayılanlara döndürür. Önceki dosya config.backup.json olarak saklanır."
+          }
+        }
+      }
+    },
+    "settings.advanced.reveal": {
+      "comment": "Button revealing the configuration file in Finder",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Göster"
+          }
+        }
+      }
+    },
+    "settings.advanced.section.file": {
+      "comment": "Settings section heading: the configuration file on disk",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuration file"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yapılandırma dosyası"
+          }
+        }
+      }
+    },
+    "settings.advanced.section.helper": {
+      "comment": "Settings section heading: the privileged helper",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan control helper"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan kontrol yardımcısı"
+          }
+        }
+      }
+    },
+    "settings.advanced.section.reset": {
+      "comment": "Settings section heading: restoring defaults",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıfırlama"
+          }
+        }
+      }
+    },
+    "settings.advanced.status": {
+      "comment": "Label of the helper status row",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durum"
+          }
+        }
+      }
+    },
+    "settings.advanced.transfer": {
+      "comment": "Label of the export and import row",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transfer"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktarım"
+          }
+        }
+      }
+    },
+    "settings.advanced.transfer.help": {
+      "comment": "Explains that import is validated exactly like a normal load",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An imported file goes through the same checks as one found at startup, including migration from an older version. A file that fails them changes nothing."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İçe aktarılan dosya, açılışta bulunan bir dosyayla aynı denetimlerden geçer; eski sürümden yükseltme dahil. Bu denetimleri geçemeyen dosya hiçbir şeyi değiştirmez."
+          }
+        }
+      }
+    },
+    "settings.advanced.writeproblem": {
+      "comment": "Reports that writing the configuration file failed",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings could not be saved: %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlar kaydedilemedi: %@"
+          }
+        }
+      }
+    },
+    "settings.appearance.chart": {
+      "comment": "Status item content option: the three minute sparkline",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mini chart"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mini grafik"
+          }
+        }
+      }
+    },
+    "settings.appearance.compact": {
+      "comment": "Status item layout option: compact mode",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compact (numbers only)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıkışık (yalnızca sayılar)"
+          }
+        }
+      }
+    },
+    "settings.appearance.compact.help": {
+      "comment": "Explains compact mode",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compact drops the degree marks and tightens the spacing, which is what to reach for when the menu bar runs out of room."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıkışık kip derece işaretlerini atar ve aralıkları daraltır; menü çubuğunda yer kalmadığında başvurulacak ayar budur."
+          }
+        }
+      }
+    },
+    "settings.appearance.fan": {
+      "comment": "Status item content option: the fan's speed",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan speed"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan hızı"
+          }
+        }
+      }
+    },
+    "settings.appearance.layout": {
+      "comment": "Label of the group of status item layout switches",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layout"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yerleşim"
+          }
+        }
+      }
+    },
+    "settings.appearance.secondary": {
+      "comment": "Setting: an additional temperature shown in the menu bar",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secondary temperature"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İkincil sıcaklık"
+          }
+        }
+      }
+    },
+    "settings.appearance.secondary.help": {
+      "comment": "Explains the secondary temperature setting",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A second temperature beside the first, taken from one group."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Birincinin yanında, tek bir gruptan alınan ikinci bir sıcaklık."
+          }
+        }
+      }
+    },
+    "settings.appearance.secondary.none": {
+      "comment": "Choice meaning no secondary temperature is shown",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yok"
+          }
+        }
+      }
+    },
+    "settings.appearance.section.content": {
+      "comment": "Settings section heading: what the status item shows",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu bar content"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menü çubuğu içeriği"
+          }
+        }
+      }
+    },
+    "settings.appearance.section.layout": {
+      "comment": "Settings section heading: how the status item is arranged",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu bar layout"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menü çubuğu yerleşimi"
+          }
+        }
+      }
+    },
+    "settings.appearance.show": {
+      "comment": "Label of the group of status item content switches",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Göster"
+          }
+        }
+      }
+    },
+    "settings.appearance.temperature": {
+      "comment": "Status item content option: the hottest sensor reading",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hottest temperature"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En yüksek sıcaklık"
+          }
+        }
+      }
+    },
+    "settings.appearance.vertical": {
+      "comment": "Status item layout option: vertical instead of horizontal",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two stacked rows"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İki satır alt alta"
+          }
+        }
+      }
+    },
+    "settings.control.default": {
+      "comment": "Setting: which profile arbitration falls back to",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default profile"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varsayılan profil"
+          }
+        }
+      }
+    },
+    "settings.control.default.help": {
+      "comment": "Explains what the default profile is for",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Used when no trigger holds and nothing is selected by hand."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiçbir tetikleyici sağlanmadığında ve elle bir seçim yapılmadığında kullanılır."
+          }
+        }
+      }
+    },
+    "settings.control.firmware": {
+      "comment": "Description of the System profile in the profile list",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the firmware keeps the fans"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "fanları donanım yazılımı tutar"
+          }
+        }
+      }
+    },
+    "settings.control.panic": {
+      "comment": "Setting: the K3 trigger temperature",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panic threshold"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panik eşiği"
+          }
+        }
+      }
+    },
+    "settings.control.panic.help": {
+      "comment": "Explains the panic threshold and why it cannot be raised",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Above this, every fan goes to full speed and holds there. It can be lowered, never raised above the default — the ceiling is the default (ADR 0022)."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bunun üstünde her fan tam hıza çıkar ve orada kalır. Aşağı çekilebilir, varsayılanın üstüne çıkarılamaz — tavan, varsayılanın kendisidir (ADR 0022)."
+          }
+        }
+      }
+    },
+    "settings.control.section.profiles": {
+      "comment": "Settings section heading: the profile list and default",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profiles"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profiller"
+          }
+        }
+      }
+    },
+    "settings.control.section.safety": {
+      "comment": "Settings section heading: panic threshold and watchdog",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Safety limits"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güvenlik sınırları"
+          }
+        }
+      }
+    },
+    "settings.control.trigger.none": {
+      "comment": "Shown for a profile that is only reachable manually or as the default",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no automatic trigger"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "otomatik tetikleyici yok"
+          }
+        }
+      }
+    },
+    "settings.control.watchdog": {
+      "comment": "Setting shown read-only: how long the helper waits before releasing",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watchdog timeout"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watchdog süresi"
+          }
+        }
+      }
+    },
+    "settings.control.watchdog.help": {
+      "comment": "Explains why the watchdog timeout cannot be changed",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fixed, and shown here as a fact rather than a control: the helper reads no configuration and its message surface is exactly four methods, so there is no way to deliver a different value to it (ADR 0023)."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sabittir ve burada bir ayar olarak değil, bir olgu olarak gösterilir: yardımcı hiçbir yapılandırma okumaz ve mesaj yüzeyi tam olarak dört metottur, dolayısıyla ona farklı bir değer ulaştırmanın yolu yoktur (ADR 0023)."
+          }
+        }
+      }
+    },
+    "settings.general.interval": {
+      "comment": "Setting: how often the hardware is sampled",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read sensors every"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensör okuma sıklığı"
+          }
+        }
+      }
+    },
+    "settings.general.interval.help": {
+      "comment": "Explains the trade-off behind the sampling interval",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shorter is more responsive and costs a little more power. The control loop follows the same cadence."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kısa aralık daha çevik, biraz da daha fazla güç demek. Kontrol döngüsü de aynı tempoyu izler."
+          }
+        }
+      }
+    },
+    "settings.general.language.help": {
+      "comment": "Explains that the application language is a system setting",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boreas follows the language order in System Settings. macOS also lets you set a different language for this application alone, under Language & Region."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boreas, Sistem Ayarları'ndaki dil sıranızı izler. macOS ayrıca yalnızca bu uygulama için farklı bir dil seçmenize izin verir: Dil ve Bölge bölümünden."
+          }
+        }
+      }
+    },
+    "settings.general.login": {
+      "comment": "Setting: register the application as a login item",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start at login"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Girişte başlat"
+          }
+        }
+      }
+    },
+    "settings.general.login.help": {
+      "comment": "Explains what the login item switch does",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registers Boreas as a login item. macOS shows it in Login Items, where it can also be turned off."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boreas'ı bir giriş öğesi olarak kaydeder. macOS bunu Giriş Öğeleri altında gösterir; oradan kapatılabilir."
+          }
+        }
+      }
+    },
+    "settings.general.login.toggle": {
+      "comment": "Label of the start-at-login switch",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enabled"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açık"
+          }
+        }
+      }
+    },
+    "settings.general.section.language": {
+      "comment": "Settings section heading: application language",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dil"
+          }
+        }
+      }
+    },
+    "settings.general.section.sampling": {
+      "comment": "Settings section heading: how often the hardware is read",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sampling"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Örnekleme"
+          }
+        }
+      }
+    },
+    "settings.general.section.startup": {
+      "comment": "Settings section heading: launch behaviour",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startup"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başlangıç"
+          }
+        }
+      }
+    },
+    "settings.sensors.group": {
+      "comment": "Sensor settings column: which group the sensor belongs to",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grup"
+          }
+        }
+      }
+    },
+    "settings.sensors.help": {
+      "comment": "Explains what sensor overrides do and what hiding does not do",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renaming or re-filing a sensor also changes which curve can follow it. Hiding one only removes it from the lists: it is still read, still counts towards its group, and can still trigger the panic layer."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir sensörü yeniden adlandırmak ya da başka gruba almak, onu hangi eğrinin izleyebileceğini de değiştirir. Gizlemek ise yalnızca listelerden çıkarır: sensör okunmaya, grubunun hesabına katılmaya ve panik katmanını tetikleyebilmeye devam eder."
+          }
+        }
+      }
+    },
+    "settings.sensors.name": {
+      "comment": "Sensor settings column: the sensor's display name",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ad"
+          }
+        }
+      }
+    },
+    "settings.sensors.none": {
+      "comment": "Shown in the sensor settings when nothing is readable",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sensor is being read right now."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şu anda okunan sensör yok."
+          }
+        }
+      }
+    },
+    "settings.sensors.report.clean": {
+      "comment": "Shown when no sensor is uncategorized",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every sensor on this Mac was recognised."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu Mac'teki her sensör tanındı."
+          }
+        }
+      }
+    },
+    "settings.sensors.report.count": {
+      "comment": "Reports how many sensors the classifier could not place",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not recognised: %lld"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanınmayan: %lld"
+          }
+        }
+      }
+    },
+    "settings.sensors.report.detail": {
+      "comment": "Explains what happens to sensors the classifier cannot place",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrecognised sensors are still read and still shown. Filing them below teaches this Mac, and the unknown-sensor issue template shares the fix with everyone else."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanınmayan sensörler yine de okunur ve yine de gösterilir. Aşağıda onları gruplamak bu Mac'e öğretir; bilinmeyen sensör konu şablonu ise çözümü herkesle paylaşır."
+          }
+        }
+      }
+    },
+    "settings.sensors.section.list": {
+      "comment": "Settings section heading: the editable sensor list",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All sensors"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm sensörler"
+          }
+        }
+      }
+    },
+    "settings.sensors.section.report": {
+      "comment": "Settings section heading: the uncategorized sensor report",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrecognised sensors"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanınmayan sensörler"
+          }
+        }
+      }
+    },
+    "settings.sensors.shown": {
+      "comment": "Sensor settings column: whether the sensor appears in the lists",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shown"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Görünür"
+          }
+        }
+      }
+    },
+    "settings.shortcuts.clear": {
+      "comment": "Tooltip of the button that clears a shortcut",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove this shortcut"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu kısayolu kaldır"
+          }
+        }
+      }
+    },
+    "settings.shortcuts.help": {
+      "comment": "Explains what global shortcuts are and their one limitation",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These work anywhere, without Boreas being frontmost, and without any accessibility permission. A combination another application already holds cannot be taken, and Boreas says so rather than doing nothing."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bunlar her yerde çalışır; Boreas'ın önde olması gerekmez ve hiçbir erişilebilirlik izni istenmez. Başka bir uygulamanın tuttuğu bir kombinasyon alınamaz ve Boreas bunu sessizce geçmek yerine söyler."
+          }
+        }
+      }
+    },
+    "settings.shortcuts.needsmodifier": {
+      "comment": "Shown when a recorded combination has no qualifying modifier",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "add ⌘, ⌥ or ⌃"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌘, ⌥ ya da ⌃ ekleyin"
+          }
+        }
+      }
+    },
+    "settings.shortcuts.recording": {
+      "comment": "Placeholder while a shortcut is being recorded",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press keys…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tuşlara basın…"
+          }
+        }
+      }
+    },
+    "settings.shortcuts.refused": {
+      "comment": "Shown when the system refused to register a shortcut",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "already in use elsewhere"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "başka yerde kullanımda"
+          }
+        }
+      }
+    },
+    "settings.shortcuts.section": {
+      "comment": "Settings section heading: system-wide key combinations",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Global shortcuts"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Global kısayollar"
+          }
+        }
+      }
+    },
+    "settings.shortcuts.unset": {
+      "comment": "Shown for an action with no shortcut assigned",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not set"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atanmadı"
+          }
+        }
+      }
+    },
+    "settings.tab.advanced": {
+      "comment": "Settings tab: the helper, the configuration file and resetting",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Advanced"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gelişmiş"
+          }
+        }
+      }
+    },
+    "settings.tab.appearance": {
+      "comment": "Settings tab: what the menu bar item shows and how",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appearance"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Görünüm"
+          }
+        }
+      }
+    },
+    "settings.tab.control": {
+      "comment": "Settings tab: profiles and the panic threshold",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontrol"
+          }
+        }
+      }
+    },
+    "settings.tab.general": {
+      "comment": "Settings tab: sampling and launch behaviour",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Genel"
+          }
+        }
+      }
+    },
+    "settings.tab.sensors": {
+      "comment": "Settings tab: naming, grouping and hiding sensors",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensors"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensörler"
+          }
+        }
+      }
+    },
+    "settings.window.title": {
+      "comment": "Title of the settings window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boreas Settings"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boreas Ayarları"
+          }
+        }
+      }
+    },
+    "setup.approval.explain": {
+      "comment": "Shown while the background item waits for approval in System Settings",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS is waiting for your approval in System Settings. Boreas notices by itself once you allow it — leave this window open."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS, Sistem Ayarları'nda onayınızı bekliyor. İzin verdiğiniz anda Boreas bunu kendisi fark eder — bu pencereyi açık bırakın."
+          }
+        }
+      }
+    },
+    "setup.approval.open": {
+      "comment": "Button that opens the Login Items pane where the approval is granted",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open System Settings"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem Ayarları'nı Aç"
+          }
+        }
+      }
+    },
+    "setup.failed": {
+      "comment": "Introduces the raw system error message after a failed step",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That did not work. The system said:"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu işe yaramadı. Sistemin söylediği:"
+          }
+        }
+      }
+    },
+    "setup.files.bundle": {
+      "comment": "Setup bullet: SMAppService keeps the helper inside the app bundle",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The helper program and its launch definition already sit inside the Boreas app. Installing copies nothing into system folders."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yardımcı program ve onun başlatma tanımı zaten Boreas uygulamasının içinde duruyor. Kurulum sistem klasörlerine hiçbir şey kopyalamaz."
+          }
+        }
+      }
+    },
+    "setup.files.heading": {
+      "comment": "Heading of the setup section listing file system effects",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What is written where"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nereye ne yazılıyor"
+          }
+        }
+      }
+    },
+    "setup.files.registry": {
+      "comment": "Setup bullet: the only system-side record is the background item registration",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS records the approval in its background items database. The entry is visible in System Settings under Login Items & Extensions."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS onayı arka plan öğeleri veritabanına kaydeder. Kayıt, Sistem Ayarları'nda Giriş Öğeleri ve Uzantılar altında görünür."
+          }
+        }
+      }
+    },
+    "setup.install.button": {
+      "comment": "Button that starts the helper installation",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install Fan Control Helper"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan Kontrol Yardımcısını Kur"
+          }
+        }
+      }
+    },
+    "setup.installing": {
+      "comment": "Progress text while the helper is being registered",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registering the helper…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yardımcı kaydediliyor…"
+          }
+        }
+      }
+    },
+    "setup.ready": {
+      "comment": "Success line after installation; the number is how many fans the helper reports",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper installed and verified. It sees %lld fan(s)."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yardımcı kuruldu ve doğrulandı. %lld fan görüyor."
+          }
+        }
+      }
+    },
+    "setup.reinstall.button": {
+      "comment": "Button that reinstalls the helper after a removal",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install Again"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeniden Kur"
+          }
+        }
+      }
+    },
+    "setup.remove.button": {
+      "comment": "Button that unregisters the privileged helper",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaldır…"
+          }
+        }
+      }
+    },
+    "setup.removed": {
+      "comment": "Confirmation after the helper was unregistered",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper removed. The background item is gone and the firmware controls the fans."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yardımcı kaldırıldı. Arka plan öğesi gitti; fanları donanım yazılımı yönetiyor."
+          }
+        }
+      }
+    },
+    "setup.retry.button": {
+      "comment": "Button that retries the helper installation after a failure",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeniden Dene"
+          }
+        }
+      }
+    },
+    "setup.skip.note": {
+      "comment": "Reassurance under the setup actions; installing is optional (invariant I4)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can skip this entirely. Without the helper, Boreas remains a fully working temperature monitor."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bunu tümüyle atlayabilirsiniz. Yardımcı olmadan da Boreas tam çalışan bir sıcaklık izleyicisi olarak kalır."
+          }
+        }
+      }
+    },
+    "setup.title": {
+      "comment": "Title inside the helper setup window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan Control Setup"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan Kontrolü Kurulumu"
+          }
+        }
+      }
+    },
+    "setup.undo.button": {
+      "comment": "Setup bullet: removal routes offered by the product",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Remove button on this screen unregisters the helper. The Terminal command “boreas uninstall --all” does the same and also deletes saved settings."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu ekrandaki Kaldır düğmesi yardımcının kaydını siler. Terminal'deki “boreas uninstall --all” komutu aynısını yapar, üstelik kayıtlı ayarları da siler."
+          }
+        }
+      }
+    },
+    "setup.undo.firmware": {
+      "comment": "Setup bullet: System Settings route and the firmware fallback guarantee (G4)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can also switch the item off in System Settings. The moment the helper is gone, the firmware controls the fans again — that is the safe state."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öğeyi Sistem Ayarları'ndan da kapatabilirsiniz. Yardımcı gittiği anda fanları yeniden donanım yazılımı yönetir — güvenli durum budur."
+          }
+        }
+      }
+    },
+    "setup.undo.heading": {
+      "comment": "Heading of the setup section explaining removal",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How to undo it"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geri alma yolu"
+          }
+        }
+      }
+    },
+    "setup.verifying": {
+      "comment": "Progress text while the app proves the helper connection end to end",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifying the connection…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bağlantı doğrulanıyor…"
+          }
+        }
+      }
+    },
+    "setup.what.admin": {
+      "comment": "Setup bullet: single administrator approval (invariant I3)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS asks an administrator to approve the helper — once. Boreas never sees the password."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS yardımcıyı onaylaması için bir yöneticiye sorar — bir kez. Boreas parolayı hiçbir zaman görmez."
+          }
+        }
+      }
+    },
+    "setup.what.heading": {
+      "comment": "Heading of the setup section explaining the effects of installing",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What will happen"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ne olacak"
+          }
+        }
+      }
+    },
+    "setup.what.helper": {
+      "comment": "Setup bullet: what the privileged helper is",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A helper service is registered. It runs with root privileges and is started by macOS on demand."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir yardımcı servis kaydedilir. Root yetkisiyle çalışır ve macOS tarafından gerektiğinde başlatılır."
+          }
+        }
+      }
+    },
+    "setup.what.surface": {
+      "comment": "Setup bullet: the helper's deliberately narrow surface (invariants M4-M6)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The helper only reads fan state and writes fan speeds within hardware limits. It accepts no files or commands and never touches the network."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yardımcı yalnızca fan durumunu okur ve donanım sınırları içinde fan hızı yazar. Hiçbir dosya ya da komut kabul etmez, ağa hiç dokunmaz."
+          }
+        }
+      }
+    },
+    "setup.window.title": {
+      "comment": "Title of the fan control setup window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan Control"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan Kontrolü"
+          }
+        }
+      }
+    },
+    "shortcut.boost": {
+      "comment": "Global shortcut action: run the fans at full speed temporarily",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full speed for a while"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir süre tam hız"
+          }
+        }
+      }
+    },
+    "shortcut.boost.help": {
+      "comment": "Explains what the boost shortcut does and how long it lasts",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Runs every fan at full speed for %lld minutes, then hands back to the curve."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her fanı %lld dakika boyunca tam hızda çalıştırır, sonra direksiyonu eğriye bırakır."
+          }
+        }
+      }
+    },
+    "shortcut.mainwindow": {
+      "comment": "Global shortcut action: bring up the main window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the main window"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ana pencereyi aç"
+          }
+        }
+      }
+    },
+    "shortcut.release": {
+      "comment": "Global shortcut action: release fan control to the firmware",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hand the fans back"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanları geri ver"
+          }
+        }
+      }
+    },
+    "shortcut.release.help": {
+      "comment": "Explains what the release shortcut does",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returns the fans to the Mac's own management, as quitting does."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanları Mac'in kendi yönetimine döndürür; çıkışta olduğu gibi."
+          }
+        }
+      }
+    },
+    "shortcut.settings": {
+      "comment": "Global shortcut action: bring up the settings window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open settings"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarları aç"
+          }
+        }
+      }
+    },
+    "statusitem.warning.body": {
+      "comment": "Body of the warning shown when the status item is pushed out",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Boreas status item does not fit in the visible part of the menu bar right now, so its numbers cannot be seen. Compact mode makes the item narrower."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boreas durum öğesi şu anda menü çubuğunun görünen kısmına sığmıyor, bu yüzden sayıları görülemiyor. Sıkışık kip öğeyi daraltır."
+          }
+        }
+      }
+    },
+    "statusitem.warning.compact": {
+      "comment": "Switches the status item to compact mode from the warning",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Compact Mode"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıkışık Kipi Kullan"
+          }
+        }
+      }
+    },
+    "statusitem.warning.later": {
+      "comment": "Dismisses the out-of-room warning without changes",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Now"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şimdi Değil"
+          }
+        }
+      }
+    },
+    "statusitem.warning.title": {
+      "comment": "Title of the warning shown when the status item is pushed out",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The menu bar is out of room"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menü çubuğunda yer kalmadı"
+          }
+        }
+      }
+    },
+    "statusitem.window.title": {
+      "comment": "Title of the window warning that the status item has no room",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu Bar Space"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menü Çubuğu Yeri"
+          }
+        }
+      }
+    },
+    "summary.average": {
+      "comment": "Summary card: the mean of the current sensor readings",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Average"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ortalama"
+          }
+        }
+      }
+    },
+    "summary.fans": {
+      "comment": "Summary card: the average speed of the fans",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fans"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanlar"
+          }
+        }
+      }
+    },
+    "summary.hottest": {
+      "comment": "Summary card: the highest current sensor reading",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hottest"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En yüksek"
+          }
+        }
+      }
+    },
+    "summary.profile": {
+      "comment": "Summary card: the profile currently active",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profil"
+          }
+        }
+      }
+    },
+    "summary.thermal": {
+      "comment": "Summary card: the system's reported thermal pressure",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thermal state"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termal durum"
+          }
+        }
+      }
+    },
+    "table.column.current": {
+      "comment": "Sensor table column: the current reading",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şimdi"
+          }
+        }
+      }
+    },
+    "table.column.group": {
+      "comment": "Sensor table column: which group the sensor belongs to",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grup"
+          }
+        }
+      }
+    },
+    "table.column.maximum": {
+      "comment": "Sensor table column: the highest reading this session",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Highest"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En yüksek"
+          }
+        }
+      }
+    },
+    "table.column.mean": {
+      "comment": "Sensor table column: the average reading this session",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Average"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ortalama"
+          }
+        }
+      }
+    },
+    "table.column.name": {
+      "comment": "Sensor table column: the sensor's name",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensor"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensör"
+          }
+        }
+      }
+    },
+    "table.empty": {
+      "comment": "Shown when the sensor table filter excludes every sensor",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sensor matches this filter."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu süzgece uyan sensör yok."
+          }
+        }
+      }
+    },
+    "thermal.critical": {
+      "comment": "System thermal pressure: the system is at its limit",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Critical"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kritik"
+          }
+        }
+      }
+    },
+    "thermal.fair": {
+      "comment": "System thermal pressure: slightly elevated",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fair"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orta"
+          }
+        }
+      }
+    },
+    "thermal.nominal": {
+      "comment": "System thermal pressure: nothing unusual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nominal"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normal"
+          }
+        }
+      }
+    },
+    "thermal.serious": {
+      "comment": "System thermal pressure: the system is throttling",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serious"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ciddi"
+          }
+        }
+      }
+    },
+    "trigger.add": {
+      "comment": "Menu that adds a trigger to a profile",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Trigger"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tetikleyici Ekle"
+          }
+        }
+      }
+    },
+    "trigger.app.foreground": {
+      "comment": "Profile trigger condition: a named application is frontmost",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is in the foreground"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ önde"
+          }
+        }
+      }
+    },
+    "trigger.app.running": {
+      "comment": "Profile trigger condition: a named application is running",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is running"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ çalışıyor"
+          }
+        }
+      }
+    },
+    "trigger.battery": {
+      "comment": "Profile trigger condition: battery charge below a threshold",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the battery is at or below %lld%%"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pil %%%lld ya da altında"
+          }
+        }
+      }
+    },
+    "trigger.display.connected": {
+      "comment": "Profile trigger condition: an external display is attached",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "an external display is connected"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "harici bir ekran bağlı"
+          }
+        }
+      }
+    },
+    "trigger.display.disconnected": {
+      "comment": "Profile trigger condition: no external display is attached",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no external display is connected"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "harici ekran bağlı değil"
+          }
+        }
+      }
+    },
+    "trigger.edit.app.choose": {
+      "comment": "Button that opens a picker to select the application for a trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose an application…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir uygulama seçin…"
+          }
+        }
+      }
+    },
+    "trigger.edit.app.frontmost": {
+      "comment": "Whether the application trigger needs the app to be in front",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "only when frontmost"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "yalnızca öndeyken"
+          }
+        }
+      }
+    },
+    "trigger.edit.display.connected": {
+      "comment": "External display choice: one is attached",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bağlı"
+          }
+        }
+      }
+    },
+    "trigger.edit.display.disconnected": {
+      "comment": "External display choice: none attached",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not connected"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bağlı değil"
+          }
+        }
+      }
+    },
+    "trigger.edit.power.adapter": {
+      "comment": "Power source choice: running on mains",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plugged in"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prize takılı"
+          }
+        }
+      }
+    },
+    "trigger.edit.power.battery": {
+      "comment": "Power source choice: running on battery",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On battery"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilde"
+          }
+        }
+      }
+    },
+    "trigger.edit.time.overnight": {
+      "comment": "Note on a time window that crosses midnight",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "overnight"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "gece boyu"
+          }
+        }
+      }
+    },
+    "trigger.kind.application": {
+      "comment": "Trigger kind: a named application running or frontmost",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An application"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir uygulama"
+          }
+        }
+      }
+    },
+    "trigger.kind.battery": {
+      "comment": "Trigger kind: battery charge at or below a threshold",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery level"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pil düzeyi"
+          }
+        }
+      }
+    },
+    "trigger.kind.display": {
+      "comment": "Trigger kind: an external display connected or not",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "External display"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Harici ekran"
+          }
+        }
+      }
+    },
+    "trigger.kind.power": {
+      "comment": "Trigger kind: mains or battery",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Power source"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güç kaynağı"
+          }
+        }
+      }
+    },
+    "trigger.kind.thermal": {
+      "comment": "Trigger kind: system thermal pressure at or above a level",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thermal state"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Termal durum"
+          }
+        }
+      }
+    },
+    "trigger.kind.time": {
+      "comment": "Trigger kind: a daily time window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time of day"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Günün saati"
+          }
+        }
+      }
+    },
+    "trigger.none.help": {
+      "comment": "Explains what having no trigger means for a profile",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With no trigger, this profile is reachable only by choosing it, or as the default."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tetikleyici yoksa bu profile yalnızca onu seçerek ya da varsayılan olarak ulaşılır."
+          }
+        }
+      }
+    },
+    "trigger.power.adapter": {
+      "comment": "Profile trigger condition: the Mac is on mains power",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "plugged in"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "prize takılı"
+          }
+        }
+      }
+    },
+    "trigger.power.battery": {
+      "comment": "Profile trigger condition: the Mac is on battery power",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "running on battery"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pille çalışıyor"
+          }
+        }
+      }
+    },
+    "trigger.priority": {
+      "comment": "Stepper setting a profile's arbitration priority",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Priority %lld"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öncelik %lld"
+          }
+        }
+      }
+    },
+    "trigger.remove": {
+      "comment": "Tooltip of the button that removes a trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove this trigger"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu tetikleyiciyi kaldır"
+          }
+        }
+      }
+    },
+    "trigger.thermal": {
+      "comment": "Profile trigger condition: thermal pressure at or above a level",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the thermal state is %@ or worse"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "termal durum %@ ya da daha kötü"
+          }
+        }
+      }
+    },
+    "trigger.time": {
+      "comment": "Profile trigger condition: the current time is inside a daily window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the time is between %@ and %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "saat %@ ile %@ arasında"
+          }
+        }
+      }
+    },
+    "window.1h": {
+      "comment": "Chart time window: the last hour",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 hr"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sa"
+          }
+        }
+      }
+    },
+    "window.24h": {
+      "comment": "Chart time window: the last twenty four hours",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "24 hr"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "24 sa"
+          }
+        }
+      }
+    },
+    "window.5m": {
+      "comment": "Chart time window: the last five minutes",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 min"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 dk"
+          }
+        }
+      }
+    },
+    "window.6h": {
+      "comment": "Chart time window: the last six hours",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 hr"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 sa"
+          }
+        }
+      }
+    },
+    "window.main.title": {
+      "comment": "Title of the main window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boreas"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boreas"
+          }
+        }
+      }
+    },
+    "window.tab.control": {
+      "comment": "Main window tab showing the active profile and safety chain",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontrol"
+          }
+        }
+      }
+    },
+    "window.tab.diagnostics": {
+      "comment": "Main window tab showing hardware checks and a summary",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diagnostics"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanılama"
+          }
+        }
+      }
+    },
+    "window.tab.monitoring": {
+      "comment": "Main window tab showing temperatures and fan speeds",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monitoring"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İzleme"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -33,7 +33,7 @@ extension HardwareDrills {
 
         // Before driving, the honest answer is "not yet".
         let before = DiagnosticChecks.fanResponse(samples: control.fanResponseSamples)
-        report("before driving: \(before.verdict.rawValue) — \(before.observation)")
+        report("before driving: \(before.verdict.rawValue) — \(before.finding.text)")
 
         control.select(profileName: "Balanced")
         // Long enough to collect well past the minimum sample count at the
@@ -43,17 +43,17 @@ extension HardwareDrills {
         let driving = DiagnosticChecks.fanResponse(samples: control.fanResponseSamples)
         report(
             "after \(control.fanResponseSamples.count) samples: "
-                + "\(driving.verdict.rawValue) — \(driving.observation)")
+                + "\(driving.verdict.rawValue) — \(driving.finding.text)")
 
         let sensors = DiagnosticChecks.sensorValidity(
             outOfRange: monitor.allReadings.filter { !$0.isPlausible }.map(\.displayName),
             stuck: [],
             totalSensors: monitor.allReadings.count)
-        report("sensors: \(sensors.verdict.rawValue) — \(sensors.observation)")
+        report("sensors: \(sensors.verdict.rawValue) — \(sensors.finding.text)")
 
         let balance = DiagnosticChecks.fanBalance(
             speeds: monitor.fans.filter { !$0.isPoweredOff }.map(\.currentRPM))
-        report("balance: \(balance.verdict.rawValue) — \(balance.observation)")
+        report("balance: \(balance.verdict.rawValue) — \(balance.finding.text)")
 
         control.select(profileName: "System")
         pump(6)

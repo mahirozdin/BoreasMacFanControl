@@ -34,34 +34,16 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Y2 — String Catalog: all five languages present + every string has a comment
+# Y2 / Y4 / the honesty rule — String Catalog
+# The checks themselves are Python, in check-catalog.py, because they are
+# about the shape of a JSON document and shell is the wrong instrument.
 # ---------------------------------------------------------------------------
 CAT=$(tracked '*.xcstrings' | head -1)
 if [ -z "$CAT" ]; then
-  skip "no String Catalog — arrives in P6"
+  skip "no String Catalog — arrives in P6.11"
 else
-  for lang in en tr ru es zh-Hans; do
-    if grep -q "\"$lang\"" "$CAT" 2>/dev/null; then
-      ok "language present: $lang"
-    else
-      fail "language missing from the String Catalog: $lang"
-    fi
-  done
   require_tools python3
-  python3 - "$CAT" <<'PY' || GATE_FAIL=1
-import json, sys
-try:
-    data = json.load(open(sys.argv[1]))
-except Exception as e:
-    print(f"  ✗ the String Catalog could not be parsed: {e}"); sys.exit(1)
-missing = [k for k, v in data.get("strings", {}).items() if not v.get("comment")]
-if missing:
-    print(f"  ✗ strings with an empty comment field: {len(missing)} (Y2)")
-    for k in missing[:10]:
-        print(f"      {k}")
-    sys.exit(1)
-print("  ✓ every string carries a comment")
-PY
+  python3 scripts/gates/check-catalog.py "$CAT" || GATE_FAIL=1
 fi
 
 gate_result "gate-i18n"

@@ -1,3 +1,4 @@
+import AppKit
 import Core
 import Foundation
 import OSLog
@@ -48,6 +49,21 @@ public final class ConfigurationStore {
             ?? FileManager.default
             .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Boreas", isDirectory: true)
+    }
+
+    /// Writes anything still pending before the process goes away.
+    ///
+    /// Found by the P6.14 drill, which read a second store immediately
+    /// after a change and saw the old file: the write is coalesced by 600
+    /// ms, so a setting changed and then followed by a quit was simply
+    /// lost. Coalescing is still right — a slider drag must not rewrite the
+    /// file sixty times a second — but it needs an exit that flushes.
+    func flushOnTermination() {
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.willTerminateNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.save(immediately: true) }
+        }
     }
 
     // MARK: - Loading
