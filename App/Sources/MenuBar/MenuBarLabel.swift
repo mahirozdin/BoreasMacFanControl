@@ -59,8 +59,11 @@ struct MenuBarLabel: View {
                 inlineContent
             }
 
-            if style.showChart, model.hottestHistory.count >= 2 {
-                TemperatureSparkline(values: model.hottestHistory)
+            if style.showChart {
+                let recent = model.sparkline
+                if recent.count >= 2 {
+                    TemperatureSparkline(values: recent)
+                }
             }
         }
     }

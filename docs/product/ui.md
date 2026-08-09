@@ -1,6 +1,6 @@
 # User Interface
 
-> Last updated: 2026-08-05 — P6.03
+> Last updated: 2026-08-05 — P6.04, P6.05
 > Source: blueprint §9
 
 ## Design language
@@ -42,6 +42,8 @@ The sampling loop does **not stop** while the panel is open.
 **② Control** — the active profile **and why it is active** (which trigger held — transparency matters) · curve editor · fan↔sensor group mapping · manual override (with a duration picker) · safety chain status.
 
 **③ Diagnostics** — the checks in `docs/operations/diagnostics.md` · system and hardware summary · log access · **local** support report (no automatic upload).
+
+**Implementation (P6.04, P6.05):** [`App/Sources/Window/`](../../App/Sources/Window/) — `MainWindow` carries the two tabs that exist; Diagnostics arrives with P6.09 rather than appearing empty. The charts share **one x domain computed once and handed to both**, which is what makes a temperature rise and the fan's answer readable as cause and effect. Chart history lives in [`Core/Presentation/TimeSeries.swift`](../../Packages/Core/Sources/Core/Presentation/TimeSeries.swift), which spends resolution rather than span when it fills up — a "24 hour" window that had quietly become "the last few minutes" would be a chart that lies by omission. Series identity uses `Core.SeriesPalette` (categorical hue, still no red); fans stay neutral because the y-axis already says how fast. Render evidence: `--render-window <dir>`; the manual override's "expiry returns to the engine, not the firmware" rule is proven on hardware by `--override-drill`.
 
 ## Curve editor
 

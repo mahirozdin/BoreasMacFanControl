@@ -35,6 +35,17 @@ extension Color {
         Color.primary.opacity(FanScale.fillFraction(for: duty))
     }
 
+    /// A chart series' identity colour (`Core.SeriesPalette`). Hue carries
+    /// *which series* here, never how hot — the y-axis already says that.
+    static func series(_ index: Int) -> Color {
+        let components = SeriesPalette.color(at: index)
+        return Color(
+            red: components.red,
+            green: components.green,
+            blue: components.blue
+        )
+    }
+
     /// The only red in the product. Panic and error states — nothing else.
     ///
     /// The system red adapts to appearance and to the user's accessibility

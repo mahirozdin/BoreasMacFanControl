@@ -55,6 +55,14 @@ public final class ControlModel {
     /// becomes a clamped `Duty` at the moment of use, never before.
     public var manualDuty: Double = 0.35
 
+    /// When a manual duty override gives way to the engine again, or `nil`
+    /// for "until further notice". The blueprint's own example is "back to
+    /// automatic in 30 minutes".
+    public private(set) var dutyOverrideUntil: Date?
+
+    /// Whether the slider, rather than the engine, is deciding right now.
+    public var isDutyOverridden: Bool { source == .manualDuty }
+
     public var isEngaged: Bool {
         state == .controlling || state == .panic
     }
@@ -106,6 +114,34 @@ public final class ControlModel {
             return
         }
         manualSelection = ManualSelection(profileName: profileName, until: until)
+        refreshOutcome()
+        reconcile()
+    }
+
+    // MARK: - Manual duty override (P6.05)
+
+    /// Hands the requested duty to the slider instead of the engine, for a
+    /// while.
+    ///
+    /// Expiry returns control to the *engine*, not to the firmware: the
+    /// user asked to take the wheel for half an hour, not to stop cooling
+    /// afterwards. The safety chain is in the path either way, so an
+    /// override can raise the fans but never hold them below what K1–K3
+    /// demand.
+    public func overrideDuty(_ duty: Double, until: Date?) {
+        manualDuty = duty
+        dutyOverrideUntil = until
+        source = .manualDuty
+        if state == .monitoring {
+            engage(source: .manualDuty)
+        }
+    }
+
+    /// Gives the engine back the wheel. If the active profile pauses the
+    /// engine, the loop releases to firmware instead of idling engaged.
+    public func clearDutyOverride() {
+        dutyOverrideUntil = nil
+        source = .engine
         refreshOutcome()
         reconcile()
     }
@@ -230,6 +266,15 @@ public final class ControlModel {
     private func cycle(_ client: HelperClient) async {
         let fans = monitor.fans
         guard !fans.isEmpty else { return }
+
+        // A timed override ends here rather than on a timer of its own: the
+        // loop is already the thing that ticks, and an expiry that can only
+        // be noticed while the fans are being driven is an expiry that can
+        // never be missed.
+        if source == .manualDuty, let until = dutyOverrideUntil, Date() >= until {
+            logger.notice("manual duty override expired, returning to the engine")
+            clearDutyOverride()
+        }
 
         let targets: [FanTarget]
         switch source {

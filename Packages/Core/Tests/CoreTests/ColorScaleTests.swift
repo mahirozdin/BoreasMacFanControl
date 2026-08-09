@@ -141,6 +141,40 @@ struct ColorScaleTests {
         #expect(warm.hueDegrees > 25 && warm.hueDegrees < 40)
     }
 
+    // MARK: - Series palette
+
+    @Test("no series colour lands in the red corridor either")
+    func seriesPaletteAvoidsRed() {
+        // The reserved-red rule is a product rule, not a ramp rule: adding
+        // a second colour source must not smuggle red back in through the
+        // chart legend.
+        for color in SeriesPalette.colors {
+            #expect(color.saturation >= 0.15, "a series colour must be identifiable by hue")
+            let hue = color.hueDegrees
+            #expect(hue >= 22 && hue <= 330, "series hue \(hue)° is inside the reserved-red corridor")
+        }
+    }
+
+    @Test("series colours are far enough apart to tell series apart")
+    func seriesColoursAreDistinct() {
+        // Identity is the whole job here. Hues closer than 25° would read
+        // as the same line in a legend at chart scale.
+        let hues = SeriesPalette.colors.map(\.hueDegrees).sorted()
+        for (earlier, later) in zip(hues, hues.dropFirst()) {
+            #expect(later - earlier >= 25, "hues \(earlier)° and \(later)° are too close")
+        }
+    }
+
+    @Test("the palette wraps rather than running out")
+    func paletteWraps() {
+        let count = SeriesPalette.colors.count
+        #expect(SeriesPalette.color(at: 0) == SeriesPalette.colors[0])
+        #expect(SeriesPalette.color(at: count) == SeriesPalette.colors[0])
+        #expect(SeriesPalette.color(at: count + 2) == SeriesPalette.colors[2])
+        // A negative index is a caller's arithmetic slip, not a crash.
+        #expect(SeriesPalette.color(at: -1) == SeriesPalette.colors[count - 1])
+    }
+
     // MARK: - Fan fill
 
     @Test("fan fill is monotone, floored for visibility, and full at full duty")

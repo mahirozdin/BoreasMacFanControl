@@ -296,11 +296,11 @@ enum HardwareDrills {
     // blocks the main thread on a semaphore, so anything the detached task
     // awaits must never hop to the main actor — that is the deadlock the
     // P3.00 run log documents, and it bit again here before this annotation.
-    private nonisolated static func actualRPM(_ smc: SMCConnection) -> Double {
+    nonisolated static func actualRPM(_ smc: SMCConnection) -> Double {
         (try? smc.readValue(key: "F0Ac")?.numericValue ?? 0) ?? 0
     }
 
-    private nonisolated static func modeByte(_ smc: SMCConnection) -> UInt8? {
+    nonisolated static func modeByte(_ smc: SMCConnection) -> UInt8? {
         try? smc.readValue(key: "F0Md")?.bytes.first
     }
 

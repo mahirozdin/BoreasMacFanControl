@@ -16,6 +16,12 @@ public final class MonitorModel {
     public private(set) var fans: [FanState] = []
     public private(set) var power: PowerContext = .desktop
 
+    /// The system's own thermal pressure, sampled rather than read at the
+    /// point of display: a live read inside a view body would make the
+    /// render evidence depend on how warm the rendering machine happens to
+    /// be. K2 reads the same official API in the safety chain.
+    public private(set) var thermal: ThermalPressure = .nominal
+
     /// Non-nil when sensors cannot be read at all. The interface shows this
     /// instead of an empty list, so "no data" is never mistaken for "cool".
     public private(set) var sensorProblem: String?
@@ -23,12 +29,35 @@ public final class MonitorModel {
     /// Non-nil when readings come from a degraded path.
     public private(set) var degradedReason: String?
 
-    /// The hottest reading of each recent sample, oldest first — the status
-    /// item's mini chart. Ninety samples at the two-second cadence is three
-    /// minutes of shape, which is what a glance at the menu bar is for.
-    public private(set) var hottestHistory: [Double] = []
+    /// The hottest reading over time, feeding the status item's mini chart.
+    public private(set) var overallHistory = TimeSeries()
 
-    private static let historyLimit = 90
+    /// Per group, the hottest reading of that group over time — one chart
+    /// series each. Groups are the granularity curves are bound to, so a
+    /// chart series answers the question a curve asks.
+    public private(set) var groupHistory: [SensorGroup: TimeSeries] = [:]
+
+    /// Per fan, its speed over time. Same clock as the temperatures, which
+    /// is what lets the two charts share an axis and show cause next to
+    /// effect.
+    public private(set) var fanHistory: [Int: TimeSeries] = [:]
+
+    /// Session peak and average per sensor, keyed by sensor id. Reset by
+    /// `resetMaximums()`.
+    public private(set) var statistics: [String: ReadingStatistics] = [:]
+
+    /// The last three minutes of the hottest reading — the menu bar
+    /// sparkline. Derived rather than stored: two copies of the same
+    /// history would eventually disagree.
+    ///
+    /// The window is anchored to the newest sample rather than to the wall
+    /// clock, so a stalled sensor leaves the last known shape on screen
+    /// instead of silently emptying the chart. That a sensor has stopped
+    /// answering is `sensorProblem`'s job to say, in words.
+    public var sparkline: [Double] {
+        guard let newest = overallHistory.samples.last else { return [] }
+        return overallHistory.window(180, endingAt: newest.time).map(\.value)
+    }
 
     public private(set) var isRunning = false
 
@@ -50,11 +79,38 @@ public final class MonitorModel {
     init(
         fixedForRendering readings: [SensorReading],
         fans: [FanState],
-        history: [Double] = []
+        history: [(Date, Double)] = [],
+        groupHistory: [SensorGroup: [(Date, Double)]] = [:],
+        fanHistory: [Int: [(Date, Double)]] = [:]
     ) {
         self.readings = readings
         self.fans = fans
-        self.hottestHistory = history
+        for (time, value) in history {
+            overallHistory.record(value, at: time)
+        }
+        for (group, samples) in groupHistory {
+            var series = TimeSeries()
+            for (time, value) in samples { series.record(value, at: time) }
+            self.groupHistory[group] = series
+        }
+        for (fanID, samples) in fanHistory {
+            var series = TimeSeries()
+            for (time, value) in samples { series.record(value, at: time) }
+            self.fanHistory[fanID] = series
+        }
+        for reading in readings {
+            statistics[reading.id, default: ReadingStatistics()].record(reading.celsius)
+        }
+    }
+
+    /// Clears the session peaks and averages behind the sensor table's
+    /// "highest" and "average" columns. The chart history is a separate
+    /// record and is deliberately left alone — the action resets the
+    /// session's statistics, not the machine's past.
+    public func resetMaximums() {
+        for key in statistics.keys {
+            statistics[key]?.reset()
+        }
     }
 
     public var hottest: SensorReading? {
@@ -89,6 +145,7 @@ public final class MonitorModel {
 
     private func sample() async {
         power = powerSource.current()
+        thermal = ThermalPressure(ProcessInfo.processInfo.thermalState)
 
         do {
             if sensors == nil { sensors = try LiveSensorSource() }
@@ -119,11 +176,33 @@ public final class MonitorModel {
             logger.error("fan read failed: \(String(describing: error), privacy: .public)")
         }
 
-        if let hottest {
-            hottestHistory.append(hottest.celsius)
-            if hottestHistory.count > Self.historyLimit {
-                hottestHistory.removeFirst(hottestHistory.count - Self.historyLimit)
-            }
+        recordHistory(at: Date())
+    }
+
+    /// Files this sample into every series and statistic.
+    ///
+    /// Implausible readings are excluded throughout: Apple Silicon parks
+    /// unused clusters and their sensors then report values far outside
+    /// anything physical, and a chart or an average that swallowed those
+    /// would be describing the parking, not the machine.
+    private func recordHistory(at now: Date) {
+        let usable = readings.filter(\.isPlausible)
+
+        if let hottest = usable.map(\.celsius).max() {
+            overallHistory.record(hottest, at: now)
+        }
+
+        for (group, items) in Dictionary(grouping: usable, by: \.group) {
+            guard let peak = items.map(\.celsius).max() else { continue }
+            groupHistory[group, default: TimeSeries()].record(peak, at: now)
+        }
+
+        for fan in fans where !fan.isPoweredOff {
+            fanHistory[fan.id, default: TimeSeries()].record(Double(fan.currentRPM), at: now)
+        }
+
+        for reading in usable {
+            statistics[reading.id, default: ReadingStatistics()].record(reading.celsius)
         }
     }
 }

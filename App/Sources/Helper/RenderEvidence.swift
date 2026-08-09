@@ -11,12 +11,26 @@ import SwiftUI
 /// deterministic, which a screenshot never is. Separate from
 /// `HelperCommands` because these are the project's camera, not its
 /// features.
+///
+/// **The camera's one rule: photograph content views, never containers.**
+/// Every AppKit-backed SwiftUI container found so far lays out nothing
+/// under `ImageRenderer` and produces a silently blank image —
+/// `DisclosureGroup`, `LazyVStack` and `.link` buttons in P6.02,
+/// `ScrollView` and `TabView` in P6.04. A blank render is the only warning
+/// there is, so views are structured with the container and its content
+/// apart, and the evidence renders the content.
 @MainActor
 enum RenderEvidence {
 
-    private static func report(_ text: String) {
+    static func report(_ text: String) {
         FileHandle.standardOutput.write(Data((text + "\n").utf8))
     }
+
+    /// The instant every fixture pretends it is. A frozen clock is what
+    /// makes a chart's own x axis reproducible; anchoring the fixtures to
+    /// the wall clock would make every render differ from the last by the
+    /// time printed on the axis.
+    static let fixedNow = Date(timeIntervalSince1970: 1_800_000_000)
 
     /// Renders the setup window in every phase to PNG files.
     ///
@@ -84,9 +98,14 @@ enum RenderEvidence {
         let fan = FanState(
             id: 0, name: "Fan 0", currentRPM: 1608,
             minimumRPM: 1000, maximumRPM: 4900, isPoweredOff: false)
-        // A believable three minutes: a slow climb with wobble.
-        let history = (0..<90).map { step in
-            48.0 + Double(step) * 0.15 + (step.isMultiple(of: 2) ? 0.6 : -0.6)
+        // A believable three minutes: a slow climb with wobble. Built with
+        // an explicit loop — the tuple-returning map defeated the type
+        // checker's time budget.
+        var history: [(Date, Double)] = []
+        for step in 0..<90 {
+            let time = Self.fixedNow.addingTimeInterval(Double(step - 89) * 2)
+            let wobble: Double = step.isMultiple(of: 2) ? 0.6 : -0.6
+            history.append((time, 48.0 + Double(step) * 0.15 + wobble))
         }
         let monitor = MonitorModel(fixedForRendering: readings, fans: [fan], history: history)
 
@@ -183,122 +202,6 @@ enum RenderEvidence {
             report("render failed: warning")
         }
     }
-
-    /// One frozen panel state for the render evidence.
-    private struct PanelScene {
-        let name: String
-        let readings: [SensorReading]
-        let rpm: Int
-        let selection: ManualSelection
-        let state: ControlState
-        let layer: SafetyLayer?
-        let installer: HelperInstaller.State
-        let expanded: Set<SensorGroup>
-        let dark: Bool
-    }
-
-    /// The P6.02 states worth freezing: firmware in charge, the engine
-    /// driving (both appearances), panic, and no helper installed.
-    private static func panelScenes() -> [PanelScene] {
-        func reading(_ name: String, _ group: SensorGroup, _ celsius: Double) -> SensorReading {
-            SensorReading(rawName: name, displayName: name, group: group, celsius: celsius)
-        }
-        let normal: [SensorReading] = [
-            reading("PMU tdie5", .compute, 65.4),
-            reading("PMU tdie1", .compute, 63.8),
-            reading("PMU tdie2", .compute, 61.2),
-            reading("PMU tdev1", .compute, 58.9),
-            reading("GPU tdie0", .graphics, 57.6),
-            reading("GPU tdie1", .graphics, 55.1),
-            reading("PMU tdie9", .power, 52.3),
-            reading("DDR temp", .memory, 49.2),
-            reading("NAND CH0 temp", .storage, 41.8),
-        ]
-        var hot = normal
-        hot[0] = reading("PMU tdie5", .compute, 96.8)
-
-        return [
-            PanelScene(
-                name: "1-firmware", readings: normal, rpm: 1002,
-                selection: ManualSelection(profileName: "System"),
-                state: .monitoring, layer: nil, installer: .enabled,
-                expanded: [.compute], dark: false),
-            PanelScene(
-                name: "2-driving", readings: normal, rpm: 2755,
-                selection: ManualSelection(profileName: "Balanced"),
-                state: .controlling, layer: nil, installer: .enabled,
-                expanded: [.compute], dark: false),
-            PanelScene(
-                name: "3-driving-dark", readings: normal, rpm: 2755,
-                selection: ManualSelection(profileName: "Balanced"),
-                state: .controlling, layer: nil, installer: .enabled,
-                expanded: [.compute], dark: true),
-            PanelScene(
-                name: "4-panic", readings: hot, rpm: 4900,
-                selection: ManualSelection(profileName: "Balanced"),
-                state: .panic, layer: .panic, installer: .enabled,
-                expanded: [], dark: false),
-            PanelScene(
-                name: "5-not-installed", readings: normal, rpm: 998,
-                selection: ManualSelection(profileName: "System"),
-                state: .monitoring, layer: nil, installer: .notRegistered,
-                expanded: [], dark: false),
-        ]
-    }
-
-    /// Renders the menu bar panel in its P6.02 states on fixed data, same
-    /// rationale as `setup`: deterministic, permission-free.
-    /// The control model in each scene runs real arbitration on the frozen
-    /// selection, so no render can show a state arbitration would refuse.
-    static func panel(into directory: URL) {
-        do {
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        } catch {
-            report("cannot create \(directory.path): \(error)")
-            return
-        }
-
-        for scene in panelScenes() {
-            let fan = FanState(
-                id: 0, name: "Fan 0", currentRPM: scene.rpm,
-                minimumRPM: 1000, maximumRPM: 4900, isPoweredOff: false)
-            let monitor = MonitorModel(fixedForRendering: scene.readings, fans: [fan])
-            let control = ControlModel(
-                fixedForRendering: monitor,
-                selection: scene.selection,
-                state: scene.state,
-                layer: scene.layer)
-            let setup = HelperSetupModel()
-            setup.fixedInstallerStateForRendering = scene.installer
-
-            let view = MenuBarPanel(
-                model: monitor, setup: setup, control: control,
-                initiallyExpanded: scene.expanded
-            )
-            .background(scene.dark ? Color(white: 0.14) : Color(white: 0.97))
-            .environment(\.colorScheme, scene.dark ? .dark : .light)
-
-            let renderer = ImageRenderer(content: view)
-            renderer.scale = 2
-
-            guard let cgImage = renderer.cgImage,
-                let data = NSBitmapImageRep(cgImage: cgImage)
-                    .representation(using: .png, properties: [:])
-            else {
-                report("render failed: \(scene.name)")
-                continue
-            }
-
-            let url = directory.appendingPathComponent("panel-\(scene.name).png")
-            do {
-                try data.write(to: url)
-                report("wrote \(url.path)")
-            } catch {
-                report("write failed for \(scene.name): \(error)")
-            }
-        }
-    }
-
     /// Renders the design-system swatch sheet in both appearances, same
     /// rationale as `setup`: deterministic, permission-free.
     static func design(into directory: URL) {

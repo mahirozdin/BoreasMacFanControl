@@ -76,6 +76,135 @@ extension SensorGroup {
     }
 }
 
+extension HistoryWindow {
+
+    var displayName: String {
+        switch self {
+        case .fiveMinutes:
+            return String(
+                localized: "window.5m", defaultValue: "5 min",
+                comment: "Chart time window: the last five minutes")
+        case .oneHour:
+            return String(
+                localized: "window.1h", defaultValue: "1 hr",
+                comment: "Chart time window: the last hour")
+        case .sixHours:
+            return String(
+                localized: "window.6h", defaultValue: "6 hr",
+                comment: "Chart time window: the last six hours")
+        case .twentyFourHours:
+            return String(
+                localized: "window.24h", defaultValue: "24 hr",
+                comment: "Chart time window: the last twenty four hours")
+        }
+    }
+}
+
+extension SafetyLayer {
+
+    /// The layer's short name for the safety chain status list.
+    var displayName: String {
+        switch self {
+        case .thermalSerious:
+            return String(
+                localized: "layer.k2.serious", defaultValue: "Thermal state: serious",
+                comment: "Safety chain layer K2 while the system reports serious thermal pressure")
+        case .thermalCritical:
+            return String(
+                localized: "layer.k2.critical", defaultValue: "Thermal state: critical",
+                comment: "Safety chain layer K2 while the system reports critical thermal pressure")
+        case .panic:
+            return String(
+                localized: "layer.k3", defaultValue: "Panic threshold",
+                comment: "Safety chain layer K3, triggered by a sensor above the panic threshold")
+        }
+    }
+}
+
+extension ThermalPressure {
+
+    var displayName: String {
+        switch self {
+        case .nominal:
+            return String(
+                localized: "thermal.nominal", defaultValue: "Nominal",
+                comment: "System thermal pressure: nothing unusual")
+        case .fair:
+            return String(
+                localized: "thermal.fair", defaultValue: "Fair",
+                comment: "System thermal pressure: slightly elevated")
+        case .serious:
+            return String(
+                localized: "thermal.serious", defaultValue: "Serious",
+                comment: "System thermal pressure: the system is throttling")
+        case .critical:
+            return String(
+                localized: "thermal.critical", defaultValue: "Critical",
+                comment: "System thermal pressure: the system is at its limit")
+        }
+    }
+}
+
+extension ProfileTrigger {
+
+    /// A sentence fragment naming the condition, for the control tab's
+    /// "why is this profile active" line.
+    var displayCondition: String {
+        switch self {
+        case .powerSource(let source):
+            switch source {
+            case .battery:
+                return String(
+                    localized: "trigger.power.battery", defaultValue: "running on battery",
+                    comment: "Profile trigger condition: the Mac is on battery power")
+            case .adapter:
+                return String(
+                    localized: "trigger.power.adapter", defaultValue: "plugged in",
+                    comment: "Profile trigger condition: the Mac is on mains power")
+            }
+        case .application(let bundleIdentifier, let foregroundOnly):
+            return foregroundOnly
+                ? String(
+                    localized: "trigger.app.foreground",
+                    defaultValue: "\(bundleIdentifier) is in the foreground",
+                    comment: "Profile trigger condition: a named application is frontmost")
+                : String(
+                    localized: "trigger.app.running",
+                    defaultValue: "\(bundleIdentifier) is running",
+                    comment: "Profile trigger condition: a named application is running")
+        case .timeWindow(let startMinute, let endMinute):
+            return String(
+                localized: "trigger.time",
+                defaultValue: "the time is between \(Self.clock(startMinute)) and \(Self.clock(endMinute))",
+                comment: "Profile trigger condition: the current time is inside a daily window")
+        case .batteryAtOrBelow(let percent):
+            return String(
+                localized: "trigger.battery",
+                defaultValue: "the battery is at or below \(percent)%",
+                comment: "Profile trigger condition: battery charge below a threshold")
+        case .externalDisplay(let connected):
+            return connected
+                ? String(
+                    localized: "trigger.display.connected",
+                    defaultValue: "an external display is connected",
+                    comment: "Profile trigger condition: an external display is attached")
+                : String(
+                    localized: "trigger.display.disconnected",
+                    defaultValue: "no external display is connected",
+                    comment: "Profile trigger condition: no external display is attached")
+        case .thermalStateAtLeast(let level):
+            return String(
+                localized: "trigger.thermal",
+                defaultValue: "the thermal state is \(level.displayName) or worse",
+                comment: "Profile trigger condition: thermal pressure at or above a level")
+        }
+    }
+
+    private static func clock(_ minuteOfDay: Int) -> String {
+        String(format: "%02d:%02d", minuteOfDay / 60, minuteOfDay % 60)
+    }
+}
+
 extension Profile {
 
     /// The user-facing name. Built-in names double as localisation keys

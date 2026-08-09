@@ -94,10 +94,27 @@ struct MenuBarPanel: View {
 
     private var footer: some View {
         HStack {
+            Button {
+                openWindow(id: MainWindow.windowID)
+                // An LSUIElement app is never frontmost on its own; without
+                // this the window opens behind whatever has focus.
+                NSApplication.shared.activate(ignoringOtherApps: true)
+            } label: {
+                Text(
+                    String(
+                        localized: "panel.mainwindow.button",
+                        defaultValue: "Main Window",
+                        comment: "Menu bar panel button that opens the main window"
+                    )
+                )
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.tint)
+
             // A Mac without a controllable fan gets no setup offer — the
             // error-scenario table says exactly that, and a quiet footer is
-            // not an error state (invariant I4). Main window and settings
-            // entries arrive with the windows themselves (P6.04, P6.08).
+            // not an error state (invariant I4). The settings entry arrives
+            // with the settings window (P6.08).
             if !model.fans.isEmpty {
                 Button {
                     openWindow(id: HelperSetupView.windowID)

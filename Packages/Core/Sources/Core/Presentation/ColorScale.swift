@@ -129,6 +129,42 @@ public enum TemperatureScale {
     }
 }
 
+/// Categorical colours for chart series — one per sensor group or fan.
+///
+/// This does **not** contradict `TemperatureScale`. That scale encodes one
+/// value's magnitude, for a dot or a gauge where nothing else can. In a
+/// time series the y-axis already carries magnitude, so spending hue on it
+/// again would be redundant *and* would leave two groups at the same
+/// temperature indistinguishable — the one thing a multi-series chart must
+/// never do. Here hue carries identity instead.
+///
+/// The reserved-red rule still holds: every entry stays out of the red
+/// corridor, and the test proves it the same way the ramp's does.
+public enum SeriesPalette {
+
+    /// Seven hues spread around the wheel, all avoiding red, all at a
+    /// middle luminance so they hold up against both appearances.
+    public static let colors: [ScaleColor] = [
+        ScaleColor(red: 0.29, green: 0.56, blue: 0.91),  // blue    ~214°
+        ScaleColor(red: 0.18, green: 0.70, blue: 0.64),  // teal    ~173°
+        ScaleColor(red: 0.91, green: 0.65, blue: 0.23),  // amber   ~37°
+        ScaleColor(red: 0.56, green: 0.48, blue: 0.91),  // violet  ~251°
+        ScaleColor(red: 0.36, green: 0.71, blue: 0.35),  // green   ~118°
+        ScaleColor(red: 0.83, green: 0.42, blue: 0.80),  // magenta ~304°
+        // Yellow-green, not the olive this started as: at ~55° that entry
+        // sat 18° from the amber above and the distinctness test refused
+        // it. Moved into the widest remaining gap.
+        ScaleColor(red: 0.57, green: 0.72, blue: 0.22),  // yellow-green ~78°
+    ]
+
+    /// The colour for a series index, wrapping when there are more series
+    /// than colours. Wrapping is acceptable because a chart legend names
+    /// every series — colour is the shortcut, never the only key.
+    public static func color(at index: Int) -> ScaleColor {
+        colors[((index % colors.count) + colors.count) % colors.count]
+    }
+}
+
 /// The fan gauge scale: how *much* of the appearance-adaptive neutral grey a
 /// fan gauge fills, never which hue.
 ///

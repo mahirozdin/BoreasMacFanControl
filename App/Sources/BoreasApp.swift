@@ -16,7 +16,28 @@ import SwiftUI
 enum HelperCommands {
 
     static func handleIfPresent() -> Bool {
-        handleMaintenance() || handleDrills()
+        handleMaintenance() || handleRenders() || handleDrills()
+    }
+
+    /// The render evidence arguments, kept apart from the helper
+    /// maintenance ones: they are the project's camera, and folding them
+    /// into the same switch pushed it past the complexity budget.
+    private static func handleRenders() -> Bool {
+        let arguments = CommandLine.arguments
+        let commands: [(flag: String, run: (URL) -> Void)] = [
+            ("--render-setup", RenderEvidence.setup),
+            ("--render-design", RenderEvidence.design),
+            ("--render-panel", RenderEvidence.panel),
+            ("--render-status", RenderEvidence.status),
+            ("--render-window", RenderEvidence.window),
+        ]
+        for command in commands {
+            if let index = arguments.firstIndex(of: command.flag), index + 1 < arguments.count {
+                command.run(URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
+                return true
+            }
+        }
+        return false
     }
 
     private static func report(_ text: String) {
@@ -50,26 +71,6 @@ enum HelperCommands {
                 report("removed")
             }
             report("helper status: \(installer.state.summary)")
-            return true
-        }
-
-        if let index = arguments.firstIndex(of: "--render-setup"), index + 1 < arguments.count {
-            RenderEvidence.setup(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
-            return true
-        }
-
-        if let index = arguments.firstIndex(of: "--render-design"), index + 1 < arguments.count {
-            RenderEvidence.design(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
-            return true
-        }
-
-        if let index = arguments.firstIndex(of: "--render-panel"), index + 1 < arguments.count {
-            RenderEvidence.panel(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
-            return true
-        }
-
-        if let index = arguments.firstIndex(of: "--render-status"), index + 1 < arguments.count {
-            RenderEvidence.status(into: URL(fileURLWithPath: arguments[index + 1], isDirectory: true))
             return true
         }
 
@@ -130,6 +131,10 @@ enum HelperCommands {
         }
         if arguments.contains("--profile-drill") {
             HardwareDrills.profileDrill(report: report)
+            return true
+        }
+        if arguments.contains("--override-drill") {
+            HardwareDrills.overrideDrill(report: report)
             return true
         }
 
@@ -217,6 +222,18 @@ struct BoreasApp: App {
                 }
         }
         .menuBarExtraStyle(.window)
+
+        Window(
+            String(
+                localized: "window.main.title",
+                defaultValue: "Boreas",
+                comment: "Title of the main window"
+            ),
+            id: MainWindow.windowID
+        ) {
+            MainWindow(model: model, control: control, setup: setup)
+        }
+        .defaultPosition(.center)
 
         Window(
             String(
