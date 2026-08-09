@@ -3,10 +3,9 @@ import SwiftUI
 
 /// The main window (P6.04, P6.05).
 ///
-/// Two tabs for now — Monitoring and Control. Diagnostics is P6.09 and is
-/// deliberately absent rather than present-but-empty: a tab that promises
-/// checks it cannot run is the kind of thing the honesty rule exists to
-/// prevent.
+/// Three tabs: Monitoring, Control and Diagnostics — the last arriving in
+/// P6.09, once there were checks it could actually run. Until then it was
+/// deliberately absent rather than present-but-empty.
 struct MainWindow: View {
     static let windowID = "main"
 
@@ -37,6 +36,18 @@ struct MainWindow: View {
                                 comment: "Main window tab showing the active profile and safety chain"))
                     } icon: {
                         Image(systemName: "slider.horizontal.3")
+                    }
+                }
+
+            DiagnosticsTab(model: model, control: control, setup: setup)
+                .tabItem {
+                    Label {
+                        Text(
+                            String(
+                                localized: "window.tab.diagnostics", defaultValue: "Diagnostics",
+                                comment: "Main window tab showing hardware checks and a summary"))
+                    } icon: {
+                        Image(systemName: "stethoscope")
                     }
                 }
         }

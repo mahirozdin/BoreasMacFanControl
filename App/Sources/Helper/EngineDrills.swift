@@ -7,6 +7,69 @@ import SharedIPC
 /// inside the lint budget. Same instrument, same rules.
 extension HardwareDrills {
 
+    /// P6.09 on real hardware: the diagnostics tell the truth about a Mac
+    /// that is working properly.
+    ///
+    /// The risk this drill exists for is **false positives**. A fan
+    /// response check with the tolerance set too tight would tell every
+    /// healthy owner their fan is not following commands, and the honesty
+    /// rule's whole argument is that a wrong diagnosis costs more than no
+    /// diagnosis. So the drill drives a known-good fan properly and
+    /// insists the check comes back healthy.
+    static func diagnosticsDrill(report: (String) -> Void) {
+        let monitor = MonitorModel()
+        let control = ControlModel(monitor: monitor)
+
+        func pump(_ seconds: Double) {
+            RunLoop.main.run(until: Date().addingTimeInterval(seconds))
+        }
+
+        monitor.start()
+        pump(3)
+        guard !monitor.fans.isEmpty else {
+            report("no controllable fan")
+            exit(1)
+        }
+
+        // Before driving, the honest answer is "not yet".
+        let before = DiagnosticChecks.fanResponse(samples: control.fanResponseSamples)
+        report("before driving: \(before.verdict.rawValue) — \(before.observation)")
+
+        control.select(profileName: "Balanced")
+        // Long enough to collect well past the minimum sample count at the
+        // two second cycle, including the ramp the rate limiter imposes.
+        pump(40)
+
+        let driving = DiagnosticChecks.fanResponse(samples: control.fanResponseSamples)
+        report(
+            "after \(control.fanResponseSamples.count) samples: "
+                + "\(driving.verdict.rawValue) — \(driving.observation)")
+
+        let sensors = DiagnosticChecks.sensorValidity(
+            outOfRange: monitor.allReadings.filter { !$0.isPlausible }.map(\.displayName),
+            stuck: [],
+            totalSensors: monitor.allReadings.count)
+        report("sensors: \(sensors.verdict.rawValue) — \(sensors.observation)")
+
+        let balance = DiagnosticChecks.fanBalance(
+            speeds: monitor.fans.filter { !$0.isPoweredOff }.map(\.currentRPM))
+        report("balance: \(balance.verdict.rawValue) — \(balance.observation)")
+
+        control.select(profileName: "System")
+        pump(6)
+
+        let passed =
+            before.verdict == .indeterminate
+            && control.fanResponseSamples.count >= DiagnosticChecks.minimumSamples
+            // The point of the drill: a healthy fan must not be accused.
+            && driving.verdict == .healthy
+            && sensors.verdict == .healthy
+            && balance.verdict == .notApplicable
+
+        report(passed ? "DIAGNOSTICS DRILL PASS" : "DIAGNOSTICS DRILL FAIL")
+        exit(passed ? 0 : 1)
+    }
+
     /// P6.06 on real hardware: an edited curve reaches the fans.
     ///
     /// The curve editor is only an instrument if what it draws changes what

@@ -53,6 +53,18 @@ public final class MonitorModel {
     /// `resetMaximums()`.
     public private(set) var statistics: [String: ReadingStatistics] = [:]
 
+    /// When this monitor started sampling — the "session" the diagnostics
+    /// and the sensor table both mean.
+    public private(set) var sessionStart = Date()
+
+    /// Seconds spent at each thermal pressure level. Accumulated from the
+    /// samples rather than from a timer: the thermal history check should
+    /// count time the application actually observed, not wall time it
+    /// assumes it was watching.
+    public private(set) var thermalSeconds: [ThermalPressure: Double] = [:]
+
+    private var lastSampleAt: Date?
+
     /// The last three minutes of the hottest reading — the menu bar
     /// sparkline. Derived rather than stored: two copies of the same
     /// history would eventually disagree.
@@ -98,11 +110,15 @@ public final class MonitorModel {
         fans: [FanState],
         history: [(Date, Double)] = [],
         groupHistory: [SensorGroup: [(Date, Double)]] = [:],
-        fanHistory: [Int: [(Date, Double)]] = [:]
+        fanHistory: [Int: [(Date, Double)]] = [:],
+        sessionStart: Date? = nil,
+        thermalSeconds: [ThermalPressure: Double] = [:]
     ) {
         self.store = nil
         self.readings = readings
         self.allReadings = readings
+        if let sessionStart { self.sessionStart = sessionStart }
+        self.thermalSeconds = thermalSeconds
         self.fans = fans
         for (time, value) in history {
             overallHistory.record(value, at: time)
@@ -265,6 +281,20 @@ public final class MonitorModel {
     /// anything physical, and a chart or an average that swallowed those
     /// would be describing the parking, not the machine.
     private func recordHistory(at now: Date) {
+        // Time is attributed to the level that held *during* the gap, which
+        // is the level this sample reports. Attributing it to the next one
+        // would credit a spike with the calm before it.
+        if let last = lastSampleAt {
+            let elapsed = now.timeIntervalSince(last)
+            // A gap far longer than the cadence means the machine slept or
+            // the process was stopped; counting it would invent observation
+            // nobody made.
+            if elapsed > 0, elapsed < 60 {
+                thermalSeconds[thermal, default: 0] += elapsed
+            }
+        }
+        lastSampleAt = now
+
         let usable = readings.filter(\.isPlausible)
 
         if let hottest = usable.map(\.celsius).max() {

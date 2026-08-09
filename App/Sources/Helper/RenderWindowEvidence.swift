@@ -111,7 +111,14 @@ extension RenderEvidence {
         let monitor = MonitorModel(
             fixedForRendering: readings, fans: [displayFan],
             groupHistory: series.filter { $0.key != .uncategorized },
-            fanHistory: [0: fanSpeeds])
+            fanHistory: [0: fanSpeeds],
+            // A session that started when the series did, and a spell of
+            // real thermal pressure — the diagnostics evidence has to show
+            // the "worth a look" wording, which is the whole point of the
+            // honesty rule. A fixture where everything is fine proves only
+            // that the healthy path renders.
+            sessionStart: fixedNow.addingTimeInterval(-windowStep * Double(windowSampleCount)),
+            thermalSeconds: [.serious: 96, .critical: 12])
         let control = ControlModel(
             fixedForRendering: monitor,
             selection: ManualSelection(profileName: "Balanced"),
@@ -157,6 +164,15 @@ extension RenderEvidence {
             .background(background)
             .environment(\.colorScheme, dark ? .dark : .light)
             write(controlTab, to: directory, named: "window-control-\(suffix)")
+
+            let diagnostics = DiagnosticsContent(
+                model: fixture.monitor, control: fixture.control, setup: fixture.setup,
+                now: fixedNow
+            )
+            .frame(width: 860)
+            .background(background)
+            .environment(\.colorScheme, dark ? .dark : .light)
+            write(diagnostics, to: directory, named: "window-diagnostics-\(suffix)")
         }
     }
 

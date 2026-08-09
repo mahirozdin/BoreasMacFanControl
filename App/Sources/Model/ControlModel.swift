@@ -77,6 +77,18 @@ public final class ControlModel {
     /// Whether the slider, rather than the engine, is deciding right now.
     public var isDutyOverridden: Bool { source == .manualDuty }
 
+    /// What the fans were told against what they were doing on the *next*
+    /// cycle, for the fan response diagnostic.
+    ///
+    /// Sampled one cycle late on purpose: comparing a target with the speed
+    /// measured in the same instant would measure the fan's inertia, not
+    /// whether it obeys. Only collected while driving — a fan the firmware
+    /// owns is not failing to follow anything.
+    public private(set) var fanResponseSamples: [(target: Int, actual: Int)] = []
+
+    private var pendingTargets: [Int: Int] = [:]
+    private static let responseSampleLimit = 120
+
     public var isEngaged: Bool {
         state == .controlling || state == .panic
     }
@@ -281,6 +293,9 @@ public final class ControlModel {
         activeLayer = nil
         engineState = .initial
         lastStepAt = nil
+        // Otherwise the first cycle after re-engaging would compare a
+        // target from before the release with a speed the firmware chose.
+        pendingTargets = [:]
         self.client = nil
         loop = nil
 
@@ -305,6 +320,8 @@ public final class ControlModel {
             clearDutyOverride()
         }
 
+        recordFanResponse(fans: fans)
+
         let targets: [FanTarget]
         switch source {
         case .manualDuty:
@@ -320,6 +337,9 @@ public final class ControlModel {
             }
             targets = stepped
         }
+
+        pendingTargets = Dictionary(
+            targets.map { ($0.fanID, $0.rpm) }, uniquingKeysWith: { first, _ in first })
 
         if activeLayer == .panic, state == .controlling {
             transition(on: .panicRaised)
@@ -396,6 +416,18 @@ public final class ControlModel {
         panicLock = cycle.state.panicLock
         activeLayer = cycle.activeLayer
         return cycle.targets
+    }
+
+    /// Last cycle's targets against this cycle's measured speeds, for the
+    /// fan response diagnostic (P6.09).
+    private func recordFanResponse(fans: [FanState]) {
+        for fan in fans {
+            guard let target = pendingTargets[fan.id] else { continue }
+            fanResponseSamples.append((target: target, actual: fan.currentRPM))
+        }
+        if fanResponseSamples.count > Self.responseSampleLimit {
+            fanResponseSamples.removeFirst(fanResponseSamples.count - Self.responseSampleLimit)
+        }
     }
 
     private func transition(on event: ControlEvent) {

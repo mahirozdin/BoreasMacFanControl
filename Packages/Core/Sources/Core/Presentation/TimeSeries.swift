@@ -134,20 +134,38 @@ public enum HistoryWindow: String, Sendable, Hashable, CaseIterable, Codable {
 public struct ReadingStatistics: Sendable, Hashable {
 
     public private(set) var maximum: Double?
+
+    /// The session's lowest reading. Kept alongside the peak so the
+    /// diagnostics can ask whether a sensor has moved at all — a sensor
+    /// stuck at one value is worth mentioning, and the spread is how you
+    /// see it without storing a series per sensor.
+    public private(set) var minimum: Double?
+
+    /// How many readings have been counted. Below a handful, "it has not
+    /// changed" says more about the session than about the sensor.
+    public private(set) var sampleCount: Int = 0
+
     private var sum: Double = 0
-    private var samplesSeen: Int = 0
 
     public init() {}
 
     public var mean: Double? {
-        samplesSeen == 0 ? nil : sum / Double(samplesSeen)
+        sampleCount == 0 ? nil : sum / Double(sampleCount)
+    }
+
+    /// The distance between the highest and lowest readings, or `nil`
+    /// before anything has been recorded.
+    public var spread: Double? {
+        guard let maximum, let minimum else { return nil }
+        return maximum - minimum
     }
 
     public mutating func record(_ value: Double) {
         guard value.isFinite else { return }
         maximum = maximum.map { Swift.max($0, value) } ?? value
+        minimum = minimum.map { Swift.min($0, value) } ?? value
         sum += value
-        samplesSeen += 1
+        sampleCount += 1
     }
 
     /// The "reset maximums" action clears the whole session record, not
@@ -156,7 +174,8 @@ public struct ReadingStatistics: Sendable, Hashable {
     /// sessions.
     public mutating func reset() {
         maximum = nil
+        minimum = nil
         sum = 0
-        samplesSeen = 0
+        sampleCount = 0
     }
 }

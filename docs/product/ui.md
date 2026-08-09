@@ -1,6 +1,6 @@
 # User Interface
 
-> Last updated: 2026-08-05 — P6.08
+> Last updated: 2026-08-10 — P6.09
 > Source: blueprint §9
 
 ## Design language
@@ -43,7 +43,9 @@ The sampling loop does **not stop** while the panel is open.
 
 **③ Diagnostics** — the checks in `docs/operations/diagnostics.md` · system and hardware summary · log access · **local** support report (no automatic upload).
 
-**Implementation (P6.04, P6.05):** [`App/Sources/Window/`](../../App/Sources/Window/) — `MainWindow` carries the two tabs that exist; Diagnostics arrives with P6.09 rather than appearing empty. The charts share **one x domain computed once and handed to both**, which is what makes a temperature rise and the fan's answer readable as cause and effect. Chart history lives in [`Core/Presentation/TimeSeries.swift`](../../Packages/Core/Sources/Core/Presentation/TimeSeries.swift), which spends resolution rather than span when it fills up — a "24 hour" window that had quietly become "the last few minutes" would be a chart that lies by omission. Series identity uses `Core.SeriesPalette` (categorical hue, still no red); fans stay neutral because the y-axis already says how fast. Render evidence: `--render-window <dir>`; the manual override's "expiry returns to the engine, not the firmware" rule is proven on hardware by `--override-drill`.
+**Implementation (P6.09):** the tab is built with the four checks whose inputs already exist, the discovered-hardware summary, and the honesty rule enforced by `Core.Diagnostic` rather than by careful writing → [`docs/operations/diagnostics.md`](../operations/diagnostics.md). Log access and the support report are **not** in it: log files arrive with P7.02 and the report generator with P7.05, and both tasks own their part of this tab. Evidence: `--render-window` (the tab in both appearances, showing all four verdicts) and `--diagnostics-drill` (a healthy fan is not accused).
+
+**Implementation (P6.04, P6.05):** [`App/Sources/Window/`](../../App/Sources/Window/) — `MainWindow` carries three tabs; Diagnostics joined them in P6.09, once there were checks it could actually run. The charts share **one x domain computed once and handed to both**, which is what makes a temperature rise and the fan's answer readable as cause and effect. Chart history lives in [`Core/Presentation/TimeSeries.swift`](../../Packages/Core/Sources/Core/Presentation/TimeSeries.swift), which spends resolution rather than span when it fills up — a "24 hour" window that had quietly become "the last few minutes" would be a chart that lies by omission. Series identity uses `Core.SeriesPalette` (categorical hue, still no red); fans stay neutral because the y-axis already says how fast. Render evidence: `--render-window <dir>`; the manual override's "expiry returns to the engine, not the firmware" rule is proven on hardware by `--override-drill`.
 
 ## Curve editor
 

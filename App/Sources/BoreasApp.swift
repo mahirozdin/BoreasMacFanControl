@@ -116,6 +116,7 @@ enum HelperCommands {
             ("--override-drill", HardwareDrills.overrideDrill),
             ("--curve-drill", HardwareDrills.curveDrill),
             ("--config-drill", ConfigurationDrill.run),
+            ("--diagnostics-drill", HardwareDrills.diagnosticsDrill),
         ]
         for drill in drills where arguments.contains(drill.flag) {
             drill.run(report)
