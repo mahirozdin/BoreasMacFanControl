@@ -60,10 +60,13 @@ Tone: it also says what it cannot do. In this category, honesty is the strongest
 compiler's own extraction** rather than parsed out of the Swift:
 
 ```bash
-make build-app   # or any Xcode build; SWIFT_EMIT_LOC_STRINGS is on
-make strings     # merges the extraction into the catalogue
-make strings-check   # fails if the catalogue is out of date
+make generate && xcodebuild -project Boreas.xcodeproj -scheme Boreas build
+make strings          # merges the compiler's extraction into the catalogue
+make strings-check    # fails if the catalogue is out of date with the source
 ```
+
+The build has to happen first: `make strings` reads what the compiler
+wrote, so it can only ever be as current as the last build.
 
 Every user facing string is a `String(localized:defaultValue:comment:)`
 call, sometimes spread over five lines with a multiline default. A regular
@@ -99,7 +102,13 @@ returns *values* (`DiagnosticFinding`, `DiagnosticCause`); the application
 supplies the words.
 
 **Turkish is not a translation.** It is written thinking in Turkish, and
-interpolated values never take a suffix — `"Bitiş: %@"` rather than
-`"%@'e kadar"` — because Turkish suffixes agree with the sound of the word
-before them, and nothing can make that agree with a number formatted at
-runtime.
+**an interpolated value never takes a suffix**: a sentence is phrased so
+the placeholder ends it (`"Son: %@"`) rather than carrying a case ending
+(`"%@'e kadar"`). Turkish suffixes agree with the vowels of the word before
+them, and nothing can make that agree with a value formatted at runtime —
+so the phrasing sidesteps the agreement instead of guessing at it.
+
+Note for anyone editing these documents: `make gate-language` (H6) refuses
+Turkish characters outside the catalogue and the files it names. Examples
+in prose have to be chosen to avoid them, which is why the two above are
+written the way they are.
