@@ -139,6 +139,7 @@ struct SensorOverrideRow: View {
             Circle()
                 .fill(Color.temperature(reading.celsius))
                 .frame(width: 7, height: 7)
+                .accessibilityHidden(true)
 
             TextField(
                 String(

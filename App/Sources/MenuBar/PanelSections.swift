@@ -65,8 +65,13 @@ struct ProfilePickerSection: View {
         } label: {
             HStack(spacing: 3) {
                 if isActive {
+                    // Hidden, not labelled: the selected state is announced by
+                    // the `.isSelected` trait below, which is what VoiceOver
+                    // users expect from a picker. A spoken "checkmark" beside
+                    // it would say the same thing twice, in the wrong idiom.
                     Image(systemName: "checkmark")
                         .font(.system(size: 8, weight: .bold))
+                        .accessibilityHidden(true)
                 }
                 Text(
                     String(
@@ -89,7 +94,9 @@ struct ProfilePickerSection: View {
             String(
                 localized: "panel.profile.automatic.help",
                 defaultValue: "Let the profile triggers decide",
-                comment: "Tooltip of the automatic choice in the profile picker"))
+                comment: "Tooltip of the automatic choice in the profile picker")
+        )
+        .accessibilityAddTraits(isActive ? [.isSelected] : [])
     }
 
     /// Selection is marked with a checkmark as well as colour — colour never
@@ -101,8 +108,13 @@ struct ProfilePickerSection: View {
         } label: {
             HStack(spacing: 3) {
                 if isActive {
+                    // Hidden, not labelled: the selected state is announced by
+                    // the `.isSelected` trait below, which is what VoiceOver
+                    // users expect from a picker. A spoken "checkmark" beside
+                    // it would say the same thing twice, in the wrong idiom.
                     Image(systemName: "checkmark")
                         .font(.system(size: 8, weight: .bold))
+                        .accessibilityHidden(true)
                 }
                 Text(verbatim: profile.displayName)
                     .font(.caption)
@@ -137,6 +149,7 @@ struct ProfilePickerSection: View {
                 }
             }
         }
+        .accessibilityAddTraits(isActive ? [.isSelected] : [])
     }
 
     /// A driving profile is only selectable once the helper exists; until
@@ -337,6 +350,21 @@ struct SensorGroupList: View {
             .reduce(0) { $0 + $1.readings.count }
     }
 
+    /// The expanded state as a spoken value.
+    ///
+    /// A value rather than a trait: SwiftUI on macOS has no `isExpanded` trait
+    /// to add — the compiler refuses it — so the state goes where a listener
+    /// will actually hear it.
+    private static func disclosureValue(isExpanded: Bool) -> String {
+        isExpanded
+            ? String(
+                localized: "panel.group.expanded", defaultValue: "expanded",
+                comment: "VoiceOver value of an expanded sensor group row")
+            : String(
+                localized: "panel.group.collapsed", defaultValue: "collapsed",
+                comment: "VoiceOver value of a collapsed sensor group row")
+    }
+
     /// A hand-rolled disclosure row: `DisclosureGroup` draws nothing under
     /// `ImageRenderer`, which would blind the render evidence — and plain
     /// primitives also keep the compact look this panel wants.
@@ -351,14 +379,21 @@ struct SensorGroupList: View {
                 }
             } label: {
                 HStack(spacing: 6) {
+                    // The chevron's direction is the expanded state, said
+                    // below by the `.isExpanded` trait — the idiom VoiceOver
+                    // already announces for a disclosure.
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                         .font(.system(size: 8, weight: .semibold))
                         .foregroundStyle(.tertiary)
                         .frame(width: 10)
+                        .accessibilityHidden(true)
                     if let hottest = readings.first {
+                        // Reinforces the temperature printed beside it; the
+                        // number is the carrier (`ContrastRequirement`).
                         Circle()
                             .fill(Color.temperature(hottest.celsius))
                             .frame(width: 8, height: 8)
+                            .accessibilityHidden(true)
                         Text(verbatim: group.displayName)
                             .font(.callout)
                         Spacer()
@@ -373,6 +408,7 @@ struct SensorGroupList: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityValue(Self.disclosureValue(isExpanded: isExpanded))
 
             if isExpanded {
                 ForEach(readings, id: \.id) { reading in
@@ -380,6 +416,7 @@ struct SensorGroupList: View {
                         Circle()
                             .fill(Color.temperature(reading.celsius))
                             .frame(width: 7, height: 7)
+                            .accessibilityHidden(true)
                         Text(verbatim: reading.displayName)
                             .font(.caption)
                             .foregroundStyle(.secondary)

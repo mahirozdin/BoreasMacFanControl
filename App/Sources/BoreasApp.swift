@@ -119,6 +119,7 @@ enum HelperCommands {
             ("--diagnostics-drill", HardwareDrills.diagnosticsDrill),
             ("--shortcut-drill", ShortcutDrill.run),
             ("--trigger-drill", TriggerDrill.run),
+            ("--a11y-drill", AccessibilityDrill.run),
         ]
         for drill in drills where arguments.contains(drill.flag) {
             drill.run(report)

@@ -63,6 +63,9 @@ struct CurveEditorSection: View {
 
             Spacer()
 
+            // `.help` is a tooltip, and a tooltip is not a name: VoiceOver
+            // reads an icon-only button from its label, which here is a glyph
+            // with no text in it. Both are needed, and they say the same word.
             Button {
                 undo()
             } label: {
@@ -70,6 +73,11 @@ struct CurveEditorSection: View {
             }
             .disabled(undoStack.isEmpty)
             .help(
+                String(
+                    localized: "curve.undo", defaultValue: "Undo",
+                    comment: "Tooltip of the curve editor undo button")
+            )
+            .accessibilityLabel(
                 String(
                     localized: "curve.undo", defaultValue: "Undo",
                     comment: "Tooltip of the curve editor undo button"))
@@ -81,6 +89,11 @@ struct CurveEditorSection: View {
             }
             .disabled(redoStack.isEmpty)
             .help(
+                String(
+                    localized: "curve.redo", defaultValue: "Redo",
+                    comment: "Tooltip of the curve editor redo button")
+            )
+            .accessibilityLabel(
                 String(
                     localized: "curve.redo", defaultValue: "Redo",
                     comment: "Tooltip of the curve editor redo button"))

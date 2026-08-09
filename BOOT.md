@@ -56,6 +56,7 @@ make gate-layers      # Core purity, Live/Mock coverage
 make gate-deps        # zero dependencies, licence compatibility
 make gate-privacy     # telemetry and network traces
 make gate-i18n        # hard coded user strings
+make gate-a11y        # SF Symbol names, chart labels, Reduce Motion
 make gate-daemon      # privileged surface limits
 make gate-coverage    # Core line coverage at or above 85 percent
 ```

@@ -411,9 +411,12 @@ private struct SetupDisclosure: View {
                 .textCase(.uppercase)
             ForEach(bullets, id: \.text) { bullet in
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    // A bullet glyph: it decorates the sentence beside
+                    // it and adds nothing to it.
                     Image(systemName: bullet.symbol)
                         .frame(width: 16)
                         .foregroundStyle(.tint)
+                        .accessibilityHidden(true)
                     Text(verbatim: bullet.text)
                         .font(.callout)
                         .fixedSize(horizontal: false, vertical: true)

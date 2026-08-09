@@ -173,9 +173,13 @@ struct DiagnosticRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
+            // The verdict is spelled out in words below (`verdictLabel`),
+            // so the glyph and its tint are the sighted shortcut to the same
+            // fact rather than the fact itself.
             Image(systemName: symbol)
                 .foregroundStyle(tint)
                 .frame(width: 18)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {

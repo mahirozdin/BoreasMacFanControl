@@ -127,6 +127,42 @@
         }
       }
     },
+    "chart.series.hidden": {
+      "comment": "VoiceOver value of a chart series that is switched off",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "hidden"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "gizli"
+          }
+        }
+      }
+    },
+    "chart.series.shown": {
+      "comment": "VoiceOver value of a chart series that is switched on",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "shown"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "görünür"
+          }
+        }
+      }
+    },
     "chart.series.toggle.help": {
       "comment": "Tooltip on a chart legend entry that toggles its series",
       "extractionState": "manual",
@@ -177,6 +213,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Grafik zaman aralığı"
+          }
+        }
+      }
+    },
+    "control.mapping.accessibility": {
+      "comment": "VoiceOver label of one fan-to-sensor-group mapping row in the control tab",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ follows %@, %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ şunu izliyor: %2$@, %3$@"
           }
         }
       }
@@ -685,6 +739,24 @@
         }
       }
     },
+    "curve.accessibility.point": {
+      "comment": "One curve control point read aloud: its number, temperature and duty",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Point %lld, %lld degrees, %lld percent"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld. nokta, %2$lld derece, yüzde %3$lld"
+          }
+        }
+      }
+    },
     "curve.editor.accessibility": {
       "comment": "VoiceOver label for the curve editor plot",
       "extractionState": "manual",
@@ -699,6 +771,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fan eğrisi düzenleyici"
+          }
+        }
+      }
+    },
+    "curve.editor.accessibility.hint": {
+      "comment": "VoiceOver hint pointing from the curve plot to its numeric table",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use the point table below to edit the curve"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eğriyi düzenlemek için aşağıdaki nokta tablosunu kullanın"
           }
         }
       }
@@ -2593,6 +2683,42 @@
         }
       }
     },
+    "panel.group.collapsed": {
+      "comment": "VoiceOver value of a collapsed sensor group row",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "collapsed"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "kapalı"
+          }
+        }
+      }
+    },
+    "panel.group.expanded": {
+      "comment": "VoiceOver value of an expanded sensor group row",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "expanded"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "açık"
+          }
+        }
+      }
+    },
     "panel.mainwindow.button": {
       "comment": "Menu bar panel button that opens the main window",
       "extractionState": "manual",
@@ -2967,6 +3093,96 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sistem"
+          }
+        }
+      }
+    },
+    "sensors.row.accessibility": {
+      "comment": "VoiceOver label of a sensor table row: the sensor's name and group",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "sensors.row.accessibility.absent": {
+      "comment": "VoiceOver text for a sensor statistic that has no value yet",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not available"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "değer yok"
+          }
+        }
+      }
+    },
+    "sensors.row.accessibility.value": {
+      "comment": "VoiceOver value of a sensor table row: its current, maximum and mean temperature",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "now %@, maximum %@, mean %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "şu an %1$@, en yüksek %2$@, ortalama %3$@"
+          }
+        }
+      }
+    },
+    "sensors.sort.ascending": {
+      "comment": "VoiceOver value of the sensor table column currently sorted upwards",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sorted ascending"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "artan sırada sıralı"
+          }
+        }
+      }
+    },
+    "sensors.sort.descending": {
+      "comment": "VoiceOver value of the sensor table column currently sorted downwards",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sorted descending"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "azalan sırada sıralı"
           }
         }
       }
@@ -4911,6 +5127,132 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ayarları aç"
+          }
+        }
+      }
+    },
+    "status.accessibility.driving": {
+      "comment": "Menu bar item VoiceOver label when the engine drives the fans",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlling the fans, profile %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanları denetliyor, profil %@"
+          }
+        }
+      }
+    },
+    "status.accessibility.driving.temporary": {
+      "comment": "Menu bar item VoiceOver label when the engine drives under a choice that expires",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlling the fans for a set time, profile %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanları belirli bir süre denetliyor, profil %@"
+          }
+        }
+      }
+    },
+    "status.accessibility.fan": {
+      "comment": "Part of the menu bar item's VoiceOver label: the fan speed",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan %lld rpm"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan %lld dev/dk"
+          }
+        }
+      }
+    },
+    "status.accessibility.firmware": {
+      "comment": "Menu bar item VoiceOver label when the firmware owns the fans",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monitoring only, the system is controlling the fans"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yalnızca izliyor, fanları sistem denetliyor"
+          }
+        }
+      }
+    },
+    "status.accessibility.hottest": {
+      "comment": "Part of the menu bar item's VoiceOver label: the hottest temperature",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hottest sensor %lld degrees Celsius"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En sıcak sensör %lld Santigrat derece"
+          }
+        }
+      }
+    },
+    "status.accessibility.panic": {
+      "comment": "Menu bar item VoiceOver label while the panic layer is acting",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cooling at full speed, the panic threshold was reached"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tam hızda soğutuyor, panik eşiğine ulaşıldı"
+          }
+        }
+      }
+    },
+    "status.sparkline.accessibility": {
+      "comment": "VoiceOver label for the menu bar item's miniature temperature chart",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent temperature trend"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son sıcaklık eğilimi"
           }
         }
       }

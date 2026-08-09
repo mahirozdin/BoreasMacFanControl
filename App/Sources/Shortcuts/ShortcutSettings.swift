@@ -153,6 +153,11 @@ struct ShortcutField: View {
                 .help(
                     String(
                         localized: "settings.shortcuts.clear", defaultValue: "Remove this shortcut",
+                        comment: "Tooltip of the button that clears a shortcut")
+                )
+                .accessibilityLabel(
+                    String(
+                        localized: "settings.shortcuts.clear", defaultValue: "Remove this shortcut",
                         comment: "Tooltip of the button that clears a shortcut"))
             }
 

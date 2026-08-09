@@ -24,7 +24,7 @@ next: ## Show the next actionable atomic task (skips manual blockers)
 	@scripts/next-task.py
 
 .PHONY: check
-check: gate-names gate-language blueprint-check docs-check gate-layers gate-deps gate-privacy gate-i18n gate-daemon gate-coverage ## Run every gate
+check: gate-names gate-language blueprint-check docs-check gate-layers gate-deps gate-privacy gate-i18n gate-a11y gate-daemon gate-coverage ## Run every gate
 	@echo ""
 	@echo "✓ All gates completed."
 
@@ -63,6 +63,10 @@ strings-check:
 
 gate-i18n: ## Y1/Y2 — hard coded user facing text
 	@$(GATES)/check-i18n.sh
+
+.PHONY: gate-a11y
+gate-a11y: ## Accessibility — SF Symbol names, chart labels, Reduce Motion
+	@$(GATES)/check-a11y.sh
 
 .PHONY: gate-daemon
 gate-daemon: ## M4/M5/M6 — daemon XPC surface limits

@@ -62,11 +62,31 @@ struct CurveEditor: View {
         }
         .frame(height: 260)
         .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
+        // **One element, and the handles are deliberately not in it.** A
+        // handle is a mouse affordance: a `Circle` with a drag gesture, no
+        // text, and no keyboard path to it. Left visible to accessibility the
+        // plot reads as a labelled group containing five anonymous circles,
+        // which is worse than a picture — it invites a user in and then has
+        // nothing to say.
+        //
+        // The documented accessible path is the numeric table beside this
+        // plot (`CurvePointTable`, P6.07): the same curve, the same `Core`
+        // editing operations, one labelled field per value, reachable by
+        // keyboard. So the plot announces *what it holds* and says where to
+        // edit it, rather than pretending to be operable.
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(
             String(
                 localized: "curve.editor.accessibility",
                 defaultValue: "Fan curve editor",
-                comment: "VoiceOver label for the curve editor plot"))
+                comment: "VoiceOver label for the curve editor plot")
+        )
+        .accessibilityValue(curve.spokenPointList)
+        .accessibilityHint(
+            String(
+                localized: "curve.editor.accessibility.hint",
+                defaultValue: "Use the point table below to edit the curve",
+                comment: "VoiceOver hint pointing from the curve plot to its numeric table"))
     }
 
     // MARK: - Handles

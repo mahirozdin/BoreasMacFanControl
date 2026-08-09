@@ -1,6 +1,6 @@
 # User Interface
 
-> Last updated: 2026-08-10 — P6.11, P6.14
+> Last updated: 2026-08-10 — P6.12
 > Source: blueprint §9
 
 ## Design language
@@ -76,3 +76,69 @@ Tabs: **General · Appearance · Sensors · Control · Notifications · Recordin
 - **Colour never carries information alone** — always backed by a number or label
 - Dynamic Type support; **no text container with a fixed pixel width or height**
 - The menu bar item provides a meaningful accessibility label
+
+**Implementation (P6.12).** Enforced in three places rather than by review, because
+a label is exactly the kind of thing that gets added to the view somebody was
+looking at and forgotten in the one beside it:
+
+| Requirement | How it is held | Where |
+|---|---|---|
+| Every glyph is named or explicitly decorative | `make gate-a11y` rule A1 | [`scripts/gates/check-a11y.py`](../../scripts/gates/check-a11y.py) |
+| Every chart and canvas describes itself | `make gate-a11y` rule A2 | same |
+| No animation ignores `Reduce Motion` | `make gate-a11y` rule A3 | same |
+| Contrast meets the requirement its role carries | `ContrastTests`, and re-measured on the *drawn* colours | [`Core/Presentation/Contrast.swift`](../../Packages/Core/Sources/Core/Presentation/Contrast.swift) · `--a11y-drill` |
+| The menu bar item says what its tint means | `StatusItemAnnouncement` under test | [`Core/Presentation/StatusItemAnnouncement.swift`](../../Packages/Core/Sources/Core/Presentation/StatusItemAnnouncement.swift) |
+
+The words for everything read aloud live in
+[`AccessibilityWording.swift`](../../App/Sources/Design/AccessibilityWording.swift),
+in the App layer where the String Catalog can see them — the same split, and for
+the same reason, as `DiagnosticWording`.
+
+### Contrast, as measured rather than as eyeballed
+
+The requirement is **not one number**, because WCAG's 3:1 for non-text applies to
+a graphical object *required to understand the content*:
+
+| Role | Requirement | Measured |
+|---|---|---|
+| Chart series line — remove it and the data is gone | 3:1 (WCAG 2.1 §1.4.11) | **3.78:1** worst case, both appearances |
+| Temperature swatch — a dot beside its own printed number | visibility floor, 1.5:1 | **2.27:1** worst case (warm end, light appearance) |
+
+The temperature ramp is **honestly below 3:1 at its warm end**, and that is the
+correct outcome rather than a gap: reaching 3:1 would mean darkening the orange
+towards red, which the red-exclusion rule forbids outright. What makes the weaker
+requirement legitimate is the colour-independence rule above — the number is
+always printed beside the swatch, so the colour is never the carrier.
+`ContrastTests` pins the trade-off in both directions so it cannot drift into
+either a regression or a silent claim of compliance.
+
+**The series palette was retuned here.** P6.01 chose seven hues "at a middle
+luminance so they hold up against both appearances"; the measurement said five of
+the seven reached only 2.0–3.0:1 against a light window. Clearing 3:1 against a
+near-white *and* a near-black background confines relative luminance to a band
+only a factor of two wide (`SeriesPalette.luminanceBand`), and brightness alone
+was moved to land inside it — hues and saturations are the P6.01 palette's, so
+series identity is unchanged.
+
+### Two platform limits, measured
+
+Recorded because both were assumed to work, and neither does:
+
+- **`Dynamic Type` does nothing on macOS.** `dynamicTypeSize` produces an
+  identical layout at `xSmall` and `accessibility5`, and
+  `NSFont.preferredFont(forTextStyle: .body)` is a fixed 13 pt — macOS has no
+  system-wide text size control. So the bullet above is aspirational on this
+  platform, and **invariant Y3 is not really about text scaling**: what changes a
+  label's length here is *translation*, which is what the pseudo-locale layout
+  test (P6.13) exists to catch. `--a11y-drill` re-measures this rather than
+  trusting the note.
+- **The accessibility tree cannot be inspected in-process.** SwiftUI builds its
+  accessibility nodes lazily, only when an accessibility client is attached, and
+  attaching one needs the Accessibility permission invariant I2 forbids. That is
+  why label coverage is a source gate. Reasoning and the three probes in
+  [`AccessibilityDrill.swift`](../../App/Sources/Helper/AccessibilityDrill.swift).
+
+`Reduce Transparency` is a read-only system setting with no appearance
+equivalent, so honouring it is a **manual check**, not an automated one.
+`Reduce Motion` is honoured by construction — the interface declares no
+animation at all — and rule A3 is what keeps that true.

@@ -144,9 +144,13 @@ struct FanMappingSection: View {
                     HStack(spacing: 8) {
                         Text(verbatim: fan.name)
                             .frame(width: 120, alignment: .leading)
+                        // The arrow *is* the relationship, and an arrow read
+                        // aloud is nothing at all — the composed label below
+                        // says "follows" in words instead.
                         Image(systemName: "arrow.left")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
                         Text(verbatim: binding.input.group.displayName)
                         Text(verbatim: binding.input.aggregate.rawValue)
                             .font(.caption)
@@ -154,6 +158,17 @@ struct FanMappingSection: View {
                         Spacer()
                     }
                     .font(.callout)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(
+                        String(
+                            localized: "control.mapping.accessibility",
+                            defaultValue: """
+                                \(fan.name) follows \(binding.input.group.displayName), \
+                                \(binding.input.aggregate.rawValue)
+                                """,
+                            comment:
+                                "VoiceOver label of one fan-to-sensor-group mapping row in the control tab"
+                        ))
                 }
             }
 

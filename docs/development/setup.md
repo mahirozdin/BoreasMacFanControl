@@ -1,6 +1,6 @@
 # Development Environment
 
-> Last updated: 2026-08-10 — P6.10
+> Last updated: 2026-08-10 — P6.12
 > Source: blueprint §16.1, §17.3 · Decision: [ADR 0001](../architecture/adr/0001-native-swift.md)
 
 ## Requirements
@@ -41,6 +41,7 @@ make generate
 | `make gate-deps` | Zero dependencies, licence compatibility |
 | `make gate-privacy` | Telemetry and network traces |
 | `make gate-i18n` | Hard coded user facing text |
+| `make gate-a11y` | SF Symbol names, chart labels, Reduce Motion |
 | `make gate-daemon` | Privileged surface boundaries |
 | `make gate-language` | The repository is written in English |
 | `make gate-coverage` | `Core` line coverage ≥ 85% |
@@ -77,6 +78,8 @@ BOREAS=~/Library/Developer/Xcode/DerivedData/Boreas-*/Build/Products/Debug/Borea
 | `--config-drill` | Settings survive a restart; a broken file falls back; a hostile one is clamped (P6.08) |
 | `--diagnostics-drill` | A healthy fan is not accused — the false positive risk (P6.09) |
 | `--shortcut-drill` | Global shortcuts register with **no accessibility permission** (P6.10) |
+| `--trigger-drill` | A trigger selects its profile, and a manual choice still overrides it (P6.14) |
+| `--a11y-drill` | The drawn colours are exactly Core's, and their measured contrast clears the requirement each role carries — in four appearances (P6.12) |
 | **Render evidence — writes PNGs into a directory** | |
 | `--render-setup <dir>` | The helper setup window in every phase |
 | `--render-design <dir>` | The design system swatch sheet, both appearances |

@@ -48,8 +48,11 @@ struct MenuBarLabel: View {
             Image(systemName: "fan")
                 // The visible-but-unobtrusive mark that control is active:
                 // the icon takes the accent while the engine drives, and
-                // nothing else about the item changes.
+                // nothing else about the item changes. **That is a colour-only
+                // signal**, which is legitimate here only because the item's
+                // composed label says it in words — see `announcement` below.
                 .foregroundStyle(control.isEngaged ? Color.accentColor : Color.primary)
+                .accessibilityHidden(true)
 
             profileMark
 
@@ -66,6 +69,35 @@ struct MenuBarLabel: View {
                 }
             }
         }
+        // One element, not six. Left alone the item reads as "fan, B, 62,
+        // 1608" — every fact, no meaning — and the state it exists to signal
+        // (whether this application is driving) is carried by the icon's
+        // *tint*, which a listener never receives. `Core` decides which facts
+        // are announced; the wording is in `AccessibilityWording`.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(announcement.spokenLabel)
+    }
+
+    /// What the item says out loud. The facts are chosen in `Core` so the
+    /// choice can be tested without a menu bar.
+    private var announcement: StatusItemAnnouncement {
+        let fan = model.fans.first
+        return StatusItemAnnouncement.make(
+            control: .make(
+                isEngaged: control.isEngaged,
+                isPanicking: control.state == .panic,
+                profileName: control.outcome?.profile.displayName,
+                expires: isTimedChoice),
+            hottestCelsius: style.showTemperature ? model.hottest?.celsius : nil,
+            fanRPM: style.showFan ? fan?.currentRPM : nil,
+            fanIsPoweredOff: fan?.isPoweredOff ?? true)
+    }
+
+    /// Whether the active choice is one that expires — the clock glyph's
+    /// meaning, said in words by the announcement.
+    private var isTimedChoice: Bool {
+        if case .manual(let until) = control.outcome?.reason { return until != nil }
+        return false
     }
 
     /// The active profile's initial while the engine drives, and a clock
@@ -82,6 +114,7 @@ struct MenuBarLabel: View {
                 Image(systemName: "clock")
                     .font(.system(size: 7))
                     .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
             }
         }
     }
@@ -176,5 +209,14 @@ struct TemperatureSparkline: View {
                 path, with: .style(HierarchicalShapeStyle.primary), lineWidth: 1)
         }
         .frame(width: 26, height: 12)
+        // The trend the shape carries, said in words. Hidden rather than
+        // labelled when the item composes its own sentence (`MenuBarLabel`
+        // ignores its children), so this only speaks where the sparkline is
+        // used on its own.
+        .accessibilityLabel(
+            String(
+                localized: "status.sparkline.accessibility",
+                defaultValue: "Recent temperature trend",
+                comment: "VoiceOver label for the menu bar item's miniature temperature chart"))
     }
 }

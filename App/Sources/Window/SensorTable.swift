@@ -115,6 +115,7 @@ struct SensorTable: View {
                         if column == entry {
                             Image(systemName: ascending ? "chevron.up" : "chevron.down")
                                 .font(.system(size: 7, weight: .bold))
+                                .accessibilityHidden(true)
                         }
                     }
                     .frame(width: Self.width(of: entry), alignment: Self.alignment(of: entry))
@@ -122,10 +123,28 @@ struct SensorTable: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
+                // The chevron says which column sorts the table and which way.
+                // A glyph is enough to *see* it and nothing to hear it, so the
+                // direction becomes the header's accessibility value — and the
+                // sorted column gains the selected trait, which is how
+                // VoiceOver announces "this is the active one" natively.
+                .accessibilityLabel(entry.displayName)
+                .accessibilityValue(column == entry ? sortOrderText : "")
+                .accessibilityAddTraits(column == entry ? [.isSelected] : [])
             }
             Spacer(minLength: 0)
         }
         .padding(.bottom, 4)
+    }
+
+    private var sortOrderText: String {
+        ascending
+            ? String(
+                localized: "sensors.sort.ascending", defaultValue: "sorted ascending",
+                comment: "VoiceOver value of the sensor table column currently sorted upwards")
+            : String(
+                localized: "sensors.sort.descending", defaultValue: "sorted descending",
+                comment: "VoiceOver value of the sensor table column currently sorted downwards")
     }
 
     static func width(of column: SensorColumn) -> CGFloat {
@@ -155,6 +174,7 @@ private struct SensorTableRow: View {
                 Circle()
                     .fill(Color.temperature(row.current))
                     .frame(width: 7, height: 7)
+                    .accessibilityHidden(true)
                 Text(verbatim: row.name)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -173,6 +193,37 @@ private struct SensorTableRow: View {
         }
         .font(.callout)
         .padding(.vertical, 3)
+        // Six fragments become one sentence, and the three numbers get named:
+        // read as separate cells they arrive as "62.4, 71.2, 58.9" with
+        // nothing to say which is now, which is the maximum and which is the
+        // mean. A column header a listener passed several rows ago is not a
+        // label.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            String(
+                localized: "sensors.row.accessibility",
+                defaultValue: "\(row.name), \(row.group.displayName)",
+                comment: "VoiceOver label of a sensor table row: the sensor's name and group")
+        )
+        .accessibilityValue(
+            String(
+                localized: "sensors.row.accessibility.value",
+                defaultValue:
+                    "now \(spoken(row.current)), maximum \(spoken(row.maximum)), mean \(spoken(row.mean))",
+                comment:
+                    "VoiceOver value of a sensor table row: its current, maximum and mean temperature"
+            ))
+    }
+
+    /// An absent statistic said as a word rather than as the dash the eye
+    /// gets — a listener hearing "dash" learns nothing.
+    private func spoken(_ value: Double?) -> String {
+        guard let value else {
+            return String(
+                localized: "sensors.row.accessibility.absent", defaultValue: "not available",
+                comment: "VoiceOver text for a sensor statistic that has no value yet")
+        }
+        return String(format: "%.1f", value)
     }
 
     /// An absent statistic shows a dash — never a zero, which would read as

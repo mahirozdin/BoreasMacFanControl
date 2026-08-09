@@ -84,6 +84,7 @@ struct MenuBarPanel: View {
                     Circle()
                         .fill(Color.temperature(hottest.celsius))
                         .frame(width: 8, height: 8)
+                        .accessibilityHidden(true)
                     Text(verbatim: String(format: "%.1f °C", hottest.celsius))
                         .monospacedDigit()
                         .foregroundStyle(.secondary)

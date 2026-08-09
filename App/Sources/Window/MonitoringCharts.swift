@@ -202,11 +202,19 @@ struct ChartControls: View {
                         selected ? Color.accentColor : Color.clear, lineWidth: 1))
         }
         .buttonStyle(.plain)
+        // Which window is chosen is carried by a tinted capsule and a border —
+        // both invisible to a listener. The trait is how a picker says it.
+        .accessibilityAddTraits(selected ? [.isSelected] : [])
     }
 
-    /// A legend entry that is also the switch for its series. The checkmark
-    /// state is carried by opacity *and* by the strikethrough-free label,
-    /// never by colour alone.
+    /// A legend entry that is also the switch for its series.
+    ///
+    /// **The on/off state was visual only, and the comment here used to claim
+    /// otherwise** — it said the state was carried by "opacity and the
+    /// strikethrough-free label", but opacity and a dimmer text colour are both
+    /// things you have to *see*. Nothing said "shown" or "hidden" out loud. It
+    /// does now, as the button's accessibility value; the dimming stays,
+    /// because for a sighted user it is the right amount of signal.
     private func seriesToggle(_ group: SensorGroup, index: Int) -> some View {
         let hidden = hiddenGroups.contains(group)
         return Button {
@@ -217,10 +225,13 @@ struct ChartControls: View {
             }
         } label: {
             HStack(spacing: 4) {
+                // The series' identity colour. Hidden from accessibility: the
+                // name is right beside it and carries the same identity.
                 Circle()
                     .fill(Color.series(index))
                     .frame(width: 8, height: 8)
                     .opacity(hidden ? 0.25 : 1)
+                    .accessibilityHidden(true)
                 Text(verbatim: group.displayName)
                     .font(.caption)
                     .foregroundStyle(hidden ? .tertiary : .primary)
@@ -232,6 +243,16 @@ struct ChartControls: View {
             String(
                 localized: "chart.series.toggle.help",
                 defaultValue: "Show or hide this series",
-                comment: "Tooltip on a chart legend entry that toggles its series"))
+                comment: "Tooltip on a chart legend entry that toggles its series")
+        )
+        .accessibilityLabel(group.displayName)
+        .accessibilityValue(
+            hidden
+                ? String(
+                    localized: "chart.series.hidden", defaultValue: "hidden",
+                    comment: "VoiceOver value of a chart series that is switched off")
+                : String(
+                    localized: "chart.series.shown", defaultValue: "shown",
+                    comment: "VoiceOver value of a chart series that is switched on"))
     }
 }

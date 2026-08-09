@@ -15,10 +15,13 @@ struct TriggerRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
+            // Ornament: it marks the row as a trigger, which the editor
+            // beside it already says in words.
             Image(systemName: "bolt.horizontal")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .frame(width: 14)
+                .accessibilityHidden(true)
 
             editor
 
@@ -30,6 +33,11 @@ struct TriggerRow: View {
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
             .help(
+                String(
+                    localized: "trigger.remove", defaultValue: "Remove this trigger",
+                    comment: "Tooltip of the button that removes a trigger")
+            )
+            .accessibilityLabel(
                 String(
                     localized: "trigger.remove", defaultValue: "Remove this trigger",
                     comment: "Tooltip of the button that removes a trigger"))

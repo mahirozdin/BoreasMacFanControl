@@ -142,19 +142,50 @@ public enum TemperatureScale {
 /// corridor, and the test proves it the same way the ramp's does.
 public enum SeriesPalette {
 
-    /// Seven hues spread around the wheel, all avoiding red, all at a
-    /// middle luminance so they hold up against both appearances.
+    /// The luminance band inside which 3:1 holds against **both** appearances.
+    ///
+    /// A chart line is a graphical object required to understand the content
+    /// (WCAG 2.1 §1.4.11), so it owes 3:1 — and it owes it on a near-white
+    /// window *and* a near-black one. Those two requirements pull in opposite
+    /// directions and leave a band only a factor of two wide, derived from
+    /// `AppearanceBackground`:
+    ///
+    /// - too light and it dissolves into the light appearance,
+    /// - too dark and it dissolves into the dark one.
+    ///
+    /// **This band is why the palette was retuned in P6.12.** P6.01 aimed for
+    /// "a middle luminance so they hold up against both appearances", which was
+    /// the right instinct with the wrong number: five of the seven original
+    /// entries sat at 0.29–0.45 and reached only 2.0–3.0:1 against a light
+    /// window. The contrast audit measured it, `ContrastTests` now enforces it,
+    /// and eyeballing a swatch cannot be the check — the ceiling is much lower
+    /// than it looks.
+    /// Rounded *inwards* at both ends, deliberately: the derivation gives
+    /// 0.1406…0.2850, and a constant rounded outwards would permit a colour
+    /// the requirement forbids. `ContrastTests` recomputes the bounds and
+    /// refuses a band wider than the arithmetic allows — it caught this
+    /// constant at `0.14` on the first run.
+    public static let luminanceBand: ClosedRange<Double> = 0.141...0.284
+
+    /// Seven hues spread around the wheel, all avoiding red, all inside
+    /// `luminanceBand`.
+    ///
+    /// Retuned in P6.12 by adjusting **brightness only**: hue carries series
+    /// identity here, so the hues and saturations of the P6.01 palette are
+    /// kept (every hue is within a degree of where it was) and only the
+    /// luminance moved. Fixing contrast by shifting hues would have traded one
+    /// accessibility property for another.
     public static let colors: [ScaleColor] = [
-        ScaleColor(red: 0.29, green: 0.56, blue: 0.91),  // blue    ~214°
-        ScaleColor(red: 0.18, green: 0.70, blue: 0.64),  // teal    ~173°
-        ScaleColor(red: 0.91, green: 0.65, blue: 0.23),  // amber   ~37°
-        ScaleColor(red: 0.56, green: 0.48, blue: 0.91),  // violet  ~251°
-        ScaleColor(red: 0.36, green: 0.71, blue: 0.35),  // green   ~118°
-        ScaleColor(red: 0.83, green: 0.42, blue: 0.80),  // magenta ~304°
+        ScaleColor(red: 0.26, green: 0.50, blue: 0.82),  // blue    ~214°
+        ScaleColor(red: 0.14, green: 0.56, blue: 0.51),  // teal    ~173°
+        ScaleColor(red: 0.65, green: 0.46, blue: 0.16),  // amber   ~37°
+        ScaleColor(red: 0.51, green: 0.44, blue: 0.83),  // violet  ~251°
+        ScaleColor(red: 0.28, green: 0.56, blue: 0.28),  // green   ~120°
+        ScaleColor(red: 0.72, green: 0.37, blue: 0.70),  // magenta ~303°
         // Yellow-green, not the olive this started as: at ~55° that entry
         // sat 18° from the amber above and the distinctness test refused
         // it. Moved into the widest remaining gap.
-        ScaleColor(red: 0.57, green: 0.72, blue: 0.22),  // yellow-green ~78°
+        ScaleColor(red: 0.43, green: 0.54, blue: 0.16),  // yellow-green ~77°
     ]
 
     /// The colour for a series index, wrapping when there are more series

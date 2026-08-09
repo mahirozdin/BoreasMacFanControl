@@ -193,11 +193,18 @@ extension RenderEvidence {
     /// hierarchy to draw itself (`cacheDisplay`) is how AppKit has always
     /// photographed itself. It needs no screen recording permission — the
     /// window is ours and the bitmap is ours — so invariant I2 is untouched.
+    /// `appearance` overrides the `dark` choice when given. It exists for the
+    /// P6.12 accessibility renders: `Increase Contrast` cannot be set through
+    /// the SwiftUI environment (`\.colorSchemeContrast` is a get-only key path
+    /// — the compiler refuses to write it), but AppKit has carried a real
+    /// high-contrast appearance since 10.14, and the window is already how this
+    /// camera controls appearance.
     static func write(
         _ view: some View,
         to directory: URL,
         named name: String,
-        dark: Bool = false
+        dark: Bool = false,
+        appearance: NSAppearance.Name? = nil
     ) {
         let hosting = NSHostingView(rootView: view)
         hosting.frame = CGRect(origin: .zero, size: hosting.fittingSize)
@@ -210,7 +217,7 @@ extension RenderEvidence {
         // controls take their appearance from the window, which is why the
         // old renders could not show a dark slider even when the SwiftUI
         // around it was dark.
-        window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        window.appearance = NSAppearance(named: appearance ?? (dark ? .darkAqua : .aqua))
         window.layoutIfNeeded()
         hosting.layoutSubtreeIfNeeded()
 

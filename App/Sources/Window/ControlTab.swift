@@ -53,8 +53,11 @@ struct ActivationExplanation: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
+            // Purely decorative: the sentence beside it already is the
+            // explanation, so announcing the glyph would only add noise.
             Image(systemName: "questionmark.circle")
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
             Text(verbatim: explanation)
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
@@ -124,9 +127,15 @@ struct SafetyChainStatus: View {
 
             ForEach(layers) { layer in
                 HStack(spacing: 8) {
+                    // The glyph changes with the state, not just its colour —
+                    // a shield when armed, a filled exclamation when acting —
+                    // so the row survives being seen without hue. It is hidden
+                    // from accessibility because the row composes its own
+                    // label below and the state is said in words there.
                     Image(systemName: layer.acting ? "exclamationmark.circle.fill" : "checkmark.shield")
                         .foregroundStyle(layer.acting ? Color.panicAccent : Color.secondary)
                         .frame(width: 16)
+                        .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(verbatim: layer.name)
                             .font(.callout)
@@ -140,6 +149,15 @@ struct SafetyChainStatus: View {
                         .fontWeight(layer.acting ? .semibold : .regular)
                         .foregroundStyle(layer.acting ? Color.panicAccent : Color.secondary)
                 }
+                // One row, one element. Read as four fragments a listener gets
+                // the layer's name, then its explanation, then — separately,
+                // after the spacer — the two words that say whether it is
+                // doing anything. The state belongs in the same breath as the
+                // name it applies to.
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(layer.name)
+                .accessibilityValue(layer.acting ? actingText : armedText)
+                .accessibilityHint(layer.detail)
             }
         }
     }
