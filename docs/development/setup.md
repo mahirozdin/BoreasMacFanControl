@@ -1,6 +1,6 @@
 # Development Environment
 
-> Last updated: 2026-07-31 — P0.22
+> Last updated: 2026-08-10 — P6.10
 > Source: blueprint §16.1, §17.3 · Decision: [ADR 0001](../architecture/adr/0001-native-swift.md)
 
 ## Requirements
@@ -48,6 +48,48 @@ make generate
 | `make generate` | Generates the Xcode project from `project.yml` |
 | `make build` / `make test` / `make lint` | Build / test / lint the packages |
 | `make clean` | Removes build outputs |
+
+## The application's own commands
+
+The built application answers a set of arguments that are **instruments,
+not features**: they exist so that claims in the run log can be reproduced
+rather than believed. None of them shows the interface, and none needs a
+permission this project has promised not to ask for.
+
+```bash
+BOREAS=~/Library/Developer/Xcode/DerivedData/Boreas-*/Build/Products/Debug/Boreas.app/Contents/MacOS/Boreas
+```
+
+| Argument | What it proves or does |
+|---|---|
+| `--helper-status` | The privileged helper's registration state |
+| `--register-helper` / `--unregister-helper` | Installs or removes it. Repairs a stale registration after repeated rebuilds |
+| `--helper-ping` | The XPC handshake, signatures verified in both directions |
+| `--fan-state` | The fan's mode byte and speed, unprivileged. What the kill and freeze harnesses poll |
+| `--fan-keys` | The SMC fan namespace, plus the proof that an unprivileged write is refused (M3) |
+| **Drills — each exits non-zero on failure** | |
+| `--takeover-drill` | Take over, converge, hand back, release again (P4) |
+| `--pump-heartbeats` / `--helper-release` | The watchdog and release idempotency harnesses (P3) |
+| `--control-drill` | The manual duty path end to end (P4.08) |
+| `--profile-drill` | Selecting a profile drives the fan along its curve (P6.02) |
+| `--override-drill` | A timed override expires back to the **engine**, not the firmware (P6.05) |
+| `--curve-drill` | An edited curve reaches the fans within a cycle (P6.06) |
+| `--config-drill` | Settings survive a restart; a broken file falls back; a hostile one is clamped (P6.08) |
+| `--diagnostics-drill` | A healthy fan is not accused — the false positive risk (P6.09) |
+| `--shortcut-drill` | Global shortcuts register with **no accessibility permission** (P6.10) |
+| **Render evidence — writes PNGs into a directory** | |
+| `--render-setup <dir>` | The helper setup window in every phase |
+| `--render-design <dir>` | The design system swatch sheet, both appearances |
+| `--render-panel <dir>` | The menu bar panel in five frozen states |
+| `--render-status <dir>` | The status item's layouts and marks |
+| `--render-window <dir>` | The main window's three tabs, both appearances |
+| `--render-settings <dir>` | The settings tabs |
+| `--crowd-menubar <seconds>` | Floods the menu bar, so the space warning can be watched firing |
+
+The renders host the view in an offscreen window and ask AppKit to draw
+itself, which needs no screen recording permission (I2) and — unlike
+`ImageRenderer`, which this replaced — draws system controls as they
+really appear.
 
 ## Coding standards
 

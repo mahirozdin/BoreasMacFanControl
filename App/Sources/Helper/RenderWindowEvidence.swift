@@ -154,7 +154,7 @@ extension RenderEvidence {
             .frame(width: 860)
             .background(background)
             .environment(\.colorScheme, dark ? .dark : .light)
-            write(monitoring, to: directory, named: "window-monitoring-\(suffix)")
+            write(monitoring, to: directory, named: "window-monitoring-\(suffix)", dark: dark)
 
             let controlTab = ControlContent(
                 model: fixture.monitor, control: fixture.control, setup: fixture.setup,
@@ -163,7 +163,7 @@ extension RenderEvidence {
             .frame(width: 860)
             .background(background)
             .environment(\.colorScheme, dark ? .dark : .light)
-            write(controlTab, to: directory, named: "window-control-\(suffix)")
+            write(controlTab, to: directory, named: "window-control-\(suffix)", dark: dark)
 
             let diagnostics = DiagnosticsContent(
                 model: fixture.monitor, control: fixture.control, setup: fixture.setup,
@@ -172,19 +172,81 @@ extension RenderEvidence {
             .frame(width: 860)
             .background(background)
             .environment(\.colorScheme, dark ? .dark : .light)
-            write(diagnostics, to: directory, named: "window-diagnostics-\(suffix)")
+            write(diagnostics, to: directory, named: "window-diagnostics-\(suffix)", dark: dark)
         }
     }
 
-    /// Renders one view to a PNG. The renderer is the same everywhere, so
-    /// the evidence commands differ only in what they build.
-    static func write(_ view: some View, to directory: URL, named name: String) {
-        let renderer = ImageRenderer(content: view)
-        renderer.scale = 2
-        guard let cgImage = renderer.cgImage,
-            let data = NSBitmapImageRep(cgImage: cgImage)
-                .representation(using: .png, properties: [:])
+    /// Renders one view to a PNG, through a real (offscreen) window.
+    ///
+    /// **This replaced `ImageRenderer`, and the reason is the finding that
+    /// ran through five phases of run log.** `ImageRenderer` draws SwiftUI
+    /// primitives and nothing else: every AppKit-backed control —
+    /// `ScrollView`, `TabView`, `DisclosureGroup`, `.link` buttons,
+    /// `Slider`, `Picker`, `TextField` — came out as a blank or a
+    /// placeholder. The workaround had been to hand-roll controls, which is
+    /// fine when the hand-rolled version is genuinely better and wrong when
+    /// it is not: a settings window should use the system's own slider,
+    /// with its accessibility and its familiar behaviour, and the camera
+    /// should be the thing that adapts.
+    ///
+    /// Hosting the view in an offscreen `NSWindow` and asking the view
+    /// hierarchy to draw itself (`cacheDisplay`) is how AppKit has always
+    /// photographed itself. It needs no screen recording permission — the
+    /// window is ours and the bitmap is ours — so invariant I2 is untouched.
+    static func write(
+        _ view: some View,
+        to directory: URL,
+        named name: String,
+        dark: Bool = false
+    ) {
+        let hosting = NSHostingView(rootView: view)
+        hosting.frame = CGRect(origin: .zero, size: hosting.fittingSize)
+
+        let window = NSWindow(
+            contentRect: hosting.frame, styleMask: [.borderless],
+            backing: .buffered, defer: false)
+        window.contentView = hosting
+        // Set on the window, not only in the SwiftUI environment: AppKit
+        // controls take their appearance from the window, which is why the
+        // old renders could not show a dark slider even when the SwiftUI
+        // around it was dark.
+        window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        window.layoutIfNeeded()
+        hosting.layoutSubtreeIfNeeded()
+
+        let bounds = hosting.bounds
+        guard bounds.width > 0, bounds.height > 0 else {
+            report("render failed: \(name)")
+            return
+        }
+
+        // A bitmap twice the size in pixels but the same size in points.
+        // The offscreen window is on no screen, so it would otherwise draw
+        // at 1x, and the rest of the evidence is 2x.
+        let scale = 2
+        guard
+            let representation = NSBitmapImageRep(
+                bitmapDataPlanes: nil,
+                pixelsWide: Int(bounds.width) * scale,
+                pixelsHigh: Int(bounds.height) * scale,
+                bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)
         else {
+            report("render failed: \(name)")
+            return
+        }
+        representation.size = bounds.size
+
+        guard let context = NSGraphicsContext(bitmapImageRep: representation) else {
+            report("render failed: \(name)")
+            return
+        }
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = context
+        hosting.displayIgnoringOpacity(bounds, in: context)
+        NSGraphicsContext.restoreGraphicsState()
+
+        guard let data = representation.representation(using: .png, properties: [:]) else {
             report("render failed: \(name)")
             return
         }
@@ -291,24 +353,7 @@ extension RenderEvidence {
             .background(scene.dark ? Color(white: 0.14) : Color(white: 0.97))
             .environment(\.colorScheme, scene.dark ? .dark : .light)
 
-            let renderer = ImageRenderer(content: view)
-            renderer.scale = 2
-
-            guard let cgImage = renderer.cgImage,
-                let data = NSBitmapImageRep(cgImage: cgImage)
-                    .representation(using: .png, properties: [:])
-            else {
-                report("render failed: \(scene.name)")
-                continue
-            }
-
-            let url = directory.appendingPathComponent("panel-\(scene.name).png")
-            do {
-                try data.write(to: url)
-                report("wrote \(url.path)")
-            } catch {
-                report("write failed for \(scene.name): \(error)")
-            }
+            write(view, to: directory, named: "panel-\(scene.name)", dark: scene.dark)
         }
     }
 

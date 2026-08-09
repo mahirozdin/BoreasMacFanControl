@@ -61,7 +61,7 @@ extension RenderEvidence {
         let fixture = settingsFixture()
 
         let tabs: [(String, AnyView)] = [
-            ("1-general", AnyView(GeneralSettings(store: fixture.store))),
+            ("1-general", AnyView(GeneralSettings(store: fixture.store, shortcuts: GlobalShortcuts()))),
             ("2-appearance", AnyView(AppearanceSettings())),
             (
                 "3-sensors",

@@ -166,6 +166,9 @@ make next            # tells you which task is next
 | `make check` | Runs every gate — must be green before pushing |
 | `make build` / `make test` | Swift packages |
 | `make lint` / `make format` | SwiftLint and swift-format |
+| `make smoke` | Hardware smoke test on a real Mac |
+
+The built application also answers a set of drill and render arguments used to reproduce the evidence in the run log — see [`docs/development/setup.md`](docs/development/setup.md#the-applications-own-commands).
 
 This repository uses a document driven workflow with machine enforced rules.
 Start at [`BOOT.md`](BOOT.md), then [`AGENTS.md`](AGENTS.md), then

@@ -117,6 +117,7 @@ enum HelperCommands {
             ("--curve-drill", HardwareDrills.curveDrill),
             ("--config-drill", ConfigurationDrill.run),
             ("--diagnostics-drill", HardwareDrills.diagnosticsDrill),
+            ("--shortcut-drill", ShortcutDrill.run),
         ]
         for drill in drills where arguments.contains(drill.flag) {
             drill.run(report)
@@ -178,6 +179,8 @@ struct BoreasApp: App {
     @State private var control: ControlModel
     @State private var visibility = StatusItemVisibilityModel()
     @State private var store: ConfigurationStore
+    @State private var shortcuts = GlobalShortcuts()
+    @Environment(\.openWindow) private var openWindowAction
 
     init() {
         // The configuration is read before anything reads it: the models
@@ -198,6 +201,40 @@ struct BoreasApp: App {
         }
     }
 
+    /// Registers whatever the configuration asks for, and routes what fires.
+    ///
+    /// Every action either shows something or asks for *more* cooling —
+    /// there is deliberately no shortcut that makes the machine quieter
+    /// unattended, because a combination pressed by accident from inside
+    /// another application should not be able to do that.
+    @MainActor
+    private func installShortcuts() {
+        shortcuts.onAction = { action in
+            switch action {
+            case .openMainWindow:
+                openMainWindow(id: MainWindow.windowID)
+            case .openSettings:
+                openMainWindow(id: SettingsWindow.windowID)
+            case .boost:
+                control.overrideDuty(
+                    1.0,
+                    until: Date().addingTimeInterval(Double(HotKeyAction.boostMinutes) * 60))
+            case .releaseToFirmware:
+                control.select(profileName: "System")
+            }
+        }
+        shortcuts.apply(store.configuration.shortcuts)
+    }
+
+    /// An `LSUIElement` application is never frontmost on its own, so a
+    /// window opened from a global key would otherwise appear behind
+    /// whatever the user was actually using.
+    @MainActor
+    private func openMainWindow(id: String) {
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        openWindowAction(id: id)
+    }
+
     var body: some Scene {
         MenuBarExtra {
             MenuBarPanel(model: model, setup: setup, control: control)
@@ -208,6 +245,7 @@ struct BoreasApp: App {
             MenuBarLabel(model: model, control: control)
                 .task {
                     model.start()
+                    installShortcuts()
                     // The visibility monitor lives at app level: the label
                     // itself is rendered to an image by MenuBarExtra, so
                     // nothing inside it can ever measure a window.
@@ -236,7 +274,9 @@ struct BoreasApp: App {
             ),
             id: SettingsWindow.windowID
         ) {
-            SettingsWindow(store: store, model: model, control: control, setup: setup)
+            SettingsWindow(
+                store: store, model: model, control: control, setup: setup,
+                shortcuts: shortcuts)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)

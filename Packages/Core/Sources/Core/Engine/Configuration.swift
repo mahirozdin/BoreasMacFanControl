@@ -84,13 +84,20 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
     /// The name of the profile arbitration falls back to.
     public var defaultProfileName: String
 
+    /// Global shortcuts, keyed by the action they perform (P6.10). Empty
+    /// by default: a system-wide key combination is a shared resource, and
+    /// taking two of them from someone who never asked is exactly the
+    /// behaviour that makes menu bar utilities unwelcome.
+    public var shortcuts: [HotKeyAction: HotKey]
+
     public init(
         schemaVersion: Int = ConfigurationFile.currentSchemaVersion,
         general: General = General(),
         safety: Safety = Safety(),
         profiles: [Profile] = BuiltInProfiles.all(),
         sensorOverrides: [String: SensorOverride] = [:],
-        defaultProfileName: String = BuiltInProfiles.defaultName
+        defaultProfileName: String = BuiltInProfiles.defaultName,
+        shortcuts: [HotKeyAction: HotKey] = [:]
     ) {
         self.schemaVersion = schemaVersion
         self.general = general
@@ -98,6 +105,7 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         self.profiles = profiles
         self.sensorOverrides = sensorOverrides
         self.defaultProfileName = defaultProfileName
+        self.shortcuts = shortcuts
     }
 
     /// The defaults this build starts from.
@@ -110,6 +118,7 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         case profiles
         case sensorOverrides
         case defaultProfileName
+        case shortcuts
     }
 
     /// Missing sections mean their defaults — a minimal file is a valid
@@ -131,7 +140,13 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
                 sensorOverrides: try container.decodeIfPresent(
                     [String: SensorOverride].self, forKey: .sensorOverrides) ?? [:],
                 defaultProfileName: try container.decodeIfPresent(
-                    String.self, forKey: .defaultProfileName) ?? BuiltInProfiles.defaultName
+                    String.self, forKey: .defaultProfileName) ?? BuiltInProfiles.defaultName,
+                // A shortcut the model refuses takes the whole section
+                // down with it rather than being silently dropped: a
+                // configuration that says one thing and does another is
+                // what the loader exists to prevent.
+                shortcuts: try container.decodeIfPresent(
+                    [HotKeyAction: HotKey].self, forKey: .shortcuts) ?? [:]
             )
         } else {
             // A foreign version: do not try to interpret the rest.

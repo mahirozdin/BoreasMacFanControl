@@ -12,13 +12,15 @@ import SwiftUI
 /// `HelperCommands` because these are the project's camera, not its
 /// features.
 ///
-/// **The camera's one rule: photograph content views, never containers.**
-/// Every AppKit-backed SwiftUI container found so far lays out nothing
-/// under `ImageRenderer` and produces a silently blank image —
-/// `DisclosureGroup`, `LazyVStack` and `.link` buttons in P6.02,
-/// `ScrollView` and `TabView` in P6.04. A blank render is the only warning
-/// there is, so views are structured with the container and its content
-/// apart, and the evidence renders the content.
+/// **The camera draws through a real window** (`write`, in
+/// `RenderWindowEvidence`). It used to use `ImageRenderer`, which draws
+/// SwiftUI primitives and nothing else: `DisclosureGroup`, `LazyVStack`,
+/// `.link` buttons, `ScrollView`, `TabView`, `Slider`, `Picker` and
+/// `TextField` all came out blank or as placeholders, and five phases of
+/// run log carried that as a known limitation. Hosting the view offscreen
+/// and asking AppKit to draw itself removed it. Views are still structured
+/// with scroll containers and their content apart — that turned out to be
+/// the better shape anyway — and the evidence renders the content.
 @MainActor
 enum RenderEvidence {
 
@@ -58,24 +60,7 @@ enum RenderEvidence {
         for entry in phases {
             let view = HelperSetupView(
                 model: HelperSetupModel(), fixedPhaseForRendering: entry.phase)
-            let renderer = ImageRenderer(content: view)
-            renderer.scale = 2
-
-            guard let cgImage = renderer.cgImage,
-                let data = NSBitmapImageRep(cgImage: cgImage)
-                    .representation(using: .png, properties: [:])
-            else {
-                report("render failed: \(entry.name)")
-                continue
-            }
-
-            let url = directory.appendingPathComponent("setup-\(entry.name).png")
-            do {
-                try data.write(to: url)
-                report("wrote \(url.path)")
-            } catch {
-                report("write failed for \(entry.name): \(error)")
-            }
+            write(view, to: directory, named: "setup-\(entry.name)")
         }
     }
 
@@ -166,42 +151,15 @@ enum RenderEvidence {
             .frame(height: 24)
             .background(Color(white: 0.92))
 
-            let renderer = ImageRenderer(content: label)
-            renderer.scale = 2
-
-            guard let cgImage = renderer.cgImage,
-                let data = NSBitmapImageRep(cgImage: cgImage)
-                    .representation(using: .png, properties: [:])
-            else {
-                report("render failed: \(variant.name)")
-                continue
-            }
-
-            let url = directory.appendingPathComponent("status-\(variant.name).png")
-            do {
-                try data.write(to: url)
-                report("wrote \(url.path)")
-            } catch {
-                report("write failed for \(variant.name): \(error)")
-            }
+            write(label, to: directory, named: "status-\(variant.name)")
         }
 
         // The space warning's content, same evidence rules as the states.
         let warning = StatusItemSpaceWarningView(visibility: StatusItemVisibilityModel())
             .background(Color(white: 0.97))
-        let warningRenderer = ImageRenderer(content: warning)
-        warningRenderer.scale = 2
-        if let cgImage = warningRenderer.cgImage,
-            let data = NSBitmapImageRep(cgImage: cgImage)
-                .representation(using: .png, properties: [:])
-        {
-            let url = directory.appendingPathComponent("status-8-warning.png")
-            try? data.write(to: url)
-            report("wrote \(url.path)")
-        } else {
-            report("render failed: warning")
-        }
+        write(warning, to: directory, named: "status-8-warning")
     }
+
     /// Renders the design-system swatch sheet in both appearances, same
     /// rationale as `setup`: deterministic, permission-free.
     static func design(into directory: URL) {
@@ -213,26 +171,9 @@ enum RenderEvidence {
         }
 
         for darkAppearance in [false, true] {
-            let renderer = ImageRenderer(
-                content: DesignEvidenceView(darkAppearance: darkAppearance))
-            renderer.scale = 2
-
-            guard let cgImage = renderer.cgImage,
-                let data = NSBitmapImageRep(cgImage: cgImage)
-                    .representation(using: .png, properties: [:])
-            else {
-                report("render failed: \(darkAppearance ? "dark" : "light")")
-                continue
-            }
-
-            let url = directory.appendingPathComponent(
-                "design-\(darkAppearance ? "dark" : "light").png")
-            do {
-                try data.write(to: url)
-                report("wrote \(url.path)")
-            } catch {
-                report("write failed: \(error)")
-            }
+            write(
+                DesignEvidenceView(darkAppearance: darkAppearance), to: directory,
+                named: "design-\(darkAppearance ? "dark" : "light")", dark: darkAppearance)
         }
     }
 }

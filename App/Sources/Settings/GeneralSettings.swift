@@ -6,6 +6,7 @@ import SwiftUI
 /// the application starts with the session.
 struct GeneralSettings: View {
     let store: ConfigurationStore
+    let shortcuts: GlobalShortcuts
 
     @State private var launchesAtLogin = SMAppService.mainApp.status == .enabled
     @State private var loginItemProblem: String?
@@ -73,6 +74,8 @@ struct GeneralSettings: View {
                     .toggleStyle(.switch)
                 }
             }
+
+            ShortcutSettings(store: store, shortcuts: shortcuts)
 
             SettingsSection(title: languageTitle) {
                 Text(

@@ -16,10 +16,11 @@ struct SettingsWindow: View {
     let model: MonitorModel
     let control: ControlModel
     let setup: HelperSetupModel
+    let shortcuts: GlobalShortcuts
 
     var body: some View {
         TabView {
-            SettingsScroll { GeneralSettings(store: store) }
+            SettingsScroll { GeneralSettings(store: store, shortcuts: shortcuts) }
                 .tabItem { tabLabel(generalTitle, systemImage: "gearshape") }
 
             SettingsScroll { AppearanceSettings() }
