@@ -96,3 +96,39 @@ This feature is tracked as a deferred decision in `ARCHITECTURE.md` §12.
 If the user asks, a **local** diagnostics file is generated. **There is no automatic upload** — the user inspects the file and attaches it to an issue if they choose.
 
 Contents: anonymous system summary · application log · configuration (contains no secret values) · sensor and fan snapshot · discovered hardware map.
+
+**Implementation (P7.05).** The decisions are in
+[`Core/Presentation/SupportReport.swift`](../../Packages/Core/Sources/Core/Presentation/SupportReport.swift)
+and the gathering in
+[`App/Sources/Window/SupportReportBuilder.swift`](../../App/Sources/Window/SupportReportBuilder.swift);
+the button is in the Diagnostics tab, deferred there by P6.09. Markdown, because
+it is going into an issue. Evidence: `--report-drill`.
+
+### Built from an allowlist, not from a dump with redactions
+
+The difference is the whole design. A dump you then clean is a dump that leaks
+the field somebody forgot to think about — and there are three concrete things to
+forget here, each **found rather than imagined**:
+
+| Leak | Where it lives | What the report does |
+|---|---|---|
+| The drive's **serial number** | Directly beside its model in the IO registry — P7.03's probe turned it up while looking for something else | `ReportedSensor`/`Hardware` have no serial field at all; the model and firmware are named individually rather than the property dictionary being passed along |
+| The user's **account name** | Inside any absolute path (`/Users/…`) | `redacted(_:)` replaces the name and keeps the path's shape, which is usually the useful part |
+| The **machine's name** | `Host.current().localizedName`, almost always a person's name | No field exists that could hold it |
+
+Every string that came from the system is redacted **on the way in**, because a
+value that was never allowed in cannot be missed on the way out. `leaks(in:)` then
+audits the finished text as a second line of defence — and if it ever finds
+something, the report says so in its own body rather than the user discovering it
+after posting the file.
+
+**Proving a value is absent means knowing it**, so the builder reads this machine's
+drive serial expressly to check it did not survive. It is never stored, never
+rendered, and never leaves that function except as a needle for the audit.
+
+### There is no submission path, and that is enforced
+
+`gate-privacy` refuses a network API anywhere outside `App/Sources/Automation/`, so
+the promise the report prints on its own first line is held by a gate rather than
+by intention. The button **writes and reveals** — it never opens a mail client, a
+browser or a form. What happens next is entirely the user's.

@@ -123,6 +123,7 @@ enum HelperCommands {
             ("--layout-drill", LayoutDrill.run),
             ("--recording-drill", RecordingDrill.run),
             ("--notification-drill", NotificationDrill.run),
+            ("--report-drill", SupportReportDrill.run),
         ]
         for drill in drills where arguments.contains(drill.flag) {
             drill.run(report)
@@ -285,7 +286,8 @@ struct BoreasApp: App {
             id: MainWindow.windowID
         ) {
             MainWindow(
-                model: model, control: control, setup: setup, recording: recording)
+                model: model, control: control, setup: setup, recording: recording,
+                store: store)
         }
         .defaultPosition(.center)
 

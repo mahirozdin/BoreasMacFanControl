@@ -17,13 +17,14 @@ struct DiagnosticsTab: View {
     let control: ControlModel
     let setup: HelperSetupModel
     var recording: RecordingModel?
+    var store: ConfigurationStore?
     var now: Date = Date()
 
     var body: some View {
         ScrollView {
             DiagnosticsContent(
                 model: model, control: control, setup: setup, recording: recording,
-                now: now)
+                store: store, now: now)
         }
     }
 }
@@ -36,7 +37,13 @@ struct DiagnosticsContent: View {
     /// working: without it the log access section is simply absent, which is the
     /// honest thing for a build that cannot offer it.
     var recording: RecordingModel?
+    /// Optional like `recording`: without it the report carries `{}` for the
+    /// configuration rather than the section being absent, and every render
+    /// fixture keeps working.
+    var store: ConfigurationStore?
     var now: Date = Date()
+
+    @State private var reportName: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -73,9 +80,82 @@ struct DiagnosticsContent: View {
             Divider()
             logAccess
             Divider()
+            supportReport
+            Divider()
             pendingChecks
         }
         .padding(18)
+    }
+
+    /// The support report, deferred here by P6.09 and delivered by P7.05.
+    ///
+    /// **A local file, and there is no code in the product that could upload it** —
+    /// `gate-privacy` refuses a network API outside `App/Sources/Automation/`, so
+    /// the promise the report prints on its own first line is held by a gate.
+    ///
+    /// The button writes and reveals; it never opens a mail client, a browser or a
+    /// form. What happens next is entirely the user's, which is the whole point of
+    /// there being no automatic submission.
+    private var supportReport: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(
+                String(
+                    localized: "diagnostics.report.title", defaultValue: "Support report",
+                    comment: "Heading of the support report section")
+            )
+            .font(.callout)
+            .fontWeight(.medium)
+
+            Text(
+                String(
+                    localized: "diagnostics.report.detail",
+                    defaultValue: """
+                        Writes one file describing this Mac's sensors, fans and settings, \
+                        so a problem can be looked at without guessing. It is saved on \
+                        this Mac and **never sent anywhere** — no machine name, no serial \
+                        number and no account name goes into it. Read it before you share it.
+                        """,
+                    comment: "Explains what the support report contains and that it stays local")
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 8) {
+                Button {
+                    writeSupportReport()
+                } label: {
+                    Text(
+                        String(
+                            localized: "diagnostics.report.write",
+                            defaultValue: "Create Support Report",
+                            comment: "Button that writes the local support report"))
+                }
+                if let reportName {
+                    Text(
+                        String(
+                            localized: "diagnostics.report.written",
+                            defaultValue: "Saved as \(reportName)",
+                            comment: "Confirms the support report was written, naming the file")
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private func writeSupportReport() {
+        let url = SupportReportBuilder.write(
+            model: model, control: control, store: store,
+            diagnostics: findings.map { "\($0.title): \($0.finding.finding.text)" },
+            now: now)
+        guard let url else { return }
+        reportName = url.lastPathComponent
+        // Revealed rather than opened: the user should see the file and decide,
+        // and a Markdown file opened in whatever is registered for it is a
+        // surprise rather than a choice.
+        NSWorkspace.shared.activateFileViewerSelecting([url])
     }
 
     /// Log access, deferred here by P6.09 and delivered by P7.02.

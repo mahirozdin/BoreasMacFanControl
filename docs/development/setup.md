@@ -84,6 +84,7 @@ BOREAS=~/Library/Developer/Xcode/DerivedData/Boreas-*/Build/Products/Debug/Borea
 | `--a11y-drill` | The drawn colours are exactly Core's, and their measured contrast clears the requirement each role carries — in four appearances (P6.12) |
 | `--layout-drill` | No fixed-width text container clips its content in any shipped language, plus a 1.4× expansion budget (P6.13) |
 | `--recording-drill` | Recordings land on disk, rotate, and the disk ceiling really deletes — proven against real files rather than fake sizes (P7.02) |
+| `--report-drill` | A real support report from this Mac, with its actual account name, machine name and drive serial proven absent (P7.05) |
 | `--notification-drill` | No permission is requested at launch; a panic survives every noise-control mechanism; a refused permission switches the feature back off; settings persist and a hostile file is clamped (P7.01) |
 | **Render evidence — writes PNGs into a directory** | |
 | `--render-setup <dir>` | The helper setup window in every phase |

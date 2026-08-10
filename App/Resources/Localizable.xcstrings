@@ -2215,6 +2215,78 @@
         }
       }
     },
+    "diagnostics.report.detail": {
+      "comment": "Explains what the support report contains and that it stays local",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writes one file describing this Mac's sensors, fans and settings, so a problem can be looked at without guessing. It is saved on this Mac and **never sent anywhere** — no machine name, no serial number and no account name goes into it. Read it before you share it."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu Mac'in sensörlerini, fanlarını ve ayarlarını anlatan tek bir dosya yazar; böylece bir sorun tahmine dayanmadan incelenebilir. Dosya bu Mac'te saklanır ve **hiçbir yere gönderilmez** — içine makine adı, seri numarası ya da hesap adı girmez. Paylaşmadan önce okuyun."
+          }
+        }
+      }
+    },
+    "diagnostics.report.title": {
+      "comment": "Heading of the support report section",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Support report"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destek raporu"
+          }
+        }
+      }
+    },
+    "diagnostics.report.write": {
+      "comment": "Button that writes the local support report",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create Support Report"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destek Raporu Oluştur"
+          }
+        }
+      }
+    },
+    "diagnostics.report.written": {
+      "comment": "Confirms the support report was written, naming the file",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved as %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydedildi: %@"
+          }
+        }
+      }
+    },
     "diagnostics.step.battery": {
       "comment": "Suggested next step for a battery notice",
       "extractionState": "manual",

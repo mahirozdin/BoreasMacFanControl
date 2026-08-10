@@ -13,6 +13,7 @@ struct MainWindow: View {
     let control: ControlModel
     let setup: HelperSetupModel
     var recording: RecordingModel?
+    var store: ConfigurationStore?
 
     var body: some View {
         TabView {
