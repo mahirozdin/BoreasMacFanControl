@@ -80,6 +80,39 @@ gate-language: ## The repository is written in English
 gate-coverage: ## Core line coverage >= 85% (blocking)
 	@$(GATES)/check-coverage.sh
 
+# ---------------------------------------------------------------------------
+# P7.15 — CI ran red for 27 consecutive pushes and nothing said so. Every run
+# log from P4 onward recorded `make check` green, which it was; nobody looked
+# at the remote, because nothing ever asked. This is what asks.
+#
+# Deliberately NOT part of `make check`: gates must run offline and must not go
+# red because of a remote this machine cannot reach. It belongs to the BOOT.md
+# snapshot instead, where "if anything is red, fix that first" already applies.
+# A missing or unauthenticated `gh` skips rather than fails — punishing an
+# environment without it would teach people to ignore the check.
+# ---------------------------------------------------------------------------
+.PHONY: ci-status
+ci-status: ## The latest CI run's conclusion — a failed run exits non-zero
+	@command -v gh >/dev/null 2>&1 \
+		|| { echo "○ SKIP: gh not installed — CI status unknown"; exit 0; }
+	@gh auth status >/dev/null 2>&1 \
+		|| { echo "○ SKIP: gh not authenticated — CI status unknown"; exit 0; }
+	@LINE=$$(gh run list --limit 1 \
+		--json status,conclusion,displayTitle,url \
+		-q '.[] | "\(.status)\t\(.conclusion)\t\(.displayTitle)\t\(.url)"' 2>/dev/null); \
+	if [ -z "$$LINE" ]; then echo "○ SKIP: no CI run found"; exit 0; fi; \
+	STATE=$$(printf '%s' "$$LINE" | cut -f1); \
+	RESULT=$$(printf '%s' "$$LINE" | cut -f2); \
+	TITLE=$$(printf '%s' "$$LINE" | cut -f3); \
+	URL=$$(printf '%s' "$$LINE" | cut -f4); \
+	if [ "$$STATE" != "completed" ]; then \
+		echo "◍ CI $$STATE — $$TITLE"; echo "    $$URL"; \
+	elif [ "$$RESULT" = "success" ]; then \
+		echo "✓ CI green — $$TITLE"; \
+	else \
+		echo "✗ CI $$RESULT — $$TITLE"; echo "    $$URL"; exit 1; \
+	fi
+
 .PHONY: bootstrap
 bootstrap: ## Set up and verify the local development environment
 	@scripts/bootstrap.sh
@@ -100,6 +133,20 @@ cli-test: ## Every boreas command, against real state (needs the CLI built)
 generate: ## Generate the Xcode project from project.yml
 	@command -v xcodegen >/dev/null 2>&1 \
 		|| { echo "✗ xcodegen missing. Run 'brew install xcodegen'."; exit 1; }
+	@# project.yml names Local.xcconfig as the config file for BOTH
+	@# configurations, and that file is git ignored because it carries a team
+	@# identifier. XcodeGen refuses a spec whose config file is absent, so a
+	@# fresh clone could not generate at all — which is what had CI red from
+	@# 2026-08-04 (the commit that introduced signing) until P7.15 found it.
+	@# Seeding from the committed example makes an unsigned build the default
+	@# instead of a hard failure, which is the state ADR 0019 already describes.
+	@# Announced rather than silent: a developer must know an empty team
+	@# identifier is why the privileged helper will not run.
+	@if [ ! -f Local.xcconfig ]; then \
+		cp Local.xcconfig.example Local.xcconfig; \
+		echo "→ Local.xcconfig created from the example — unsigned build."; \
+		echo "  Fill in DEVELOPMENT_TEAM to build the privileged helper (ADR 0019)."; \
+	fi
 	@xcodegen generate
 
 PACKAGES := Core SharedIPC HardwareKit

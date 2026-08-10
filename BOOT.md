@@ -74,7 +74,26 @@ grep -nE 'BLOCKED' TODO.md
 grep -nE '^\| M[0-9]+ .*OPEN' TODO.md
 ```
 
-### 3.3 Risky tracked files
+### 3.3 Is the remote green
+
+```bash
+make ci-status
+```
+
+**`make check` passing locally does not mean CI passed.** They are different
+machines running different steps: the gates run offline, CI additionally
+generates the Xcode project, builds the app and the CLI, and runs the layout
+test. A green local run says nothing about any of those.
+
+This step exists because CI was **red for 27 consecutive pushes** (2026-08-04 to
+2026-08-10) while every run log in that window correctly recorded `make check`
+green. Nothing was lying; nothing was asking either. A fresh clone could not
+generate the project at all, and the failure was invisible from here (P7.15).
+
+Skips cleanly when `gh` is absent or unauthenticated. It is **not** part of
+`make check` — a gate must not go red because a remote is unreachable.
+
+### 3.4 Risky tracked files
 
 ```bash
 # Has a secret or signing material been committed
@@ -167,6 +186,7 @@ git push
 BOOT complete.
 - Directory: <pwd> - Branch: <branch> - Last commit: <hash> <summary>
 - Gates: make check -> <PASS / FAIL: which one>
+- CI: make ci-status -> <green / failure + run URL / SKIP + reason>
 - Active phase: P<n> (<status>) - <theme>
 - Next task: P<n>.<nn> - <title>
 - Blocked: <manual task numbers, or "none">
