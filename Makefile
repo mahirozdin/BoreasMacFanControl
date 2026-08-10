@@ -180,21 +180,50 @@ PACKAGES := Core SharedIPC HardwareKit
 # ----------------------------------------------------------------------------
 
 .PHONY: build
+# Same treatment as `test` below, and it needed it more (P7.12): this took
+# `tail -1` of the raw output, which on a failed build is SwiftPM's `error:
+# fatalError` trailer — and then printed **no** output at all, so a broken
+# build said only "fatalError" and "failed to build". P7.03 gave `test` its
+# full-output branch; `build` never got one.
 build: ## Build all SPM packages
 	@for p in $(PACKAGES); do \
 		printf '  %-12s ' "$$p"; \
 		out=$$( cd Packages/$$p && swift build 2>&1 ); status=$$?; \
-		printf '%s\n' "$$out" | tail -1; \
-		if [ $$status -ne 0 ]; then echo "  ✗ $$p failed to build"; exit 1; fi; \
+		line=$$(printf '%s\n' "$$out" | grep -E ':[0-9]+:[0-9]+: error:' | head -1); \
+		[ -n "$$line" ] || line=$$(printf '%s\n' "$$out" | tail -1); \
+		printf '%s\n' "$$line"; \
+		if [ $$status -ne 0 ]; then \
+			echo "  ✗ $$p failed to build — full output follows"; \
+			printf '%s\n' "$$out" | sed 's/^/      /'; \
+			exit 1; \
+		fi; \
 	done
 
 .PHONY: test
+# P7.12 — why the summary line used to be useless.
+#
+# `swift test` ends a FAILED BUILD with the line `error: fatalError`. It is
+# SwiftPM's own generic trailer and says nothing; the real diagnostic is above
+# it. Taking `grep 'error:' | tail -1` therefore picked the trailer every time,
+# which is how six days of `HardwareKit error: fatalError` came to look like a
+# runtime crash inside HardwareKit — a hardware path that was searched for
+# through P6.10, P7.01, P7.02 and P7.03 and never existed. It means one thing:
+# **the package did not build.**
+#
+# So a real `file:line:col: error:` diagnostic is preferred, the trailer is
+# used only when there is nothing better, and the full output still follows on
+# failure (P7.03).
 test: ## Run all tests
 	@for p in $(PACKAGES); do \
 		if [ -d "Packages/$$p/Tests" ]; then \
 			printf '  %-12s ' "$$p"; \
 			out=$$( cd Packages/$$p && swift test 2>&1 ); status=$$?; \
-			printf '%s\n' "$$out" | grep -E 'Test run with|error:' | tail -1; \
+			line=$$(printf '%s\n' "$$out" | grep -E ':[0-9]+:[0-9]+: error:' | head -1); \
+			[ -n "$$line" ] || line=$$(printf '%s\n' "$$out" \
+				| grep -E 'Test run with|error:' | grep -v 'error: fatalError' | tail -1); \
+			[ -n "$$line" ] || line=$$(printf '%s\n' "$$out" \
+				| grep -E 'Test run with|error:' | tail -1); \
+			printf '%s\n' "$$line"; \
 			if [ $$status -ne 0 ]; then \
 				echo "  ✗ $$p tests failed — full output follows"; \
 				printf '%s\n' "$$out" | sed 's/^/      /'; \

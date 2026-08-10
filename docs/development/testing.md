@@ -87,6 +87,35 @@ The development hardware is a **single model**: Mac mini (M4, 2024) — single f
 
 **Tests that require hardware do not run in CI.** Thanks to the Mock layer, the entire engine is still tested.
 
+## Reading a failure from `make test` and `make build`
+
+> **`error: fatalError` is not a crash.** It is the line SwiftPM prints when a
+> package **fails to build**, and it says nothing about why. The real diagnostic
+> is above it.
+
+This is written down because the project chased it for four tasks. Both targets
+summarised a run with the last line matching `error:` — which is always that
+trailer — so a build failure in `HardwareKit` reported as
+`HardwareKit error: fatalError` and read like a runtime crash inside the
+hardware layer. P6.10, P7.01, P7.02 and P7.03 each looked for a nondeterministic
+hardware path; there was never one. It meant *the package did not compile*.
+
+Since P7.12 both targets prefer a real `file:line:column: error:` diagnostic for
+the summary line and fall back to the trailer only when there is nothing better,
+and both print the **full captured output** on failure — `make test` since P7.03,
+`make build` since P7.12, which had never printed any.
+
+Two hypotheses are recorded as **disproven**, so nobody spends the time again:
+
+| Hypothesis | Why it is dead |
+|---|---|
+| A runtime `fatalError` on a nondeterministic hardware path | The message is a build failure, not a run. `HardwareKit`'s tests touch no hardware, and its only `precondition` guards an internally built buffer |
+| Two SwiftPM invocations racing over one build directory | Two concurrent `swift test` runs in the same package were measured: SwiftPM serialises them, both exit 0 |
+
+What is *not* known is why those specific builds failed: the diagnostics were
+discarded before anyone could read them, and it has not recurred since the
+reporting was fixed. A recurrence now names itself.
+
 ## Evidence rule
 
 If the verification could not be run, **`NOT RUN` + the reason** goes into the Run Log and the task is not marked `DONE`. "I wrote it, it probably works" is forbidden.
