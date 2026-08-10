@@ -192,6 +192,25 @@ Start at [`BOOT.md`](BOOT.md), then [`AGENTS.md`](AGENTS.md), then
 
 Current status and next task: [`TODO.md`](TODO.md).
 
+## Troubleshooting
+
+Some of what looks like a fault is a safety guarantee doing its job, so the
+short version is worth having in front of you:
+
+| What you see | Most likely reason |
+|---|---|
+| Fan speeds never change | Fan control is not enabled — reading needs no privileges, writing needs the helper. Without it Boreas is a monitor and **shows no error**, by design |
+| Helper stuck "waiting for approval" | macOS owns the second step: System Settings → General → Login Items & Extensions |
+| The profile never switches by itself | A manual choice outranks every trigger and does not expire unless you gave it a time limit. `boreas profile --auto` hands the decision back |
+| Speeds revert on their own | The watchdog. On quit, crash, sleep or log out the fans go back to the firmware unconditionally — that is the feature, not a bug |
+| Fans pinned at full speed | The panic threshold or the macOS thermal state. Both release on their own; neither can be switched off |
+| Sensors show as uncategorised | Sensor keys are opaque codes and unmapped ones are shown rather than hidden, so they can be reported |
+| No notifications | Nothing is requested until you turn alerts on, and a refusal turns the switch back off |
+| A setting did not stick | A profile chosen from the CLI is live only, on purpose. A broken config file falls back to the last valid state |
+
+Full detail, including what to collect before opening an issue:
+[`docs/operations/troubleshooting.md`](docs/operations/troubleshooting.md).
+
 ## Questions people actually ask
 
 **Why is my Mac running hot?**

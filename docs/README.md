@@ -52,6 +52,7 @@
 | [`observability.md`](operations/observability.md) | Logs, measurement recording, metrics |
 | [`notifications.md`](operations/notifications.md) | Notifications and automation hooks |
 | [`diagnostics.md`](operations/diagnostics.md) | How is hardware health reported? |
+| [`troubleshooting.md`](operations/troubleshooting.md) | Something is not behaving — what is wrong, and what is deliberate? |
 
 ### `release/` — When and how is it released?
 

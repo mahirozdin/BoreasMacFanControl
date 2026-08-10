@@ -25,6 +25,11 @@
 
 **`.xcodeproj` is never committed** — it is generated from `project.yml` (T5).
 
+The blueprint's §17.1 tree placed `troubleshooting.md` at the top of a flat
+`docs/`; it lives at [`docs/operations/troubleshooting.md`](../operations/troubleshooting.md)
+because P0 replaced that flat tree with topic directories, and its nearest
+sibling is `diagnostics.md`.
+
 ## Product repository files
 
 These are **work items**, tracked in `TODO.md`:
