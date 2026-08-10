@@ -76,7 +76,7 @@ BOREAS=~/Library/Developer/Xcode/DerivedData/Boreas-*/Build/Products/Debug/Borea
 | `--control-drill` | The manual duty path end to end (P4.08) |
 | `--profile-drill` | Selecting a profile drives the fan along its curve (P6.02) |
 | `--override-drill` | A timed override expires back to the **engine**, not the firmware (P6.05) |
-| `--curve-drill` | An edited curve reaches the fans within a cycle (P6.06). **Its tolerance is temperature-dependent** — reliable only where the test curve saturates, and it misses by ~370 rpm on the curve's slope because the fan's own cooling moves the target underneath it. Measured in P7.01, tracked as P7.11 |
+| `--curve-drill` | An edited curve reaches the fans within a cycle (P6.06). Asks **two separate questions** since P7.11: *provenance* — the engine's command falls inside the band the edited curve spans over the temperatures observed during the run, which is the whole set of answers a monotone curve could have given, so no single instant has to be guessed at; and *tracking* — the settled `(target, actual)` pairs agree, reusing the cycle-late sampling from P6.09. It no longer recomputes an expectation from a temperature the fan has already changed, and the 350 rpm tolerance that came with that is gone |
 | `--config-drill` | Settings survive a restart; a broken file falls back; a hostile one is clamped (P6.08) |
 | `--diagnostics-drill` | A healthy fan is not accused — the false positive risk (P6.09) |
 | `--shortcut-drill` | Global shortcuts register with **no accessibility permission** (P6.10) |
