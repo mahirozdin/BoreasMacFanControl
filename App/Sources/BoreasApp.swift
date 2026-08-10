@@ -121,6 +121,7 @@ enum HelperCommands {
             ("--trigger-drill", TriggerDrill.run),
             ("--a11y-drill", AccessibilityDrill.run),
             ("--layout-drill", LayoutDrill.run),
+            ("--recording-drill", RecordingDrill.run),
             ("--notification-drill", NotificationDrill.run),
         ]
         for drill in drills where arguments.contains(drill.flag) {
@@ -185,6 +186,7 @@ struct BoreasApp: App {
     @State private var store: ConfigurationStore
     @State private var shortcuts = GlobalShortcuts()
     @State private var notifications: NotificationModel
+    @State private var recording: RecordingModel
     @Environment(\.openWindow) private var openWindowAction
 
     init() {
@@ -203,6 +205,9 @@ struct BoreasApp: App {
         _model = State(initialValue: monitor)
         _control = State(initialValue: ControlModel(monitor: monitor, store: configuration))
         _notifications = State(initialValue: NotificationModel(store: configuration))
+        let recorder = RecordingModel(store: configuration)
+        MainActor.assumeIsolated { recorder.flushOnTermination() }
+        _recording = State(initialValue: recorder)
         // Handled before any window exists so the commands can run from a
         // terminal without the menu bar item appearing.
         if MainActor.assumeIsolated({ HelperCommands.handleIfPresent() }) {
@@ -258,8 +263,9 @@ struct BoreasApp: App {
                     // Reads the permission the system already holds; it never
                     // asks. Asking happens only from the settings switch.
                     notifications.refreshAuthorization()
-                    model.onCycle = { [notifications, model, control] in
+                    model.onCycle = { [notifications, recording, model, control] in
                         notifications.observe(monitor: model, control: control)
+                        recording.observe(monitor: model, control: control)
                     }
                     // The visibility monitor lives at app level: the label
                     // itself is rendered to an image by MenuBarExtra, so
@@ -277,7 +283,8 @@ struct BoreasApp: App {
             ),
             id: MainWindow.windowID
         ) {
-            MainWindow(model: model, control: control, setup: setup)
+            MainWindow(
+                model: model, control: control, setup: setup, recording: recording)
         }
         .defaultPosition(.center)
 
@@ -291,7 +298,8 @@ struct BoreasApp: App {
         ) {
             SettingsWindow(
                 store: store, model: model, control: control, setup: setup,
-                shortcuts: shortcuts, notifications: notifications)
+                shortcuts: shortcuts, notifications: notifications,
+                recording: recording)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)

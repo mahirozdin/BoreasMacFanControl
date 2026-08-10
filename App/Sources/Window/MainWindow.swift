@@ -12,6 +12,7 @@ struct MainWindow: View {
     let model: MonitorModel
     let control: ControlModel
     let setup: HelperSetupModel
+    var recording: RecordingModel?
 
     var body: some View {
         TabView {
@@ -39,17 +40,20 @@ struct MainWindow: View {
                     }
                 }
 
-            DiagnosticsTab(model: model, control: control, setup: setup)
-                .tabItem {
-                    Label {
-                        Text(
-                            String(
-                                localized: "window.tab.diagnostics", defaultValue: "Diagnostics",
-                                comment: "Main window tab showing hardware checks and a summary"))
-                    } icon: {
-                        Image(systemName: "stethoscope")
-                    }
+            DiagnosticsTab(
+                model: model, control: control, setup: setup,
+                recording: recording
+            )
+            .tabItem {
+                Label {
+                    Text(
+                        String(
+                            localized: "window.tab.diagnostics", defaultValue: "Diagnostics",
+                            comment: "Main window tab showing hardware checks and a summary"))
+                } icon: {
+                    Image(systemName: "stethoscope")
                 }
+            }
         }
         .frame(minWidth: 760, idealWidth: 860, minHeight: 580, idealHeight: 680)
     }

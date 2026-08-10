@@ -465,6 +465,48 @@
           }
         ]
       }
+    },
+    "recording": {
+      "type": "object",
+      "description": "Measurement recording (P7.02). Optional and additive: a file without this section is valid and means the defaults, which leave recording OFF — docs/operations/observability.md calls it \"measurement recording, at the user's request\". Files are written to Application Support/Boreas/Recordings and nothing is ever sent anywhere.",
+      "properties": {
+        "isEnabled": {
+          "type": "boolean",
+          "description": "False by default. Recording writes files to the user's disk, so it waits to be asked."
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "jsonl",
+            "csv"
+          ],
+          "description": "jsonl is the default: it survives schema evolution and a file cut short by a power loss is readable up to its last complete line. csv fixes its columns when a file starts, so a sensor that appears later in the day is not in that file."
+        },
+        "retentionDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365,
+          "description": "How long a file is kept. A preference — diskCeilingBytes overrides it. Today's file never expires, whatever this is set to."
+        },
+        "diskCeilingBytes": {
+          "type": "integer",
+          "minimum": 10000000,
+          "maximum": 20000000000,
+          "description": "The HARD limit on everything the recorder has written. When the total exceeds it the oldest files are deleted until it does not, even when they are newer than retentionDays — retention is a preference, this is a promise not to fill the disk. The file currently being written is never deleted."
+        },
+        "maximumFileBytes": {
+          "type": "integer",
+          "minimum": 1000000,
+          "maximum": 1000000000,
+          "description": "A file rotates to the next sequence number once it passes this size, so no single file grows unbounded within a day."
+        },
+        "intervalSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "description": "How often a sample is written. Independent of the monitor's sampling interval: two seconds is right for a live chart and wasteful for a file read a week later."
+        }
+      }
     }
   },
   "additionalProperties": true

@@ -16,11 +16,14 @@ struct DiagnosticsTab: View {
     let model: MonitorModel
     let control: ControlModel
     let setup: HelperSetupModel
+    var recording: RecordingModel?
     var now: Date = Date()
 
     var body: some View {
         ScrollView {
-            DiagnosticsContent(model: model, control: control, setup: setup, now: now)
+            DiagnosticsContent(
+                model: model, control: control, setup: setup, recording: recording,
+                now: now)
         }
     }
 }
@@ -29,6 +32,10 @@ struct DiagnosticsContent: View {
     let model: MonitorModel
     let control: ControlModel
     let setup: HelperSetupModel
+    /// Optional so every render fixture and drill that builds this tab keeps
+    /// working: without it the log access section is simply absent, which is the
+    /// honest thing for a build that cannot offer it.
+    var recording: RecordingModel?
     var now: Date = Date()
 
     var body: some View {
@@ -64,9 +71,58 @@ struct DiagnosticsContent: View {
             }
 
             Divider()
+            logAccess
+            Divider()
             pendingChecks
         }
         .padding(18)
+    }
+
+    /// Log access, deferred here by P6.09 and delivered by P7.02.
+    ///
+    /// It reveals the folder rather than showing the contents inline, and that is
+    /// the whole design: a log viewer inside the application would have to decide
+    /// what to redact, and the honest answer is that the user's own tools are
+    /// better at reading a file than anything built here would be. Revealing a
+    /// folder needs no permission — it is theirs, and the act is theirs.
+    @ViewBuilder
+    private var logAccess: some View {
+        if let recording {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(
+                    String(
+                        localized: "diagnostics.logs.title", defaultValue: "Recordings",
+                        comment: "Heading of the recording access section in diagnostics")
+                )
+                .font(.callout)
+                .fontWeight(.medium)
+
+                Text(
+                    String(
+                        localized: "diagnostics.logs.detail",
+                        defaultValue: """
+                            \(recording.status.fileCount) recording file(s) on this Mac, \
+                            \(recording.status.totalBytes / 1_000_000) MB. Nothing is sent \
+                            anywhere; recording is switched on in Settings and off by default.
+                            """,
+                        comment: "Says how many recordings exist and that they stay local")
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    recording.revealInFinder()
+                } label: {
+                    Text(
+                        String(
+                            localized: "diagnostics.logs.reveal",
+                            defaultValue: "Show in Finder",
+                            comment: "Button opening the recordings folder from diagnostics"))
+                }
+            }
+            .onAppear { recording.refreshStatus() }
+        }
     }
 
     // MARK: - Running the checks

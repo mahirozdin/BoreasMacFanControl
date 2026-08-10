@@ -1765,6 +1765,60 @@
         }
       }
     },
+    "diagnostics.logs.detail": {
+      "comment": "Says how many recordings exist and that they stay local",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld recording file(s) on this Mac, %lld MB. Nothing is sent anywhere; recording is switched on in Settings and off by default."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu Mac'te %1$lld kayıt dosyası var, %2$lld MB. Hiçbir şey hiçbir yere gönderilmez; kayıt Ayarlar'dan açılır ve varsayılan olarak kapalıdır."
+          }
+        }
+      }
+    },
+    "diagnostics.logs.reveal": {
+      "comment": "Button opening the recordings folder from diagnostics",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show in Finder"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder'da Göster"
+          }
+        }
+      }
+    },
+    "diagnostics.logs.title": {
+      "comment": "Heading of the recording access section in diagnostics",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recordings"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kayıtlar"
+          }
+        }
+      }
+    },
     "diagnostics.pending.detail": {
       "comment": "Explains which diagnostic checks are missing and why",
       "extractionState": "manual",
@@ -4825,6 +4879,366 @@
         }
       }
     },
+    "settings.record.ceiling": {
+      "comment": "Label of the recording disk ceiling stepper",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Never use more than"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullanılacak en fazla alan"
+          }
+        }
+      }
+    },
+    "settings.record.ceiling.note": {
+      "comment": "Explains that the disk ceiling overrides the retention setting",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This limit wins over the one above it. If recordings reach it, the oldest are deleted even when they are newer than the retention period."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sınır üstündekine üstün gelir. Kayıtlar bu boyuta ulaşırsa, saklama süresinden daha yeni olsalar bile en eskiler silinir."
+          }
+        }
+      }
+    },
+    "settings.record.ceiling.value": {
+      "comment": "The recording disk ceiling in megabytes",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld MB"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld MB"
+          }
+        }
+      }
+    },
+    "settings.record.enable": {
+      "comment": "Main switch for measurement recording",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record measurements to a file"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ölçümleri dosyaya kaydet"
+          }
+        }
+      }
+    },
+    "settings.record.format": {
+      "comment": "Picker choosing the recording file format",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Format"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Biçim"
+          }
+        }
+      }
+    },
+    "settings.record.format.csv": {
+      "comment": "Recording format: comma separated values",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CSV"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CSV"
+          }
+        }
+      }
+    },
+    "settings.record.format.csv.note": {
+      "comment": "Explains what the CSV recording format is good for and its limitation",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens directly in a spreadsheet. The columns are fixed when a file starts, so a sensor that appears later in the day is not in it."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doğrudan hesap tablosunda açılır. Sütunlar dosya başlarken sabitlenir; gün içinde sonradan görünen bir sensör o dosyada yer almaz."
+          }
+        }
+      }
+    },
+    "settings.record.format.jsonl": {
+      "comment": "Recording format: one JSON object per line",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JSON Lines"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JSON Lines"
+          }
+        }
+      }
+    },
+    "settings.record.format.jsonl.note": {
+      "comment": "Explains what the JSON Lines recording format is good for",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One line per sample. Best for scripts, and a file cut short by a power loss is still readable up to its last complete line."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her örnek için bir satır. Betikler için en uygunu; elektrik kesintisiyle yarıda kalan bir dosya da son tam satırına kadar okunabilir kalır."
+          }
+        }
+      }
+    },
+    "settings.record.interval": {
+      "comment": "Label of the recording interval stepper",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a sample every"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Örnek yazma sıklığı"
+          }
+        }
+      }
+    },
+    "settings.record.interval.value": {
+      "comment": "The recording interval in seconds",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld s"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld sn"
+          }
+        }
+      }
+    },
+    "settings.record.note": {
+      "comment": "Explains that recording is local only and off by default",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off unless you ask for it. Every sample is written locally and nothing is ever sent anywhere."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İstemedikçe kapalı. Her örnek yerel olarak yazılır ve hiçbir şey hiçbir yere gönderilmez."
+          }
+        }
+      }
+    },
+    "settings.record.retention": {
+      "comment": "Label of the recording retention stepper",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep files for"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosyaları saklama süresi"
+          }
+        }
+      }
+    },
+    "settings.record.retention.value": {
+      "comment": "The recording retention period in days",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld gün"
+          }
+        }
+      }
+    },
+    "settings.record.reveal": {
+      "comment": "Button opening the recordings folder",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show in Finder"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder'da Göster"
+          }
+        }
+      }
+    },
+    "settings.record.section.limits": {
+      "comment": "Heading of the recording retention and disk limit section",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limits"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sınırlar"
+          }
+        }
+      }
+    },
+    "settings.record.section.state": {
+      "comment": "Heading of the recording status section",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On disk"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diskte"
+          }
+        }
+      }
+    },
+    "settings.record.state.ceiling": {
+      "comment": "Shown when the disk ceiling has had to delete recordings",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The size limit has deleted %lld file(s) this session. Raise the limit or shorten the retention period to keep more."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boyut sınırı bu oturumda %lld dosya sildi. Daha fazlasını saklamak için sınırı yükseltin ya da saklama süresini kısaltın."
+          }
+        }
+      }
+    },
+    "settings.record.state.error": {
+      "comment": "Shown when a recording write failed",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The last write did not succeed: %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son yazma işlemi başarılı olmadı: %@"
+          }
+        }
+      }
+    },
+    "settings.record.state.summary": {
+      "comment": "How many recording files exist and how much space they use",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld file(s), %lld MB"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld dosya, %2$lld MB"
+          }
+        }
+      }
+    },
     "settings.sensors.group": {
       "comment": "Sensor settings column: which group the sensor belongs to",
       "extractionState": "manual",
@@ -5217,6 +5631,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bildirimler"
+          }
+        }
+      }
+    },
+    "settings.tab.recording": {
+      "comment": "Settings tab: writing measurements to a file",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kayıt"
           }
         }
       }

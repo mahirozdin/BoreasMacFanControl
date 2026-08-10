@@ -5,9 +5,8 @@ import Foundation
 ///
 /// This is the wire model: field names match the published schema, and the
 /// conversion into engine types is where validation happens. Everything the
-/// engine consumes today is here; sections that belong to later phases
-/// (logging) pass through untouched as raw JSON so a file carrying them
-/// round-trips without loss. Notifications joined the model in P7.01.
+/// engine consumes today is here. Notifications joined the model in P7.01 and
+/// recording in P7.02, so every section the schema publishes is now typed.
 public struct ConfigurationFile: Sendable, Hashable, Codable {
 
     /// The version this build reads and writes.
@@ -98,6 +97,15 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
     /// `NotificationSettings.isEnabled`.
     public var notifications: NotificationSettings
 
+    /// Measurement recording (P7.02).
+    ///
+    /// Optional and additive, like every section added after v1 of the schema: a
+    /// file written before it existed decodes to the defaults, which leave
+    /// recording **off**. `docs/operations/observability.md` calls it
+    /// "measurement recording — at the user's request", and writing files to
+    /// somebody's disk unasked is not that.
+    public var recording: RecordingSettings
+
     public init(
         schemaVersion: Int = ConfigurationFile.currentSchemaVersion,
         general: General = General(),
@@ -110,7 +118,8 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         // The user chooses when that changes.
         defaultProfileName: String = "System",
         shortcuts: [HotKeyAction: HotKey] = [:],
-        notifications: NotificationSettings = NotificationSettings()
+        notifications: NotificationSettings = NotificationSettings(),
+        recording: RecordingSettings = RecordingSettings()
     ) {
         self.schemaVersion = schemaVersion
         self.general = general
@@ -120,6 +129,7 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         self.defaultProfileName = defaultProfileName
         self.shortcuts = shortcuts
         self.notifications = notifications
+        self.recording = recording
     }
 
     /// The defaults this build starts from.
@@ -134,6 +144,7 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         case defaultProfileName
         case shortcuts
         case notifications
+        case recording
     }
 
     /// Missing sections mean their defaults — a minimal file is a valid
@@ -163,7 +174,9 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
                 shortcuts: try container.decodeIfPresent(
                     [HotKeyAction: HotKey].self, forKey: .shortcuts) ?? [:],
                 notifications: try container.decodeIfPresent(
-                    NotificationSettings.self, forKey: .notifications) ?? NotificationSettings()
+                    NotificationSettings.self, forKey: .notifications) ?? NotificationSettings(),
+                recording: try container.decodeIfPresent(
+                    RecordingSettings.self, forKey: .recording) ?? RecordingSettings()
             )
         } else {
             // A foreign version: do not try to interpret the rest.

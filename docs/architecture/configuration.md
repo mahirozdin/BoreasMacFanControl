@@ -27,7 +27,9 @@
   "shortcuts":         [ "<action>", { keyCode, modifiers }, … ],
   "notifications":     { isEnabled, suppressionWindowMinutes, enabledKinds[],
                          quietHours: { startMinuteOfDay, endMinuteOfDay },
-                         thresholds: { "<sensor group>": celsius } }
+                         thresholds: { "<sensor group>": celsius } },
+  "recording":         { isEnabled, format, retentionDays, diskCeilingBytes,
+                         maximumFileBytes, intervalSeconds }
 }
 ```
 
@@ -57,6 +59,13 @@
 > is **refused**, taking the section down to its defaults, rather than dropped —
 > the P6.10 rule for shortcuts, and for the same reason: a configuration that
 > says one thing and does another is what the loader exists to prevent.
+
+> **`recording` is optional and additive** (P7.02), and its defaults leave
+> recording **off**. `diskCeilingBytes` is a **hard** limit that overrides
+> `retentionDays`: when the total exceeds it, the oldest files are deleted even
+> when they are newer than the retention period, because retention is a
+> preference and the ceiling is a promise not to fill the disk. The file being
+> written is never deleted. → [`docs/operations/observability.md`](../operations/observability.md)
 
 > **`shortcuts` has an awkward on-disk shape, and it is documented as it is
 > rather than as it should be.** It is an alternating array — `["boost", {…}]` —

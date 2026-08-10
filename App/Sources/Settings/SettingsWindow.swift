@@ -3,12 +3,11 @@ import SwiftUI
 
 /// The settings window (P6.08).
 ///
-/// The blueprint lists seven tabs. Six are here. **Notifications joined them
-/// in P7.01, when its subsystem arrived** — P6.08 left it out on the grounds
-/// that a tab full of switches changing nothing is what the honesty rule exists
-/// to prevent, and that reasoning held until there was something for the
-/// switches to change. Recording is still absent on the same grounds; P7.02
-/// owns it.
+/// **All seven tabs the blueprint asks for are here**, as of P7.02. P6.08
+/// shipped five and left Notifications and Recording out on the grounds that a
+/// tab full of switches changing nothing is what the honesty rule exists to
+/// prevent; that reasoning held until each subsystem existed, and P7.01 and
+/// P7.02 brought them in turn.
 struct SettingsWindow: View {
     static let windowID = "settings"
 
@@ -18,6 +17,7 @@ struct SettingsWindow: View {
     let setup: HelperSetupModel
     let shortcuts: GlobalShortcuts
     let notifications: NotificationModel
+    let recording: RecordingModel
 
     var body: some View {
         TabView {
@@ -39,6 +39,9 @@ struct SettingsWindow: View {
             }
             .tabItem { tabLabel(notificationsTitle, systemImage: "bell") }
 
+            SettingsScroll { RecordingSettingsTab(store: store, recording: recording) }
+                .tabItem { tabLabel(recordingTitle, systemImage: "record.circle") }
+
             SettingsScroll { AdvancedSettings(store: store, control: control, setup: setup) }
                 .tabItem { tabLabel(advancedTitle, systemImage: "wrench.and.screwdriver") }
         }
@@ -51,6 +54,12 @@ struct SettingsWindow: View {
         } icon: {
             Image(systemName: systemImage)
         }
+    }
+
+    private var recordingTitle: String {
+        String(
+            localized: "settings.tab.recording", defaultValue: "Recording",
+            comment: "Settings tab: writing measurements to a file")
     }
 
     private var notificationsTitle: String {

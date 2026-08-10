@@ -22,6 +22,7 @@ extension RenderEvidence {
         // Notifications on in the fixture: a tab photographed entirely greyed
         // out would prove only that `.disabled` works.
         store.update {
+            $0.recording.isEnabled = true
             $0.notifications.isEnabled = true
             $0.notifications.quietHours = QuietHours(
                 startMinuteOfDay: 22 * 60, endMinuteOfDay: 7 * 60)
@@ -68,7 +69,23 @@ extension RenderEvidence {
 
         let fixture = settingsFixture()
 
-        let tabs: [(String, AnyView)] = [
+        let tabs = settingsTabs(fixture: fixture)
+
+        for (name, tab) in tabs {
+            let view =
+                tab
+                .frame(width: 620)
+                .background(Color(white: 0.97))
+                .environment(\.colorScheme, .light)
+            write(view, to: directory, named: "settings-\(name)")
+        }
+    }
+
+    /// The seven tabs, as their own function: the list plus the loop had
+    /// outgrown the function-length budget, and the fixture and the tab list
+    /// are two concerns anyway.
+    private static func settingsTabs(fixture: SettingsFixture) -> [(String, AnyView)] {
+        [
             ("1-general", AnyView(GeneralSettings(store: fixture.store, shortcuts: GlobalShortcuts()))),
             ("2-appearance", AnyView(AppearanceSettings())),
             (
@@ -110,20 +127,26 @@ extension RenderEvidence {
                             fixedAuthorizationForRendering: .denied)))
             ),
             (
-                "7-advanced",
+                "7-recording",
+                AnyView(
+                    RecordingSettingsTab(
+                        store: fixture.store,
+                        // A writer over a throwaway directory: the camera must
+                        // not touch the owner's own recordings.
+                        recording: RecordingModel(
+                            writer: RecordingWriter(
+                                directory: URL(
+                                    fileURLWithPath: NSTemporaryDirectory(), isDirectory: true
+                                ).appendingPathComponent(
+                                    "boreas-render-recordings", isDirectory: true)),
+                            store: fixture.store)))
+            ),
+            (
+                "8-advanced",
                 AnyView(
                     AdvancedSettings(
                         store: fixture.store, control: fixture.control, setup: fixture.setup))
             ),
         ]
-
-        for (name, tab) in tabs {
-            let view =
-                tab
-                .frame(width: 620)
-                .background(Color(white: 0.97))
-                .environment(\.colorScheme, .light)
-            write(view, to: directory, named: "settings-\(name)")
-        }
     }
 }
