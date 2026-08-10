@@ -9757,6 +9757,222 @@
         }
       }
     },
+    "settings.automation.commands": {
+      "comment": "Switch permitting the command hook, which executes a script",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow hooks to run commands"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir que los enlaces ejecuten comandos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешить обработчикам запускать команды"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kancaların komut çalıştırmasına izin ver"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许挂钩运行命令"
+          }
+        }
+      }
+    },
+    "settings.automation.commands.warning": {
+      "comment": "Warning shown beside the switch that permits command hooks",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A command hook runs a program on this Mac with your account's privileges, every time a hook fires. Only turn this on for a script you wrote or have read. It never runs as an administrator, and the fan helper never runs it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un enlace de comando ejecuta un programa en este Mac con los privilegios de tu cuenta cada vez que se activa. Actívalo solo para un script que hayas escrito o leído. Nunca se ejecuta como administrador, y el asistente del ventilador nunca lo ejecuta."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обработчик команд запускает программу на этом Mac с правами вашей учётной записи при каждом срабатывании. Включайте это только для скрипта, который вы написали или прочитали. Он никогда не выполняется с правами администратора, и помощник вентилятора его не запускает."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komut kancası, her tetiklenişinde bu Mac'te sizin hesabınızın yetkileriyle bir program çalıştırır. Bunu yalnızca kendi yazdığınız ya da okuduğunuz bir betik için açın. Hiçbir zaman yönetici olarak çalışmaz ve fan yardımcısı onu hiç çalıştırmaz."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "命令挂钩每次触发时都会以你的账户权限在这台 Mac 上运行一个程序。只有当脚本是你自己编写或已读过时才开启。它绝不会以管理员身份运行，风扇助理也不会运行它。"
+          }
+        }
+      }
+    },
+    "settings.automation.detail": {
+      "comment": "Explains when automation hooks run and where they are defined",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hooks fire on the notifications that get through, so the rules above apply to them too. They are defined in the configuration file: a webhook posts to a URL you choose, a command runs a script on this Mac."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los enlaces se activan con las notificaciones que superan las reglas anteriores, así que esas reglas también les afectan. Se definen en el archivo de configuración: un webhook envía una petición a la dirección que elijas y un comando ejecuta un script en este Mac."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обработчики срабатывают на тех уведомлениях, которые прошли правила выше, — значит, эти правила действуют и на них. Сами обработчики задаются в файле конфигурации: webhook отправляет запрос на выбранный вами адрес, команда запускает скрипт на этом Mac."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kancalar, yukarıdaki kurallardan geçen bildirimlerde tetiklenir; yani o kurallar kancalar için de geçerlidir. Kancalar yapılandırma dosyasında tanımlanır: webhook seçtiğiniz bir adrese istek gönderir, komut ise bu Mac'te bir betik çalıştırır."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "挂钩在通过上述规则的通知上触发，因此这些规则同样适用于它们。挂钩在配置文件中定义：webhook 会向你指定的地址发送请求，命令则在这台 Mac 上运行脚本。"
+          }
+        }
+      }
+    },
+    "settings.automation.enabled": {
+      "comment": "Master switch for webhook and command automation hooks",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run automation hooks"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejecutar enlaces de automatización"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускать автоматизацию"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomasyon kancalarını çalıştır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "运行自动化挂钩"
+          }
+        }
+      }
+    },
+    "settings.automation.section": {
+      "comment": "Settings section heading for webhook and command hooks",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automation hooks"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enlaces de automatización"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Автоматизация"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomasyon kancaları"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动化挂钩"
+          }
+        }
+      }
+    },
+    "settings.automation.withheld": {
+      "comment": "Shown when command hooks exist in the file but are not permitted",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Command hooks in the configuration file are not running, because the switch above is off. Count: %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los enlaces de comando del archivo de configuración no se están ejecutando porque el interruptor de arriba está desactivado. Cantidad: %lld"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обработчики команд из файла конфигурации не выполняются, потому что переключатель выше выключен. Количество: %lld"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yapılandırma dosyasındaki komut kancaları çalışmıyor, çünkü üstteki anahtar kapalı. Sayı: %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "配置文件中的命令挂钩没有运行，因为上面的开关已关闭。数量：%lld"
+          }
+        }
+      }
+    },
     "settings.control.default": {
       "comment": "Setting: which profile arbitration falls back to",
       "extractionState": "manual",

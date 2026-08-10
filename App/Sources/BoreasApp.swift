@@ -124,6 +124,7 @@ enum HelperCommands {
             ("--shortcut-drill", ShortcutDrill.run),
             ("--trigger-drill", TriggerDrill.run),
             ("--a11y-drill", AccessibilityDrill.run),
+            ("--automation-drill", AutomationDrill.run),
             ("--layout-drill", LayoutDrill.run),
             ("--recording-drill", RecordingDrill.run),
             ("--notification-drill", NotificationDrill.run),

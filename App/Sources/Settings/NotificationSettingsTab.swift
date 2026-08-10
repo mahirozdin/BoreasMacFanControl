@@ -25,6 +25,8 @@ struct NotificationSettingsTab: View {
             noiseControl
             Divider()
             thresholds
+            Divider()
+            AutomationSection(store: store)
         }
         .onAppear { notifications.refreshAuthorization() }
     }

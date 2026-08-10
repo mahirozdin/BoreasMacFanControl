@@ -369,7 +369,7 @@
       "properties": {
         "isEnabled": {
           "type": "boolean",
-          "description": "The master switch. False by default: delivering a notification needs the user's permission, and this application does not ask for one until asked to."
+          "description": "The main switch. False by default: delivering a notification needs the user's permission, and this application does not ask for one until asked to."
         },
         "suppressionWindowMinutes": {
           "type": "integer",
@@ -391,7 +391,7 @@
               "batteryHealth"
             ]
           },
-          "description": "Which triggers fire once notifications are enabled. 'panicEngaged' is always delivered whether or not it appears here, and no noise-control mechanism can drop it — the same reasoning as G2 one level up."
+          "description": "Which triggers fire once notifications are enabled. 'panicEngaged' is always delivered whether or not it appears here, and no noise-control mechanism can drop it \u2014 the same reasoning as G2 one level up."
         },
         "quietHours": {
           "type": "object",
@@ -412,7 +412,7 @@
         },
         "thresholds": {
           "type": "object",
-          "description": "Per-group temperature thresholds in °C, keyed by sensor group name. Empty by default and deliberately so: there is no sensible default, because what counts as hot depends on the machine and on what its owner is doing with it. A group name this build does not know is REFUSED rather than dropped.",
+          "description": "Per-group temperature thresholds in \u00b0C, keyed by sensor group name. Empty by default and deliberately so: there is no sensible default, because what counts as hot depends on the machine and on what its owner is doing with it. A group name this build does not know is REFUSED rather than dropped.",
           "propertyNames": {
             "enum": [
               "compute",
@@ -438,12 +438,12 @@
       }
     },
     "shortcuts": {
-      "type": "array",
-      "description": "Global shortcuts (P6.10), empty by default. NOTE ON THE FORMAT: this is an alternating array of action name and key combination — [\"boost\", {...}] — because Swift encodes a dictionary with an enum key that way. It round-trips correctly and is awkward to edit by hand; correcting it to an object is a tracked task. Published here as the format really is rather than as it should be, because a schema that describes an intention is worse than none.",
-      "items": {
-        "oneOf": [
-          {
-            "type": "string",
+      "description": "Global shortcuts (P6.10), empty by default. Written as an OBJECT keyed by action name since P7.10. Builds before that wrote Swift's alternating array for a dictionary with an enum key - [\"boost\", {...}] - and that shape is still accepted on read, so a file written by an older build keeps working. An unrecognised action name is refused rather than dropped, taking the section to its defaults.",
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "The current shape: action name to key combination.",
+          "propertyNames": {
             "enum": [
               "openMainWindow",
               "openSettings",
@@ -451,7 +451,7 @@
               "releaseToFirmware"
             ]
           },
-          {
+          "additionalProperties": {
             "type": "object",
             "properties": {
               "keyCode": {
@@ -463,12 +463,41 @@
               }
             }
           }
-        ]
-      }
+        },
+        {
+          "type": "array",
+          "description": "The legacy alternating array, accepted on read only.",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "openMainWindow",
+                  "openSettings",
+                  "boost",
+                  "releaseToFirmware"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "keyCode": {
+                    "type": "integer"
+                  },
+                  "modifiers": {
+                    "type": "integer",
+                    "description": "Bit set. At least one of Command, Option or Control is required; a combination without one is refused, because a bare letter would be swallowed in every application."
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
     },
     "recording": {
       "type": "object",
-      "description": "Measurement recording (P7.02). Optional and additive: a file without this section is valid and means the defaults, which leave recording OFF — docs/operations/observability.md calls it \"measurement recording, at the user's request\". Files are written to Application Support/Boreas/Recordings and nothing is ever sent anywhere.",
+      "description": "Measurement recording (P7.02). Optional and additive: a file without this section is valid and means the defaults, which leave recording OFF \u2014 docs/operations/observability.md calls it \"measurement recording, at the user's request\". Files are written to Application Support/Boreas/Recordings and nothing is ever sent anywhere.",
       "properties": {
         "isEnabled": {
           "type": "boolean",
@@ -486,13 +515,13 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 365,
-          "description": "How long a file is kept. A preference — diskCeilingBytes overrides it. Today's file never expires, whatever this is set to."
+          "description": "How long a file is kept. A preference \u2014 diskCeilingBytes overrides it. Today's file never expires, whatever this is set to."
         },
         "diskCeilingBytes": {
           "type": "integer",
           "minimum": 10000000,
           "maximum": 20000000000,
-          "description": "The HARD limit on everything the recorder has written. When the total exceeds it the oldest files are deleted until it does not, even when they are newer than retentionDays — retention is a preference, this is a promise not to fill the disk. The file currently being written is never deleted."
+          "description": "The HARD limit on everything the recorder has written. When the total exceeds it the oldest files are deleted until it does not, even when they are newer than retentionDays \u2014 retention is a preference, this is a promise not to fill the disk. The file currently being written is never deleted."
         },
         "maximumFileBytes": {
           "type": "integer",
@@ -505,6 +534,87 @@
           "minimum": 1,
           "maximum": 3600,
           "description": "How often a sample is written. Independent of the monitor's sampling interval: two seconds is right for a live chart and wasteful for a file read a week later."
+        }
+      }
+    },
+    "automation": {
+      "type": "object",
+      "description": "Automation hooks (P7.10, ADR 0015). Optional and additive: a file without this section is complete, and every switch in it defaults to off. Hooks fire on notifications that survive the noise rules in 'notifications', so those rules govern hooks too.",
+      "properties": {
+        "isEnabled": {
+          "type": "boolean",
+          "description": "Main switch. Default false: nothing runs until asked."
+        },
+        "commandHooksAllowed": {
+          "type": "boolean",
+          "description": "Permits the 'command' hook, which executes a program with the user's privileges. Default false, and SEPARATE from isEnabled on purpose - both must be true. Never runs as root; the daemon spawns no subprocess at all."
+        },
+        "timeoutSeconds": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 60,
+          "description": "How long one hook may take before it is abandoned. Clamped into range rather than refused."
+        },
+        "maximumConcurrent": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8,
+          "description": "How many hooks may run at once. Excess hooks are dropped rather than queued: a backlog is the runaway build-up this limit exists to prevent."
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Placeholders in a template or an argument: ${kind}, ${subject}, ${sensor} (an alias of subject), ${celsius}, ${timestamp}. An unknown placeholder is left as written rather than blanked, so a typo is visible.",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "url"
+                ],
+                "properties": {
+                  "type": {
+                    "const": "webhook"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "http or https only."
+                  },
+                  "method": {
+                    "type": "string",
+                    "description": "Defaults to POST."
+                  },
+                  "template": {
+                    "type": "string",
+                    "description": "The request body, after placeholder expansion."
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "path"
+                ],
+                "properties": {
+                  "type": {
+                    "const": "command"
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "An executable file. A leading ~ is expanded."
+                  },
+                  "arguments": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Passed as argv, never through a shell, so an expanded placeholder cannot become a second command."
+                  }
+                }
+              }
+            ]
+          }
         }
       }
     }

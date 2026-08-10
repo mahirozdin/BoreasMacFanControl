@@ -24,12 +24,14 @@
   "profiles":          [ { name, binding, perFan, triggers[], priority,
                            smoothing, hysteresis, slew, enginePaused } ],
   "sensorOverrides":   { "<raw sensor name>": { displayName, group, hidden } },
-  "shortcuts":         [ "<action>", { keyCode, modifiers }, … ],
+  "shortcuts":         { "<action>": { keyCode, modifiers } },
   "notifications":     { isEnabled, suppressionWindowMinutes, enabledKinds[],
                          quietHours: { startMinuteOfDay, endMinuteOfDay },
                          thresholds: { "<sensor group>": celsius } },
   "recording":         { isEnabled, format, retentionDays, diskCeilingBytes,
-                         maximumFileBytes, intervalSeconds }
+                         maximumFileBytes, intervalSeconds },
+  "automation":        { isEnabled, commandHooksAllowed, timeoutSeconds,
+                         maximumConcurrent, hooks[] }
 }
 ```
 
@@ -67,16 +69,27 @@
 > preference and the ceiling is a promise not to fill the disk. The file being
 > written is never deleted. → [`docs/operations/observability.md`](../operations/observability.md)
 
-> **`shortcuts` has an awkward on-disk shape, and it is documented as it is
-> rather than as it should be.** It is an alternating array — `["boost", {…}]` —
-> because Swift encodes a dictionary with an enum key that way, and nobody
-> noticed in P6.10 because all four shortcuts ship unset, so it has never been
-> written to a real file. It round-trips correctly and is unpleasant to edit by
-> hand, which matters for a file this project expects people to edit.
-> `notifications.thresholds` avoids it with a hand-written `encode(to:)`;
-> correcting `shortcuts` the same way is **P7.10**. A schema that describes an
-> intention would be worse than none, so the published schema says what the
-> format really is.
+> **`shortcuts` is an object keyed by action name — corrected in P7.10.** It
+> used to be an alternating array, `["boost", {…}]`, because Swift encodes a
+> dictionary with an enum key that way; nobody noticed in P6.10 because all four
+> shortcuts ship unset, so it had never reached a real file. It round-tripped
+> correctly and was unpleasant to edit by hand, which matters for a file this
+> project expects people to edit. The fix is the hand-written `encode(to:)`
+> `notifications.thresholds` already used.
+>
+> **The old shape is still accepted on read.** A file written by an earlier
+> build does not stop being valid because the writer improved, and only a
+> genuine type mismatch falls through to it — so a *malformed object* still
+> fails as an object rather than being retried as an array and reported
+> confusingly. An unrecognised action name is refused rather than dropped,
+> taking the section to its defaults: the P6.10 rule, unchanged.
+
+> **`automation` is optional and additive** (P7.10), and every switch inside it
+> defaults to off, so a file that has never heard of the section behaves exactly
+> as it did. `isEnabled` and `commandHooksAllowed` are **separate and both
+> required** before a hook that executes code will run. `timeoutSeconds` and
+> `maximumConcurrent` are clamped into range rather than refused, like every
+> other limit here. → [`docs/operations/notifications.md`](../operations/notifications.md)
 
 **Who reads and writes it:** `App/Sources/Model/ConfigurationStore.swift`
 does the disk work — atomic writes, coalesced so a slider drag writes once,

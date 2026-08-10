@@ -123,6 +123,72 @@ The user builds their own integration: a chat service webhook, ntfy, Home Assist
 | Timeout and concurrency limit | Prevents runaway process build-up |
 | Network only under `App/Sources/Automation/` | `make gate-privacy` enforces this |
 
+### Implementation (P7.10)
+
+Decisions in [`Core/Presentation/Automation.swift`](../../Packages/Core/Sources/Core/Presentation/Automation.swift),
+under test; the doing in [`App/Sources/Automation/`](../../App/Sources/Automation/),
+the only directory permitted a network API.
+
+**Two switches, and they are an AND.** `automation.isEnabled` turns hooks on at
+all; `automation.commandHooksAllowed` additionally permits the kind that
+executes code. A command hook sitting in the file does nothing until both are
+true, so "off by default" is a property of the data rather than something the
+runner has to remember to check — `AutomationSettings.runnable()` is the whole
+gate, in one pure function.
+
+**When they fire.** On the notifications that *survive* the rules above, not on
+every event observed. That reuses the suppression window, coalescing, the
+once-per-session rule and quiet hours rather than growing a second set of
+controls that would drift from the first. The consequence worth stating plainly:
+**quiet hours silence a webhook too.** That is acceptable only because the panic
+survives all five mechanisms, so the event meaning "this Mac is in trouble"
+always gets through.
+
+**One deliberate difference from notifications:** hooks fire *before* the macOS
+notification permission is checked. A webhook is not a notification, and
+requiring that permission before this application may reach a monitoring
+endpoint would break exactly the headless remote machine ADR 0015 exists for.
+
+**Placeholders** — `${kind}`, `${subject}`, `${sensor}` (an alias of `subject`,
+because that is the name ADR 0015's example uses), `${celsius}`, `${timestamp}`.
+An **unknown placeholder is left exactly as written** rather than blanked: a
+typo that expands to nothing produces a body that looks deliberate and is wrong,
+while `${sesnor}` arriving intact names the mistake. A placeholder with no value
+*this time* — `${celsius}` on a profile change — expands to empty, because that
+is a fact about the event rather than an error in the template.
+
+> **The payload is machine-readable, not localised.** `${sensor}` carries the
+> sensor group's stable identifier (`compute`), never its display name. The
+> notification a person reads shows the translated group name; a script must not
+> have to know which language that is in. This is the defect [P7.14](../../TODO.md) found in the CLI — a value a
+> program depends on moving with the interface language — caught before it
+> shipped this time.
+
+**Limits.** One timeout per hook, clamped to 1–60 s, and a ceiling on how many
+run at once, clamped to 1–8. Hooks over the ceiling are **dropped, not queued**:
+a backlog is the runaway build-up the limit exists to prevent, and a dropped hook
+is recorded so it is visible rather than merely absent.
+
+Evidence: `--automation-drill <port>`. It proves the withheld command hook
+leaves **no file behind**, that a permitted one runs and receives expanded
+arguments, that a hanging hook is abandoned near its timeout, and — against a
+local listener — that a real request arrives with the expanded body.
+
 ## For the user who wants email
 
-The documentation provides a ready-made script example (using the system's `mail` command). This leaves the responsibility for credential storage entirely with the user and does not grow the application's attack surface.
+There is no SMTP client and there will not be one. A command hook and the
+system's own `mail` covers it, and leaves credential storage entirely with the
+user:
+
+```sh
+#!/bin/sh
+# ~/bin/boreas-mail.sh — chmod +x this file, then point a command hook at it:
+#   { "type": "command", "path": "~/bin/boreas-mail.sh",
+#     "arguments": ["${kind}", "${sensor}", "${celsius}"] }
+printf 'Boreas: %s on %s at %s C\n' "$1" "$2" "$3" \
+  | mail -s "Boreas: $1" you@example.com
+```
+
+Arguments arrive as argv, never through a shell, so a value can never become a
+second command. The same shape drives a chat webhook, a push service or a home
+automation platform — with `"type": "webhook"` and no script at all.

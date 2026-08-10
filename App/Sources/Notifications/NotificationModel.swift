@@ -59,6 +59,11 @@ final class NotificationModel {
     private var helperLevel = Level<Bool>()
     private var thresholdsAbove: Set<SensorGroup> = []
 
+    /// What a threshold crossing was really about, keyed by the *localised*
+    /// subject the event carries — see `stableSubject(for:subject:)` for why the
+    /// two have to be kept apart.
+    private var thresholdFacts: [String: (identifier: String, celsius: Double)] = [:]
+
     init(
         sink: any NotificationSink = LiveNotificationSink(),
         store: ConfigurationStore? = nil,
@@ -80,6 +85,15 @@ final class NotificationModel {
     private var settings: NotificationSettings {
         store?.configuration.notifications ?? NotificationSettings()
     }
+
+    private var automationSettings: AutomationSettings {
+        store?.configuration.automation ?? AutomationSettings()
+    }
+
+    /// The automation hooks (P7.10). Held here because hooks fire on the same
+    /// decision notifications do — see `deliver(_:now:)` for why that is the
+    /// right seam, and for the one place the two deliberately part company.
+    let automation = AutomationRunner()
 
     /// Reads the permission the system already holds, without asking for it.
     func refreshAuthorization() {
@@ -203,9 +217,14 @@ final class NotificationModel {
             let wasAbove = thresholdsAbove.contains(group)
             if hottest >= threshold, !wasAbove {
                 thresholdsAbove.insert(group)
+                // Recorded beside the event: the event carries the localised
+                // name a person reads, automation needs the stable one and the
+                // number (P7.10).
+                thresholdFacts[group.displayName] = (group.rawValue, hottest)
                 events.append(NotificationEvent(kind: .thresholdCrossed, subject: group.displayName))
             } else if wasAbove, hottest < threshold - Self.thresholdReleaseCelsius {
                 thresholdsAbove.remove(group)
+                thresholdFacts.removeValue(forKey: group.displayName)
             }
         }
         return events
@@ -215,6 +234,66 @@ final class NotificationModel {
     /// again. Two degrees is the smallest gap that survives ordinary sensor
     /// noise on this hardware, measured in the P6.09 diagnostics work.
     private static let thresholdReleaseCelsius: Double = 2
+
+    // MARK: - Automation
+
+    /// One hook run per delivered notification (P7.10).
+    ///
+    /// A coalesced delivery carries several subjects; each becomes its own
+    /// context, because a script is given one thing to act on rather than a
+    /// sentence to parse. `celsius` is filled only where the event is about a
+    /// temperature — an absent value expands to empty, which
+    /// `AutomationTemplate` distinguishes from a mistyped placeholder.
+    private func fireAutomation(for deliveries: [NotificationDecision.Delivery], now: Date) {
+        let settings = automationSettings
+        guard !settings.runnable().isEmpty else { return }
+
+        var contexts: [AutomationContext] = []
+        for delivery in deliveries {
+            if delivery.subjects.isEmpty {
+                contexts.append(AutomationContext(kind: delivery.kind, timestamp: now))
+            } else {
+                for subject in delivery.subjects {
+                    contexts.append(
+                        AutomationContext(
+                            kind: delivery.kind,
+                            subject: stableSubject(for: delivery.kind, subject: subject),
+                            celsius: temperature(for: delivery.kind, subject: subject),
+                            timestamp: now))
+                }
+            }
+        }
+
+        let runner = automation
+        Task { [contexts, settings] in
+            for context in contexts {
+                await runner.fire(context, settings: settings)
+            }
+        }
+    }
+
+    /// The temperature a threshold crossing was about. `nil` for every other
+    /// kind: a profile change has no temperature, and inventing one would be
+    /// worse than leaving the placeholder empty.
+    private func temperature(for kind: NotificationKind, subject: String) -> Double? {
+        guard kind == .thresholdCrossed else { return nil }
+        return thresholdFacts[subject]?.celsius
+    }
+
+    /// The **stable** name for a subject, for a payload a script will parse.
+    ///
+    /// A threshold crossing's subject is the sensor group's *localised* display
+    /// name, which is right for a notification a person reads and wrong for a
+    /// webhook: under a translated interface `${sensor}` would arrive as the
+    /// translated group name, and a script matching `compute` would break the
+    /// day somebody changed the interface language. That is exactly the defect P7.14 found in the CLI —
+    /// a decision value that moves with the display language — and it is not
+    /// shipping again here. Every other kind's subject is already stable: a
+    /// profile name is the user's own text, a fan is a number.
+    private func stableSubject(for kind: NotificationKind, subject: String) -> String {
+        guard kind == .thresholdCrossed else { return subject }
+        return thresholdFacts[subject]?.identifier ?? subject
+    }
 
     // MARK: - Delivery
 
@@ -232,6 +311,20 @@ final class NotificationModel {
                 "notification withheld: \(kind, privacy: .public) (\(reason, privacy: .public))")
         }
         guard !decision.deliver.isEmpty else { return }
+
+        // Automation fires here, and **before the authorization check on
+        // purpose** (P7.10). A webhook is not a notification: requiring the
+        // system's notification permission before this application may reach
+        // somebody's monitoring endpoint would break exactly the headless
+        // remote machine [ADR 0015](../../../docs/architecture/adr/0015-automation-hooks-not-email.md)
+        // exists for, where nobody is present to grant anything.
+        //
+        // It fires on the *decision* rather than on raw events, so P7.01's
+        // whole noise-control chain applies to hooks too and there is one place
+        // to configure it. Quiet hours therefore silence a webhook — acceptable
+        // because the panic survives all five mechanisms, so the event meaning
+        // "this Mac is in trouble" always gets through.
+        fireAutomation(for: decision.deliver, now: now)
 
         // The permission is checked here rather than in the policy: whether the
         // user granted it is a fact about the system, not a decision about

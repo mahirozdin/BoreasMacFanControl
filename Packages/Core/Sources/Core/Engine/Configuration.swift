@@ -106,6 +106,11 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
     /// somebody's disk unasked is not that.
     public var recording: RecordingSettings
 
+    /// Automation hooks (P7.10). Every switch inside it is off by default, so
+    /// an existing file that has never heard of this section behaves exactly as
+    /// it did — see [ADR 0015](../../../../../docs/architecture/adr/0015-automation-hooks-not-email.md).
+    public var automation: AutomationSettings
+
     public init(
         schemaVersion: Int = ConfigurationFile.currentSchemaVersion,
         general: General = General(),
@@ -119,7 +124,8 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         defaultProfileName: String = "System",
         shortcuts: [HotKeyAction: HotKey] = [:],
         notifications: NotificationSettings = NotificationSettings(),
-        recording: RecordingSettings = RecordingSettings()
+        recording: RecordingSettings = RecordingSettings(),
+        automation: AutomationSettings = AutomationSettings()
     ) {
         self.schemaVersion = schemaVersion
         self.general = general
@@ -130,6 +136,7 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         self.shortcuts = shortcuts
         self.notifications = notifications
         self.recording = recording
+        self.automation = automation
     }
 
     /// The defaults this build starts from.
@@ -145,6 +152,69 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         case shortcuts
         case notifications
         case recording
+        case automation
+    }
+
+    /// `shortcuts`, as an object keyed by action name — **corrected in P7.10**.
+    ///
+    /// It used to be written as Swift's alternating array for a dictionary with
+    /// an enum key, `["boost", {…}]`. That round-trips correctly and is
+    /// unpleasant to edit by hand, which matters for a file this project
+    /// expects people to edit. Nobody noticed in P6.10 because all four
+    /// shortcuts ship unset, so it had never been written to a real file.
+    ///
+    /// Encoding is hand-written for this one field, the same way
+    /// `notifications.thresholds` already does it.
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(schemaVersion, forKey: .schemaVersion)
+        try container.encode(general, forKey: .general)
+        try container.encode(safety, forKey: .safety)
+        try container.encode(profiles, forKey: .profiles)
+        try container.encode(sensorOverrides, forKey: .sensorOverrides)
+        try container.encode(defaultProfileName, forKey: .defaultProfileName)
+        var namedShortcuts: [String: HotKey] = [:]
+        for (action, key) in shortcuts { namedShortcuts[action.rawValue] = key }
+        try container.encode(namedShortcuts, forKey: .shortcuts)
+        try container.encode(notifications, forKey: .notifications)
+        try container.encode(recording, forKey: .recording)
+        try container.encode(automation, forKey: .automation)
+    }
+
+    /// Reads either shape (P7.10).
+    ///
+    /// The object form is what this build writes. The alternating array is what
+    /// older builds wrote, and it is still accepted — a file on somebody's disk
+    /// does not stop being valid because the writer improved. Only a genuine
+    /// `typeMismatch` falls through, so a *malformed object* still fails as an
+    /// object rather than being retried as an array and reported confusingly.
+    ///
+    /// An unrecognised action name is **refused**, taking the section to its
+    /// defaults rather than being silently dropped — the P6.10 rule, unchanged:
+    /// a configuration that says one thing and does another is what the loader
+    /// exists to prevent.
+    private static func decodeShortcuts(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) throws -> [HotKeyAction: HotKey] {
+        do {
+            guard
+                let named = try container.decodeIfPresent(
+                    [String: HotKey].self, forKey: .shortcuts)
+            else { return [:] }
+            var result: [HotKeyAction: HotKey] = [:]
+            for (name, key) in named {
+                guard let action = HotKeyAction(rawValue: name) else {
+                    throw DecodingError.dataCorruptedError(
+                        forKey: .shortcuts, in: container,
+                        debugDescription: "unknown shortcut action '\(name)'")
+                }
+                result[action] = key
+            }
+            return result
+        } catch DecodingError.typeMismatch {
+            return try container.decodeIfPresent(
+                [HotKeyAction: HotKey].self, forKey: .shortcuts) ?? [:]
+        }
     }
 
     /// Missing sections mean their defaults — a minimal file is a valid
@@ -171,12 +241,16 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
                 // down with it rather than being silently dropped: a
                 // configuration that says one thing and does another is
                 // what the loader exists to prevent.
-                shortcuts: try container.decodeIfPresent(
-                    [HotKeyAction: HotKey].self, forKey: .shortcuts) ?? [:],
+                shortcuts: try Self.decodeShortcuts(from: container),
                 notifications: try container.decodeIfPresent(
                     NotificationSettings.self, forKey: .notifications) ?? NotificationSettings(),
                 recording: try container.decodeIfPresent(
-                    RecordingSettings.self, forKey: .recording) ?? RecordingSettings()
+                    RecordingSettings.self, forKey: .recording) ?? RecordingSettings(),
+                // Optional and additive, like `recording` before it: a file
+                // written by an older build is complete, and its defaults leave
+                // every hook off.
+                automation: try container.decodeIfPresent(
+                    AutomationSettings.self, forKey: .automation) ?? AutomationSettings()
             )
         } else {
             // A foreign version: do not try to interpret the rest.
