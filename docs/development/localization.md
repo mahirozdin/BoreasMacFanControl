@@ -123,6 +123,18 @@ make strings-check    # fails if the catalogue is out of date with the source
 The build has to happen first: `make strings` reads what the compiler
 wrote, so it can only ever be as current as the last build.
 
+**And `make format` has to happen before `make strings`, not after** (found in
+P7.01). Reformatting a source file can reflow a multi-line `defaultValue`, which
+changes the English the compiler extracts — so a catalogue built before the
+format pass no longer matches the source, and `make strings-check` goes red on a
+change that was purely cosmetic. Existing translations survive the rebuild, but
+the wasted cycle is avoidable:
+
+```bash
+make format && make generate && xcodebuild -project Boreas.xcodeproj -scheme Boreas build
+make strings && make strings-check
+```
+
 Every user facing string is a `String(localized:defaultValue:comment:)`
 call, sometimes spread over five lines with a multiline default. A regular
 expression over that would be wrong on the day somebody formats a call
