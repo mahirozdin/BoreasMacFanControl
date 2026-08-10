@@ -116,9 +116,8 @@ is happening — that field is the fastest way to confirm it.
 > **Boreas has to be running for the command to reach anything.** A selection
 > made from the terminal is delivered to the application as a local notification
 > and is never written to disk, so with the app closed there is nothing to
-> receive it. The command does not currently detect that and reports success
-> either way — if nothing changed, check the app is open and run it again.
-> Tracked as P7.14.
+> receive it. The command says so and exits non-zero rather than reporting a
+> success that went nowhere (fixed in P7.14).
 
 ## 4. The fans go back to firmware control by themselves
 

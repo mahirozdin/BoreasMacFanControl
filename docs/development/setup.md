@@ -65,7 +65,7 @@ BOREAS=~/Library/Developer/Xcode/DerivedData/Boreas-*/Build/Products/Debug/Borea
 
 | Argument | What it proves or does |
 |---|---|
-| `--helper-status` | The privileged helper's registration state |
+| `--helper-status` | The privileged helper's registration state, as **two lines**: `helper status: <translated sentence>` for a person, `helper state: <token>` for a caller with a decision to make. Never decide on the first line — that was P7.14. Format and parsing: [`HelperStateReport`](../../Packages/Core/Sources/Core/Presentation/HelperStateReport.swift) |
 | `--register-helper` / `--unregister-helper` | Installs or removes it. Repairs a stale registration after repeated rebuilds |
 | `--helper-ping` | The XPC handshake, signatures verified in both directions |
 | `--fan-state` | The fan's mode byte and speed, unprivileged. What the kill and freeze harnesses poll |

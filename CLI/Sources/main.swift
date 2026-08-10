@@ -116,7 +116,9 @@ enum CommandLineEntry {
         // The helper's registration belongs to the app bundle, so the honest
         // answer comes from the app itself rather than from a guess here.
         if let app = AppBundle.locate(), let answer = app.run(argument: "--helper-status") {
-            output += "control  : \(answer.replacingOccurrences(of: "helper status: ", with: ""))\n"
+            // The localised sentence, because this line is read by a person.
+            // The token beside it is for `profile`, which has a decision to make.
+            output += "control  : \(HelperStateReport.summary(in: answer))\n"
         } else {
             output += "control  : app not found — fan control is set up from the app\n"
         }

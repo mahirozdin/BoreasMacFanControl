@@ -50,7 +50,11 @@ enum HelperCommands {
         let installer = HelperInstaller()
 
         if arguments.contains("--helper-status") {
-            report("helper status: \(installer.state.summary)")
+            // Two lines, on purpose: the sentence for whoever is reading, the
+            // token for whoever is deciding. See `HelperStateReport` (P7.14).
+            report(
+                HelperStateReport.lines(
+                    state: installer.state.token, summary: installer.state.summary))
             return true
         }
 

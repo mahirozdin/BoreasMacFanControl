@@ -82,6 +82,83 @@ printf '%s\n' "$OUT" | grep -q "never written to disk\|live only\|hand the decis
 check "'profile' says a choice is not persisted" $?
 
 # ---------------------------------------------------------------------------
+# P7.14 — the localisation regression, and why this file did not catch it.
+#
+# These checks used to stop at "an unknown profile is refused", which passes
+# whatever language the machine is in: the refusal is decided before the helper
+# is ever consulted. The shipped bug was in the OTHER path — a **configured**
+# profile, refused with "the helper is not installed" because the CLI matched
+# the English word inside a translated status line. A test that only rejects
+# the unconfigured case can never see it.
+# ---------------------------------------------------------------------------
+APP_BINARY=$(ls -d ~/Library/Developer/Xcode/DerivedData/Boreas-*/Build/Products/Debug/Boreas.app/Contents/MacOS/Boreas 2>/dev/null | head -1)
+if [ ! -x "${APP_BINARY:-}" ]; then
+  skip "helper state contract — the application binary was not found"
+else
+  STATUS_OUT=$("$APP_BINARY" --helper-status 2>&1)
+
+  printf '%s\n' "$STATUS_OUT" | grep -q '^helper state: '
+  check "'--helper-status' emits a machine-readable state line" $?
+
+  # The token is a wire value. If it were ever localised the old bug is back,
+  # so pin it to the known vocabulary rather than to any one language.
+  printf '%s\n' "$STATUS_OUT" \
+    | grep -qE '^helper state: (enabled|not-registered|requires-approval|not-found|unknown)$'
+  check "the state token is one of the defined values, in any locale" $?
+
+  # The human line must still be there and must still be the localised one:
+  # the fix is that the two exist separately, not that the sentence went away.
+  printf '%s\n' "$STATUS_OUT" | grep -q '^helper status: '
+  check "'--helper-status' still emits the localised sentence" $?
+
+  # The regression itself, and the first attempt at it was a fake gate worth
+  # recording. Asserting that a configured profile is not refused looked like
+  # the test, but the fix had made the old code accidentally correct: the token
+  # line contains the word `enabled`, so a revert to `contains("enabled")`
+  # produced an identical outcome and the check stayed green under a deliberate
+  # violation.
+  #
+  # The defect class is not "a word is absent" — it is **a decision value that
+  # changes with the interface language**. So run the same flag under two
+  # locales: the token must be identical and the sentence must not be. The
+  # second half is what gives the first half meaning; two matching tokens prove
+  # nothing if the string is simply never translated.
+  EN_OUT=$("$APP_BINARY" --helper-status -AppleLanguages '(en)' 2>&1)
+  TR_OUT=$("$APP_BINARY" --helper-status -AppleLanguages '(tr)' 2>&1)
+  EN_TOKEN=$(printf '%s\n' "$EN_OUT" | sed -n 's/^helper state: //p')
+  TR_TOKEN=$(printf '%s\n' "$TR_OUT" | sed -n 's/^helper state: //p')
+  EN_SUMMARY=$(printf '%s\n' "$EN_OUT" | sed -n 's/^helper status: //p')
+  TR_SUMMARY=$(printf '%s\n' "$TR_OUT" | sed -n 's/^helper status: //p')
+
+  [ -n "$EN_TOKEN" ] && [ "$EN_TOKEN" = "$TR_TOKEN" ]
+  check "the state token is identical in English and Turkish" $?
+  # Both values, always: printing only one reads as agreement on the run where
+  # they disagree, which is the only run that matters.
+  note "token: en='${EN_TOKEN:-}' tr='${TR_TOKEN:-}'"
+
+  [ -n "$EN_SUMMARY" ] && [ "$EN_SUMMARY" != "$TR_SUMMARY" ]
+  check "the sentence beside it IS translated, so the token is doing real work" $?
+  note "sentence: '${EN_SUMMARY:-}' vs '${TR_SUMMARY:-}'"
+
+  # And the outcome, which is what a user actually meets: with the helper
+  # enabled, a CONFIGURED profile must not be refused for a missing helper.
+  # Weaker than the two checks above — kept because it is the user-facing shape
+  # of the bug, not because it could have caught it.
+  if printf '%s\n' "$STATUS_OUT" | grep -q '^helper state: enabled$'; then
+    FALLBACK=$("$CLI" profile 2>&1 | awk '/^ *\* /{print $2; exit}')
+    PROFILE_OUT=$("$CLI" profile "${FALLBACK:-Balanced}" 2>&1)
+    # `grep -qv` would be wrong here and was: it inverts per line, so on a
+    # multi-line refusal any other line satisfies it. The absence of a phrase
+    # from the whole output is a negated `grep -q`, not an inverted one.
+    ! printf '%s\n' "$PROFILE_OUT" | grep -q "helper is not installed"
+    check "a configured profile is not refused for a helper that IS installed" $?
+    note "checked with profile '${FALLBACK:-Balanced}', helper enabled"
+  else
+    skip "the configured-profile path — this machine's helper is not enabled"
+  fi
+fi
+
+# ---------------------------------------------------------------------------
 # export — to stdout, and to a file, and it must be valid JSON both ways.
 # ---------------------------------------------------------------------------
 TMP=$(mktemp -d)

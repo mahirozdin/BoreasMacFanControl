@@ -1,3 +1,4 @@
+import AppKit
 import Core
 import Foundation
 import SharedIPC
@@ -30,6 +31,7 @@ enum ProfileCommand {
         let named = arguments.first { !$0.hasPrefix("-") }
 
         if arguments.contains("--auto") {
+            guard appIsRunning() else { return reportNotRunning() }
             post(profileName: nil)
             write(
                 """
@@ -68,6 +70,8 @@ enum ProfileCommand {
                 """)
             return 1
         }
+
+        guard appIsRunning() else { return reportNotRunning() }
 
         post(profileName: named)
         write(
@@ -141,11 +145,45 @@ enum ProfileCommand {
         loadedConfiguration()?.defaultProfileName
     }
 
+    /// Whether fan control is available, decided on the **token** rather than on
+    /// the translated sentence beside it.
+    ///
+    /// This line used to read `answer.contains("enabled")`. The answer is
+    /// localised, so on a Turkish system it is `etkin`, and the check returned
+    /// false with the helper plainly installed — `boreas profile <name>` was
+    /// broken on four of the five languages this product ships while
+    /// `boreas status` reported the truth two lines away (P7.14).
     private static func helperIsInstalled() -> Bool {
         guard let app = AppBundle.locate(),
             let answer = app.run(argument: "--helper-status")
         else { return false }
-        return answer.contains("enabled")
+        return HelperStateReport.state(in: answer) == .enabled
+    }
+
+    /// Is there an application to receive the selection?
+    ///
+    /// A selection is delivered as a local notification and is deliberately
+    /// never written to disk, so with nothing running there is nothing to
+    /// receive it — the post succeeds and the request evaporates. Both posting
+    /// paths used to report success regardless; `--auto` printed "asked the
+    /// running app…" with no app running at all (P7.14). The named path's own
+    /// comment had already stated the principle: a selection that silently did
+    /// nothing leaves the user with no way to tell why.
+    private static func appIsRunning() -> Bool {
+        !NSRunningApplication.runningApplications(
+            withBundleIdentifier: BoreasIPC.clientBundleIdentifier
+        ).isEmpty
+    }
+
+    private static func reportNotRunning() -> Int32 {
+        writeError(
+            """
+            Boreas is not running, so there is nothing to receive the selection.
+            A profile chosen here is live only and never written to disk, which
+            is why it needs the app open. Start Boreas and run this again.
+
+            """)
+        return 1
     }
 
     private static func post(profileName: String?) {

@@ -1,3 +1,4 @@
+import Core
 import Foundation
 import OSLog
 import ServiceManagement
@@ -20,6 +21,24 @@ public final class HelperInstaller {
         case requiresApproval
         case notFound
         case unknown(Int)
+
+        /// The machine-readable counterpart of `summary`, for the
+        /// `--helper-status` contract (P7.14).
+        ///
+        /// These two must never be conflated again: `summary` is a sentence for
+        /// a person and is translated, `token` is a wire value and is not. The
+        /// CLI used to decide whether fan control was available by looking for
+        /// the English word inside `summary`, which was wrong on four of the
+        /// five languages this product ships.
+        var token: HelperStateReport.State {
+            switch self {
+            case .notRegistered: return .notRegistered
+            case .enabled: return .enabled
+            case .requiresApproval: return .requiresApproval
+            case .notFound: return .notFound
+            case .unknown: return .unknown
+            }
+        }
 
         /// Shown in the diagnostics tab, so these are user facing text and were
         /// English in every language until the P7.06 Russian render made it
