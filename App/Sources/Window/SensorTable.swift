@@ -180,6 +180,12 @@ struct SensorTable: View {
     /// the layout is static, the group *can* occur, and a column that clips is
     /// a Y3 violation whether or not the case is common.
     ///
+    /// **Widened again in P7.06**, when three more languages arrived and the drill
+    /// named four violations on the first run — Russian "Максимум" wanted 85.1 pt
+    /// of 82, and "Производительные ядра" 216.5 of 215. That is the check doing
+    /// exactly what P6.13 built it for: catching a clipped label on the day a
+    /// language lands rather than in a bug report months later.
+    ///
     /// Change one of these and run `--layout-drill`; it will say whether the new
     /// number holds. The expansion pads with a representative letter, so the
     /// measured width of a 1.4×-longer string is slightly more than 1.4× the
@@ -187,8 +193,8 @@ struct SensorTable: View {
     static func width(of column: SensorColumn) -> CGFloat {
         switch column {
         case .name: return 200
-        case .group: return 215
-        case .current, .maximum, .mean: return 82
+        case .group: return 220
+        case .current, .maximum, .mean: return 88
         }
     }
 

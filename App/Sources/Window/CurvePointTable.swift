@@ -22,8 +22,11 @@ struct CurvePointTable: View {
     /// headers against them rather than against numbers copied by hand — a
     /// copied constant is one that goes stale the first time a column is
     /// resized, and silently.
-    static let temperatureColumnWidth: CGFloat = 105
-    static let dutyColumnWidth: CGFloat = 76
+    ///
+    /// Widened in P7.06: Russian "Вентилятор" wanted 91.7 pt of 76, and Spanish
+    /// "Ventilador" 80.9 — the drill named both before either shipped.
+    static let temperatureColumnWidth: CGFloat = 112
+    static let dutyColumnWidth: CGFloat = 96
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {

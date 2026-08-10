@@ -1,6 +1,6 @@
 # Localisation
 
-> Last updated: 2026-08-10 — P6.13
+> Last updated: 2026-08-10 — P7.06
 > Source: blueprint §9.7 · Decision: [ADR 0016](../architecture/adr/0016-language-scope.md)
 
 ## Scope
@@ -14,6 +14,54 @@
 | `ru` | Русский | Long strings, three plural forms |
 | `es` | Español | |
 | `zh-Hans` | 简体中文 | Simplified |
+
+**All five ship as of P7.06.** `en` and `tr` are source quality; `ru`, `es` and
+`zh-Hans` are produced in-project and **unreviewed**, which
+[ADR 0016's addendum](../architecture/adr/0016-language-scope.md) requires to be
+stated rather than hidden — `TRANSLATORS.md` carries the origin per language.
+
+### Plural forms, per language rather than per assumption
+
+Russian was the first string in this project to need plural agreement, exactly as
+P6.11 predicted. Each language gets the CLDR categories it actually has:
+
+| Language | Categories | Strings using them |
+|---|---|---|
+| `ru` | one · few · many · other | 7 |
+| `es` | one · other | 7 |
+| `zh-Hans` | other only — the language makes no singular/plural distinction | 0 |
+| `en`, `tr` | none needed | 0 |
+
+Chinese having **no** plural variations is correct rather than a shortcut: 1 个风扇
+and 3 个风扇 use the same noun, and adding categories would invent a distinction the
+language does not make. Turkish likewise does not pluralise after a numeral.
+
+**Where a sentence carries more than one number**, a single `variations.plural`
+cannot express it — the catalogue would need per-argument `substitutions`. Those six
+strings are instead **restructured so the numeral follows its noun**
+("Циклов заряда пройдено: %lld"), which removes the agreement question entirely and
+is the same technique the Turkish text uses to end a sentence at its placeholder.
+Both are legitimate; which one each string uses is written down beside it.
+
+### Two tooling blind spots, found by adding plurals
+
+Neither could have been found earlier, because nothing used plural variations until
+Russian needed them — which is how a latent hole stays invisible until it matters:
+
+- **`gate-i18n`'s honesty check read only `stringUnit`.** A plural entry stores its
+  text under `variations.plural.{category}.stringUnit` instead, so a forbidden word
+  inside a Russian plural form would have passed straight through the gate that
+  exists to refuse it. Proven by planting one and watching the old scan read an
+  empty string.
+- **`make strings` would have crashed.** It marked translations `needs_review` by
+  assigning to `localization["stringUnit"]["state"]` — a `KeyError` on a
+  localisation that has variations instead. Adding plurals and then editing that
+  string's English would have broken the build.
+
+Both now walk the whole structure rather than the two shapes known at the time. And
+`FORBIDDEN` gained vocabulary for the three new languages: **a language present in
+the catalogue with no forbidden words is a language the honesty rule silently does
+not apply to**, so the gate now fails on that rather than passing quietly.
 
 **Documentation:** `README.md` in English (authoritative) + 4 translations. `CONTRIBUTING.md`, `SECURITY.md`, `docs/**`, code, comments, commits and the project management documents (`TODO.md`, `AGENTS.md`, `BOOT.md`) → **English only**. The original Turkish carve-out for project management documents was superseded by [ADR 0021](../architecture/adr/0021-english-only-repository.md).
 

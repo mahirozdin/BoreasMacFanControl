@@ -102,7 +102,7 @@ def merge(catalog, found):
             for language, localization in localizations.items():
                 if language == SOURCE_LANGUAGE:
                     continue
-                localization["stringUnit"]["state"] = "needs_review"
+                mark_needs_review(localization)
             changed.append(key)
 
     for key in list(strings):
@@ -112,6 +112,38 @@ def merge(catalog, found):
 
     catalog["strings"] = dict(sorted(strings.items()))
     return added, changed, removed
+
+
+def mark_needs_review(localization):
+    """Marks every translated unit in one localisation as needing review.
+
+    **Found in P7.06, and it would have crashed.** This used to do
+    `localization["stringUnit"]["state"] = "needs_review"` — which is a `KeyError`
+    on a localisation that has no `stringUnit` because it holds plural
+    `variations` instead. Russian is the first language in this project to need
+    plural forms, so it is the first thing that could have hit it: adding them and
+    then editing that string's English would have broken `make strings` outright.
+
+    The same shape of blind spot the honesty gate had, from the same cause — the
+    catalogue tooling was written when every string was a single unit.
+    """
+    units = []
+
+    def collect(node):
+        if isinstance(node, dict):
+            unit = node.get("stringUnit")
+            if isinstance(unit, dict):
+                units.append(unit)
+            for key, child in node.items():
+                if key != "stringUnit":
+                    collect(child)
+        elif isinstance(node, list):
+            for child in node:
+                collect(child)
+
+    collect(localization)
+    for unit in units:
+        unit["state"] = "needs_review"
 
 
 def main():

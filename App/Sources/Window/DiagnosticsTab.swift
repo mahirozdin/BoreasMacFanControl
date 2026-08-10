@@ -112,7 +112,7 @@ struct DiagnosticsContent: View {
                     defaultValue: """
                         Writes one file describing this Mac's sensors, fans and settings, \
                         so a problem can be looked at without guessing. It is saved on \
-                        this Mac and **never sent anywhere** — no machine name, no serial \
+                        this Mac and never sent anywhere — no machine name, no serial \
                         number and no account name goes into it. Read it before you share it.
                         """,
                     comment: "Explains what the support report contains and that it stays local")

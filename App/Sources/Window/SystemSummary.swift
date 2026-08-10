@@ -103,7 +103,13 @@ struct SystemSummary: View {
         // UTF-8 — an unreadable identifier simply goes unreported.
         let identifier = String(bytes: model.prefix { $0 != 0 }, encoding: .utf8) ?? ""
         let cores = ProcessInfo.processInfo.processorCount
-        return identifier.isEmpty ? "\(cores) cores" : "\(identifier) · \(cores) cores"
+        // Localised, because "cores" is a word. Found by the P7.06 Russian
+        // render: composed strings like this one slipped past `gate-i18n`,
+        // whose Y1 pattern only sees a literal handed straight to `Text(…)`.
+        let coreCount = String(
+            localized: "diagnostics.summary.cores", defaultValue: "\(cores) cores",
+            comment: "How many CPU cores this Mac has, shown beside its model identifier")
+        return identifier.isEmpty ? coreCount : "\(identifier) · \(coreCount)"
     }
 
     private var sensorsDescription: String {
@@ -132,7 +138,11 @@ struct SystemSummary: View {
                 localized: "diagnostics.summary.fans.none", defaultValue: "none",
                 comment: "Shown on a Mac with no controllable fan")
         }
-        let range = "\(fan.minimumRPM)–\(fan.maximumRPM) rpm"
+        // "rpm" is a unit *word* and differs per language — об/мин, 转/分.
+        let range = String(
+            localized: "diagnostics.summary.fans.range",
+            defaultValue: "\(fan.minimumRPM)–\(fan.maximumRPM) rpm",
+            comment: "A fan's usable speed range, with the rpm unit")
         return model.fans.count == 1
             ? "1 · \(range)"
             : "\(model.fans.count) · \(range)"
@@ -161,6 +171,15 @@ struct SystemSummary: View {
         let seconds = Int(now.timeIntervalSince(model.sessionStart))
         let hours = seconds / 3_600
         let minutes = (seconds % 3_600) / 60
-        return hours > 0 ? "\(hours) h \(minutes) min" : "\(minutes) min"
+        guard hours > 0 else {
+            return String(
+                localized: "diagnostics.summary.session.minutes",
+                defaultValue: "\(minutes) min",
+                comment: "How long this session has run, under an hour")
+        }
+        return String(
+            localized: "diagnostics.summary.session.hours",
+            defaultValue: "\(hours) h \(minutes) min",
+            comment: "How long this session has run, an hour or more")
     }
 }

@@ -21,13 +21,34 @@ public final class HelperInstaller {
         case notFound
         case unknown(Int)
 
+        /// Shown in the diagnostics tab, so these are user facing text and were
+        /// English in every language until the P7.06 Russian render made it
+        /// obvious. `gate-i18n` did not catch them: its Y1 pattern looks for a
+        /// literal inside `Text(…)`, and a `String` returned from a model is
+        /// invisible to it — the same class of blind spot P6.11 found in `Core`.
         var summary: String {
             switch self {
-            case .notRegistered: return "not registered"
-            case .enabled: return "enabled"
-            case .requiresApproval: return "waiting for approval in System Settings"
-            case .notFound: return "not found"
-            case .unknown(let raw): return "unknown status \(raw)"
+            case .notRegistered:
+                return String(
+                    localized: "helper.status.notregistered", defaultValue: "not registered",
+                    comment: "Helper state: it has never been installed")
+            case .enabled:
+                return String(
+                    localized: "helper.status.enabled", defaultValue: "enabled",
+                    comment: "Helper state: installed and approved")
+            case .requiresApproval:
+                return String(
+                    localized: "helper.status.approval",
+                    defaultValue: "waiting for approval in System Settings",
+                    comment: "Helper state: registered but the user has not approved it yet")
+            case .notFound:
+                return String(
+                    localized: "helper.status.notfound", defaultValue: "not found",
+                    comment: "Helper state: the service is missing from the app bundle")
+            case .unknown(let raw):
+                return String(
+                    localized: "helper.status.unknown", defaultValue: "unknown status \(raw)",
+                    comment: "Helper state: a status code this build does not recognise")
             }
         }
     }

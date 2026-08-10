@@ -273,10 +273,15 @@ struct FanListSection: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                     } else {
-                        Text(verbatim: "\(fan.currentRPM) rpm")
-                            .font(.callout)
-                            .monospacedDigit()
-                            .foregroundStyle(.secondary)
+                        Text(
+                            String(
+                                localized: "panel.fan.rpm",
+                                defaultValue: "\(fan.currentRPM) rpm",
+                                comment: "A fan's current speed with the rpm unit")
+                        )
+                        .font(.callout)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
                     }
                 }
             }

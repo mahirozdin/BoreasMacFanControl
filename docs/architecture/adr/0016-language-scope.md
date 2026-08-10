@@ -81,3 +81,53 @@ A pseudo-locale layout test in CI: overflow checking with artificially lengthene
 - ⚠️ Warning texts that carry safety or data loss risk may deserve to be shown **alongside the `en` fallback** until the translation is reviewed; to be evaluated in P6
 
 **Enforcement.** `make gate-i18n` already checks that all five languages are present and that `comment` fields are filled. In addition, P7 will add a check that `TRANSLATORS.md` contains an origin line for every language.
+
+## Addendum — 2026-08-10 (P7.06): the deferred evaluation, answered
+
+**Context.** The addendum above ends with a consequence marked *"to be evaluated in
+P6"*: whether warning texts carrying safety or data-loss risk should be shown
+**alongside the `en` fallback** until a native speaker has reviewed them. **P6
+closed without evaluating it.** P7.06 is the task that ships the three unreviewed
+languages, so it is the last honest moment to answer.
+
+**Decision. No dual rendering.** The reasoning is that the premise does not hold
+for this product:
+
+1. **Safety here is enforced by code, not by comprehension.** G1 (layers only ever
+   raise), G2 (K2/K3 cannot be switched off), G3 (the watchdog range is locked) and
+   G4 (quit, crash, sleep and shutdown all return the fans to firmware) hold
+   whatever language the interface is in and whether or not the user reads it.
+   **Nothing in this product asks the user to act correctly on a warning in order
+   to stay safe.** A mistranslated sentence is therefore a comprehension cost, not
+   a safety failure — which is not what the original concern assumed.
+2. **Data loss has one real path, and it is not a warning.** The recording disk
+   ceiling deletes files; it is governed by a number the user set, shown as a
+   standing state in the Recording tab, and not dependent on reading a sentence in
+   time.
+3. **Dual rendering would cost every language, including the reviewed ones.** Two
+   languages in one label roughly doubles its width, on top of the 1.4× expansion
+   budget `make layout` enforces — P7.06 had to widen four columns to satisfy that
+   budget for one language at a time. Making every label bilingual would push the
+   interface past what any fixed-width column can hold, degrading the two source
+   quality languages to protect the three that are unreviewed.
+
+**What we do instead** — the honesty the first addendum chose, applied without
+inventing a second mechanism:
+
+- `TRANSLATORS.md` states the origin per language (P7.07), so a user knows how much
+  to trust what they are reading.
+- The `setup.*` strings — the one place a user grants root privileges and therefore
+  the one place informed consent genuinely matters — are deliberately the most
+  detailed text in the product: what will happen, what is written where, and how to
+  undo it. Detail of that kind survives translation; a short warning does not.
+- `make gate-i18n` refuses an accusing word **in every language**, including inside
+  plural forms since P7.06 — so the class of mistranslation that would do real harm
+  (telling somebody their hardware is broken) is the one thing actually blocked
+  mechanically.
+
+**Consequences.**
+- ✅ The open item from 2026-08-03 is closed rather than carried into P8
+- ✅ No layout or readability cost imposed on `en` and `tr` to hedge the others
+- ⚠️ An unreviewed translation can still read awkwardly or misdescribe a *feature*;
+  `TRANSLATORS.md` and the fix template are the mitigation, and they are honest
+  rather than complete
