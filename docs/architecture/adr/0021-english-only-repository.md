@@ -70,3 +70,59 @@ The excepted paths are listed in the script with the reason for each.
 
 Proven by writing this decision: the gate went red against the repository as it
 stood, and turning it green is what the rewrite is measured against.
+
+---
+
+## Addendum — 2026-08-10 (P7.13): the gate could only see one of the languages
+
+**Context.** The Enforcement section above describes a scan for Turkish
+characters and Turkish function words, and that is all it ever was. When
+[ADR 0016](0016-language-scope.md)'s remaining three languages shipped in P7.06,
+**Cyrillic and CJK were not detected at all** — so `ru` and `zh-Hans` could
+appear anywhere in the repository and H6 stayed green. `es` shares the Latin
+alphabet and was never detectable this way.
+
+The gap surfaced in P7.07, when `TRANSLATORS.md` was found listed in the gate's
+exclusion regex while being invisible to it either way: the exemption granted by
+the Decision above was **inert**, because nothing in that file was of a kind the
+gate could see.
+
+**The question this addendum has to answer.** Adding the missing detection turns
+the gate red on files that are not violations. Six of them quote a translation as
+**evidence**: three Swift comments recording the measured widths that
+`make layout` found, `TODO.md`'s Run Log naming the strings a render exposed, the
+localisation document showing what a plural form looks like, and the P7.14 tests
+whose whole subject is that a translated status line changes nothing about a
+parsed token. Is that permitted?
+
+**Decision. Yes, and it is not an exception to H6 — it is what H6 already
+meant.** The invariant forbids *working in* another language. A comment in
+English that names the Russian string which overflowed a column is working in
+English **about** Russian, and deleting the string would delete the evidence.
+A defect recorded without the text that showed it is not a record.
+
+**How, and why not a file list.** A file **declares its own exemption** with a
+`gate-language:quotes-translations` marker and a reason, and the gate reports how
+many files were skipped **every time it runs**. This is deliberately the same
+shape as the `gate-names:policy-doc` marker, for the reason `LEGAL.md` §5.1 gives:
+a hard-coded list goes stale, while a declaration is visible in review. Adding the
+marker is a deliberate act and is questioned in review; it cannot be used to hide
+a passage somebody simply wrote in another language.
+
+**Consequences.**
+- ✅ H6 now covers four of the five shipped languages instead of one
+- ✅ The evidence this project depends on stays in the record
+- ⚠️ **Spanish remains undetectable** by any character check, and no claim is made
+  that it is covered. Stated here rather than left to be discovered a third time
+- ⚠️ A marker exempts a whole file, not a passage — the same coarseness
+  `gate-names:policy-doc` accepts, and the same mitigation: it is counted, visible
+  and reviewed
+
+**Enforcement.** The writing-system half is
+[`scripts/gates/check-language.py`](../../../scripts/gates/check-language.py),
+in Python because a `grep` bracket range is matched **byte-wise** under the C
+locale and swallows the em dash this repository uses on nearly every line — the
+first attempt at this scan, in P7.07, reported all 276 files as violations.
+Proven three ways: Russian prose in a source file is caught, Chinese prose is
+caught, and the same Chinese text with the marker passes while the exempt count
+rises by one.

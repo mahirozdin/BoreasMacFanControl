@@ -1,3 +1,6 @@
+// gate-language:quotes-translations — this file names the unit word in the languages it differs in, which is the reason the value is localised at all.
+// H6 forbids working in another language, not writing in English about one.
+
 import Core
 import Foundation
 import SwiftUI

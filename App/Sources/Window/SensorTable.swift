@@ -1,3 +1,6 @@
+// gate-language:quotes-translations — this file records the measured widths that `make layout` found, naming the strings that overflowed.
+// H6 forbids working in another language, not writing in English about one.
+
 import Core
 import SwiftUI
 

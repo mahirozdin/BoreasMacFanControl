@@ -70,4 +70,21 @@ else
   ok "no Turkish function words"
 fi
 
+# ---------------------------------------------------------------------------
+# P7.13 — the other three languages.
+#
+# Everything above looks for Turkish and only Turkish, so from P7.06 onward
+# `ru`, `es` and `zh-Hans` could appear anywhere and H6 stayed green. Cyrillic
+# and CJK are checked in Python because a `grep` bracket range is matched
+# byte-wise under the C locale and swallows the em dash — the first attempt at
+# this, in P7.07, reported all 276 files as violations.
+#
+# **Spanish is not covered and cannot be**, by this or any character check: it
+# shares the Latin alphabet. Stated here rather than left to be discovered.
+# ---------------------------------------------------------------------------
+require_tools python3
+if ! printf '%s\n' "$FILES" | python3 scripts/gates/check-language.py; then
+  GATE_FAIL=1
+fi
+
 gate_result "gate-language"

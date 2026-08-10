@@ -1,3 +1,8 @@
+// gate-language:quotes-translations — the five shipped translations ARE the test
+// data here: the whole point is that a translated summary changes nothing about
+// the parsed token.
+// H6 forbids working in another language, not writing in English about one.
+
 import Foundation
 import Testing
 

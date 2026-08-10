@@ -1,3 +1,6 @@
+// gate-language:quotes-translations — this file records the measured width of a Russian label, which is the evidence for the column size below it.
+// H6 forbids working in another language, not writing in English about one.
+
 import Core
 import SwiftUI
 

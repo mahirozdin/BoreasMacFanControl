@@ -1,6 +1,9 @@
+<!-- gate-language:quotes-translations — this file names each language in its own script and shows what a plural form looks like, which is the subject of the document.
+     H6 forbids working in another language, not writing in English about one. -->
+
 # Localisation
 
-> Last updated: 2026-08-10 — P7.07
+> Last updated: 2026-08-10 — P7.13
 > Source: blueprint §9.7 · Decision: [ADR 0016](../architecture/adr/0016-language-scope.md)
 
 ## Scope
@@ -256,3 +259,21 @@ Note for anyone editing these documents: `make gate-language` (H6) refuses
 Turkish characters outside the catalogue and the files it names. Examples
 in prose have to be chosen to avoid them, which is why the two above are
 written the way they are.
+
+**Since P7.13 it refuses Cyrillic and CJK too** — and this document carries a
+`gate-language:quotes-translations` marker, because naming each language in its
+own script is its subject. What the gate covers, stated plainly so nobody
+assumes more than is true:
+
+| Language | Detected? | How |
+|---|---|---|
+| `tr` | Partly | Six Turkish-only letters and nine function words. A sentence avoiding all of them passes |
+| `ru` | Yes | Cyrillic range |
+| `zh-Hans` | Yes | CJK ranges |
+| `es` | **No, and it cannot be** | It shares the Latin alphabet; no character check can tell Spanish prose from English |
+
+The exemption is a per-file marker with a reason, counted and printed on every
+run, following the `gate-names:policy-doc` precedent — see
+[ADR 0021's P7.13 addendum](../architecture/adr/0021-english-only-repository.md)
+for why quoting a translation as evidence was decided to be inside H6 rather
+than an exception to it.
