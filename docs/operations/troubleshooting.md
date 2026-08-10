@@ -176,10 +176,13 @@ gap invisible to the one person who can report it.
 - Hiding a sensor is a display choice only. A hidden sensor still counts toward
   its group's aggregate and can still trigger panic — safety never depends on
   what you chose to look at
-- If your Mac shows sensors as uncategorised, please send a report using the
-  [unknown sensor template](../../.github/ISSUE_TEMPLATE/unknown_sensor.yml).
-  This is the most useful contribution available, because the project is
-  developed on one machine
+- If your Mac shows sensors as uncategorised, **Settings → Sensors → Report
+  These Sensors** opens a pre-filled
+  [unknown sensor report](../../.github/ISSUE_TEMPLATE/unknown_sensor.yml) in
+  your browser. It carries four things and no more — this Mac's model
+  identifier, its chip, the unrecognised sensor names and the fan count. This is
+  the most useful contribution available, because the project is developed on
+  one machine
 
 ## 7. The menu bar item is missing
 

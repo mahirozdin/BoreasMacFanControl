@@ -70,8 +70,11 @@ than a long compatibility table.
 | Everything else | Should work; **not verified** |
 
 If your Mac shows sensors as `uncategorized`, that is useful information —
-please open an [unknown sensor report](https://github.com/mahirozdin/boreas-mac-fan-control/issues/new?template=unknown_sensor.yml).
-Unmapped sensors are shown rather than hidden precisely so they can be reported.
+**Settings → Sensors → Report These Sensors** opens a pre-filled
+[unknown sensor report](https://github.com/mahirozdin/boreas-mac-fan-control/issues/new?template=unknown_sensor.yml)
+in your browser, carrying your Mac's model identifier, chip, the unrecognised
+sensor names and the fan count, and nothing else. Unmapped sensors are shown
+rather than hidden precisely so they can be reported.
 
 ## Permissions
 

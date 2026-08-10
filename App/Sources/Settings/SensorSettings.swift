@@ -107,7 +107,69 @@ struct SensorSettings: View {
                         .foregroundStyle(Color.warningAccent)
                 }
                 .font(.callout)
+
+                reportButton(for: unknown)
             }
+        }
+    }
+
+    /// One click to a pre-filled issue (P7.09).
+    ///
+    /// **The explanation beside it is not decoration.** A pre-filled issue URL
+    /// reaches the server the moment the browser opens it, before anything is
+    /// submitted, so the user cannot review the payload the way they can review
+    /// the support report file. Saying exactly what the link carries is the only
+    /// honest substitute, and what it carries is fixed by `SensorReportLink`.
+    @ViewBuilder
+    private func reportButton(for unknown: [SensorReading]) -> some View {
+        if let link = SensorReportAction.link(unrecognised: unknown, fanCount: model.fans.count) {
+            VStack(alignment: .leading, spacing: 6) {
+                Button(
+                    String(
+                        localized: "settings.sensors.report.button",
+                        defaultValue: "Report These Sensors",
+                        comment: "Button: open a pre-filled unknown-sensor issue in the browser")
+                ) {
+                    SensorReportAction.open(link)
+                }
+
+                Text(
+                    String(
+                        localized: "settings.sensors.report.shares",
+                        defaultValue: """
+                            Opens a pre-filled report in your browser. It carries this Mac's \
+                            model identifier, its chip, the unrecognised sensor names and the \
+                            number of fans — nothing else. No machine name, no serial number, \
+                            no account name.
+                            """,
+                        comment:
+                            "Explains exactly which facts the pre-filled issue link contains")
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+                if link.omittedSensorCount > 0 {
+                    // Phrased so the numeral ends the sentence: a count that has
+                    // to agree with a verb needs plural forms in every language
+                    // (P6.11), and this sidesteps the agreement rather than
+                    // guessing at it.
+                    Text(
+                        String(
+                            localized: "settings.sensors.report.truncated",
+                            defaultValue: """
+                                Too many to fit in one link. Names left out, \
+                                to add by hand: \(link.omittedSensorCount)
+                                """,
+                            comment:
+                                "Shown when the sensor list is too long for the issue link")
+                    )
+                    .font(.caption)
+                    .foregroundStyle(Color.warningAccent)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.top, 4)
         }
     }
 

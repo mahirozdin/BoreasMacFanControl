@@ -43,6 +43,17 @@ These are not "not done yet"; they **will not be done**.
 
 ## Next wave
 
-Mini chart in the menu bar · WidgetKit widget · App Intents/Shortcuts · local metrics endpoint · automation hooks · unknown sensor report · configuration sharing · Sparkle updates.
+WidgetKit widget · App Intents/Shortcuts · local metrics endpoint · configuration sharing · Sparkle updates.
 
-Tracked together with their triggers in `ARCHITECTURE.md` §12.
+Two of these — the local metrics endpoint and Sparkle — have their triggers in
+`ARCHITECTURE.md` §12. **The other three do not**, so §12 is not the complete
+register this line once implied.
+
+> **Corrected in P7.09.** This list had gone stale in both directions and said
+> so about features that already exist. The **mini chart in the menu bar**
+> shipped in P6 (`StatusItemStyle.showChart`), **automation hooks** are P7.10 and
+> the **unknown sensor report** is P7.09 — all three inside v1.0, all three still
+> listed here as deferred. A "next wave" list that names shipped work is worse
+> than no list: it is the section somebody reads to decide what not to expect.
+> The three were removed and the cross-reference corrected, since only two of the
+> original eight were ever in §12.

@@ -83,6 +83,10 @@ targets:
         # Menu bar application: no Dock icon (blueprint §9.2)
         LSUIElement: true
         NSHumanReadableCopyright: "Licensed under the Apache License 2.0"
+        # Where the unknown-sensor report (P7.09) files its issue. It lives
+        # here rather than in Swift because the address contains the product
+        # name, and K2 keeps that out of the code.
+        BORepositoryURL: https://github.com/mahirozdin/boreas-mac-fan-control
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas

@@ -82,8 +82,82 @@ enum SupportReportDrill {
             check("the report was written to disk", false)
         }
 
+        passed =
+            checkSensorLink(
+                monitor: monitor, needles: [account, machine, serial], report: report) && passed
+
         report(passed ? "SUPPORT REPORT DRILL PASS" : "SUPPORT REPORT DRILL FAIL")
         exit(passed ? 0 : 1)
+    }
+
+    /// The unknown-sensor link (P7.09) — the other thing that can leave this
+    /// machine, and the one with less protection.
+    ///
+    /// A pre-filled issue URL reaches the server **on page load**, so unlike the
+    /// support report there is no moment where the user reads the payload and
+    /// then decides. It is checked in this drill rather than its own because the
+    /// needles are the same three, already read from the system by the caller.
+    private static func checkSensorLink(
+        monitor: MonitorModel, needles: [String], report: (String) -> Void
+    ) -> Bool {
+        var passed = true
+        func check(_ label: String, _ condition: Bool) {
+            report("  \(condition ? "ok  " : "FAIL") \(label)")
+            passed = passed && condition
+        }
+
+        report("    unknown-sensor link:")
+        let unrecognised = monitor.allReadings.filter { $0.group == .uncategorized }
+        report(
+            "      \(unrecognised.count) unrecognised of \(monitor.allReadings.count) sensors, "
+                + "\(monitor.fans.count) fan(s)")
+
+        // This Mac classifies every sensor it has, so the populated branch would
+        // never run here and the privacy assertions below would silently test
+        // nothing. A stand-in name is substituted when the list is empty: the
+        // three needles, the model and the chip are still **this machine's**,
+        // which is what the assertions are about — only the hardware key, which
+        // is the one field that could never carry an identity, is synthetic.
+        let standIn = SensorReading(
+            rawName: "DRILL synthetic key", displayName: "DRILL synthetic key",
+            group: .uncategorized, celsius: 42)
+        if unrecognised.isEmpty {
+            report("      nothing unrecognised on this Mac — using a stand-in sensor key")
+        }
+
+        if let link = SensorReportAction.link(
+            unrecognised: unrecognised.isEmpty ? [standIn] : unrecognised,
+            fanCount: monitor.fans.count)
+        {
+            let leaked = SupportReport.leaks(
+                in: link.url.removingPercentEncoding ?? link.url, forbidden: needles)
+            check("the link leaks none of the three needles", leaked.isEmpty)
+            if !leaked.isEmpty {
+                report("      LEAKED: \(leaked.joined(separator: ", "))")
+            }
+            check(
+                "the link carries the model as a class of machine",
+                link.url.contains("model=Mac"))
+            check("the link targets the unknown-sensor template", link.url.contains(".yml"))
+            check(
+                "the link stays inside its length budget",
+                link.url.count <= SensorReportLink.maximumURLLength)
+            report("      \(link.url.count) chars, \(link.omittedSensorCount) name(s) omitted")
+            report("      chip read as: \(SensorReportAction.chip)")
+        } else {
+            // Reachable only if the bundle carries no repository address, which
+            // is a build fault rather than a state of this Mac.
+            check("a link could be built", false)
+            report("      no link — is \(SensorReportAction.repositoryURLKey) in Info.plist?")
+        }
+
+        // The empty case is a real branch too, and it must offer nothing rather
+        // than a link to an issue with no content in it.
+        check(
+            "an empty sensor list yields no link at all",
+            SensorReportAction.link(unrecognised: [], fanCount: monitor.fans.count) == nil)
+
+        return passed
     }
 
     /// Reads the serial **only so its absence can be asserted.** Never rendered,

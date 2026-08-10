@@ -12169,6 +12169,42 @@
         }
       }
     },
+    "settings.sensors.report.button": {
+      "comment": "Button: open a pre-filled unknown-sensor issue in the browser",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report These Sensors"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Informar de estos sensores"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сообщить об этих датчиках"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu Sensörleri Bildir"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "报告这些传感器"
+          }
+        }
+      }
+    },
     "settings.sensors.report.clean": {
       "comment": "Shown when no sensor is uncategorized",
       "extractionState": "manual",
@@ -12273,6 +12309,78 @@
           "stringUnit": {
             "state": "translated",
             "value": "未识别的传感器仍会被读取和显示。在下面为它们归类可以让这台 Mac 学会识别，而“未知传感器”问题模板会把这个修正分享给其他人。"
+          }
+        }
+      }
+    },
+    "settings.sensors.report.shares": {
+      "comment": "Explains exactly which facts the pre-filled issue link contains",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens a pre-filled report in your browser. It carries this Mac's model identifier, its chip, the unrecognised sensor names and the number of fans — nothing else. No machine name, no serial number, no account name."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre en el navegador un informe rellenado previamente. Contiene el identificador de modelo de este Mac, su chip, los nombres de los sensores no reconocidos y el número de ventiladores, y nada más. Sin nombre del equipo, sin número de serie, sin nombre de cuenta."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открывает в браузере предварительно заполненный отчёт. В нём есть идентификатор модели этого Mac, чип, названия нераспознанных датчиков и количество вентиляторов — и больше ничего. Ни имени компьютера, ни серийного номера, ни имени учётной записи."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tarayıcınızda önceden doldurulmuş bir rapor açar. İçinde bu Mac'in model kimliği, yongası, tanınmayan sensör adları ve fan sayısı bulunur — başka hiçbir şey. Makine adı yok, seri numarası yok, hesap adı yok."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在浏览器中打开一份预先填好的报告。其中包含这台 Mac 的机型标识符、芯片、未识别的传感器名称和风扇数量，仅此而已。不含设备名称、序列号或账户名。"
+          }
+        }
+      }
+    },
+    "settings.sensors.report.truncated": {
+      "comment": "Shown when the sensor list is too long for the issue link",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many to fit in one link. Names left out, to add by hand: %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demasiados para un solo enlace. Nombres por añadir a mano: %lld"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Слишком много для одной ссылки. Названий нужно добавить вручную: %lld"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tek bir bağlantıya sığmayacak kadar çok. Elle eklenecek ad sayısı: %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "太多，一个链接放不下。需要手动补充的名称数量：%lld"
           }
         }
       }
