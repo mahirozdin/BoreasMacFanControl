@@ -92,6 +92,10 @@ smoke: ## Hardware smoke test on this Mac (see --with-sleep for the attended leg
 layout: ## Y3 — pseudo-locale overflow check (needs the app built)
 	@scripts/layout-test.sh
 
+.PHONY: cli-test
+cli-test: ## Every boreas command, against real state (needs the CLI built)
+	@scripts/cli-test.sh
+
 .PHONY: generate
 generate: ## Generate the Xcode project from project.yml
 	@command -v xcodegen >/dev/null 2>&1 \

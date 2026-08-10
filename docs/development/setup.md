@@ -47,6 +47,7 @@ make generate
 | `make gate-coverage` | `Core` line coverage ≥ 85% |
 | `make smoke` | Hardware smoke test on a real Mac (P4.10; sleep leg attended-only) |
 | `make layout` | Y3 — pseudo-locale overflow check; needs the app built (P6.13) |
+| `make cli-test` | Every `boreas` command against real state; needs the CLI built (P7.04) |
 | `make generate` | Generates the Xcode project from `project.yml` |
 | `make build` / `make test` / `make lint` | Build / test / lint the packages |
 | `make clean` | Removes build outputs |
@@ -97,6 +98,45 @@ The renders host the view in an offscreen window and ask AppKit to draw
 itself, which needs no screen recording permission (I2) and — unlike
 `ImageRenderer`, which this replaced — draws system controls as they
 really appear.
+
+## The `boreas` command line tool (P7.04)
+
+Built as its own target (`xcodebuild -scheme boreas`), and it takes no runtime
+dependencies — the argument table is hand written (T4).
+
+| Command | What it does |
+|---|---|
+| `status` | Temperatures, fans, power, and the helper's registration state |
+| `sensors [--raw]` | Every sensor, grouped; `--raw` shows hardware names |
+| `profile` | Lists profiles and marks the configured fallback |
+| `profile <name>` | Activates one **now**, in the running app |
+| `profile --auto` | Hands the decision back to the profile triggers |
+| `install` | Installs the fan control helper, by asking the app to do it |
+| `uninstall [--all]` | Removes the helper; `--all` also deletes saved settings |
+| `export [file]` | Writes the configuration; to standard output when no file is given |
+| `import <file>` | Replaces the configuration, **after validating it** |
+
+Three decisions worth knowing, because each is a constraint rather than a
+preference:
+
+- **A profile chosen from the CLI is live, never written to disk.** P6.14 found
+  that a *standing* manual selection vetoes every profile trigger forever, which
+  is why the app deliberately starts with none. A CLI that persisted one would
+  re-introduce that bug from outside, where nobody would look for it. So the
+  command asks the **running app** through a distributed notification — local IPC,
+  no network (P2), no permission — and says plainly when nothing is listening.
+- **`install` delegates to the app.** `SMAppService` registers a helper on behalf
+  of a *bundle*, so a command line tool doing it itself would either fail or
+  register something the app does not know about.
+- **`import` validates before it writes**, through `Core`'s own loader, and writes
+  back the **loaded** model rather than the user's text — so what lands on disk is
+  what the app will act on, clamped values and all. The previous configuration is
+  kept as `config.backup.json`, the same name the app's own store uses.
+
+Verified by `make cli-test` (19 checks), which runs the destructive commands
+against a copy and restores the real configuration afterwards. It does **not** run
+`install`/`uninstall`: those change the helper's registration and prompt for a
+password.
 
 ## Coding standards
 

@@ -170,6 +170,8 @@ make next            # tells you which task is next
 
 The built application also answers a set of drill and render arguments used to reproduce the evidence in the run log — see [`docs/development/setup.md`](docs/development/setup.md#the-applications-own-commands).
 
+There is also a `boreas` command line tool — `status`, `sensors`, `profile`, `install`, `uninstall`, `export`, `import` — documented in the same place.
+
 This repository uses a document driven workflow with machine enforced rules.
 Start at [`BOOT.md`](BOOT.md), then [`AGENTS.md`](AGENTS.md), then
 [`TODO.md`](TODO.md). Contribution guide: [`CONTRIBUTING.md`](CONTRIBUTING.md).

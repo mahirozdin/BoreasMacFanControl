@@ -263,6 +263,7 @@ struct BoreasApp: App {
                     // Reads the permission the system already holds; it never
                     // asks. Asking happens only from the settings switch.
                     notifications.refreshAuthorization()
+                    control.observeCommandLineSelections()
                     model.onCycle = { [notifications, recording, model, control] in
                         notifications.observe(monitor: model, control: control)
                         recording.observe(monitor: model, control: control)

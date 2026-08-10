@@ -9,6 +9,43 @@ import HardwareKit
 /// library would cost more than it saves.
 enum CommandLineEntry {
 
+    /// One command, its aliases, and what it does.
+    ///
+    /// A table rather than a `switch`: nine commands as branches is nine paths
+    /// through one function, and the complexity budget objects — correctly, since
+    /// the paths are all the same shape. `HelperCommands.handleDrills` in the app
+    /// made the same move for the same reason. Adding a command is now a row.
+    private struct Command {
+        let names: [String]
+        let run: ([String]) async -> Int32
+    }
+
+    private static var table: [Command] {
+        [
+            Command(names: ["version", "--version", "-v"]) { _ in
+                write("boreas 0.1.0\n")
+                return 0
+            },
+            Command(names: ["status"]) { _ in await status() },
+            Command(names: ["sensors"]) { rest in
+                await sensors(showRaw: rest.contains("--raw"))
+            },
+            Command(names: ["profile"]) { rest in ProfileCommand.run(arguments: rest) },
+            Command(names: ["install"]) { _ in ConfigCommands.install() },
+            Command(names: ["export"]) { rest in ConfigCommands.export(arguments: rest) },
+            Command(names: ["import"]) { rest in
+                ConfigCommands.importConfiguration(arguments: rest)
+            },
+            Command(names: ["uninstall"]) { rest in
+                UninstallCommand.run(removeUserData: rest.contains("--all"))
+            },
+            Command(names: ["help", "--help", "-h"]) { _ in
+                printUsage()
+                return 0
+            },
+        ]
+    }
+
     static func run() async -> Int32 {
         let arguments = Array(CommandLine.arguments.dropFirst())
 
@@ -16,30 +53,12 @@ enum CommandLineEntry {
             printUsage()
             return 1
         }
-
-        switch command {
-        case "version", "--version", "-v":
-            write("boreas 0.1.0\n")
-            return 0
-
-        case "status":
-            return await status()
-
-        case "sensors":
-            return await sensors(showRaw: arguments.contains("--raw"))
-
-        case "uninstall":
-            return UninstallCommand.run(removeUserData: arguments.contains("--all"))
-
-        case "help", "--help", "-h":
-            printUsage()
-            return 0
-
-        default:
+        guard let matched = table.first(where: { $0.names.contains(command) }) else {
             writeError("unknown command: \(command)\n")
             printUsage()
             return 1
         }
+        return await matched.run(Array(arguments.dropFirst()))
     }
 
     // MARK: - Commands
@@ -145,9 +164,17 @@ enum CommandLineEntry {
             commands:
               status            temperatures, fans and power at a glance
               sensors [--raw]   every sensor, grouped; --raw shows hardware names
+              profile [name]    list profiles, or activate one now
+              profile --auto    hand the decision back to the profile triggers
+              install           install the fan control helper (asks the app to do it)
               uninstall [--all] remove the fan control helper; --all also deletes saved settings
+              export [file]     write the configuration; to stdout when no file is given
+              import <file>     replace the configuration, after validating it
               version           print version
               help              print this message
+
+            a profile chosen here is live only, never written to disk: a stored
+            choice would override every profile trigger for good.
             """
         writeError(usage + "\n")
     }
