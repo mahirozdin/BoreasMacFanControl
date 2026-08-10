@@ -144,3 +144,81 @@ struct ConfigurationTests {
         #expect(result.data == data)
     }
 }
+
+/// The notifications section (P7.01).
+///
+/// A configuration schema change owes a migration test (AGENTS §7). The section
+/// is **additive**, which is the claim being tested: a file written before it
+/// existed has to decode to the defaults, and no schema version bump is needed.
+@Suite("Configuration — notifications section (P7.01)")
+struct NotificationConfigurationTests {
+
+    @Test("a file written before this section existed decodes to the defaults")
+    func absentSectionMeansDefaults() throws {
+        let older = """
+            {"schemaVersion":1,"general":{"samplingIntervalSeconds":2}}
+            """
+        let decoded = try JSONDecoder().decode(
+            ConfigurationFile.self, from: Data(older.utf8))
+        #expect(decoded.notifications == NotificationSettings())
+        #expect(decoded.notifications.isEnabled == false)
+        #expect(decoded.schemaVersion == 1)
+    }
+
+    @Test("the section round-trips without loss")
+    func roundTrips() throws {
+        var original = ConfigurationFile()
+        original.notifications.isEnabled = true
+        original.notifications.suppressionWindowMinutes = 42
+        original.notifications.enabledKinds = [.panicEngaged, .thresholdCrossed]
+        original.notifications.quietHours = QuietHours(
+            startMinuteOfDay: 22 * 60, endMinuteOfDay: 7 * 60)
+        original.notifications.thresholds = [.compute: 88, .graphics: 79]
+
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(ConfigurationFile.self, from: data)
+        #expect(decoded.notifications == original.notifications)
+    }
+
+    @Test("a hostile file is clamped by the types on the way in")
+    func hostileFileIsClamped() throws {
+        // The G6 shape: a file asking for the impossible is corrected, never
+        // trusted and never a crash.
+        let hostile = """
+            {"schemaVersion":1,"notifications":{"isEnabled":true,
+            "suppressionWindowMinutes":99999,
+            "thresholds":{"compute":900}}}
+            """
+        let decoded = try JSONDecoder().decode(
+            ConfigurationFile.self, from: Data(hostile.utf8))
+        #expect(decoded.notifications.suppressionWindowMinutes == 120)
+        #expect(
+            (decoded.notifications.thresholds[.compute] ?? 0)
+                <= NotificationSettings.thresholdRange.upperBound)
+    }
+
+    @Test("thresholds are written as a hand-editable object, not an alternating array")
+    func thresholdsEncodeAsAnObject() throws {
+        // Swift would encode `[SensorGroup: Double]` as `["compute", 88]`, which
+        // round-trips and reads terribly. This file is meant to be edited by
+        // hand — P6.14's finding was that automatic profile switching had been
+        // reachable only that way.
+        var config = ConfigurationFile()
+        config.notifications.thresholds = [.compute: 88]
+        let text = String(bytes: try JSONEncoder().encode(config), encoding: .utf8) ?? ""
+        #expect(text.contains("\"thresholds\":{\"compute\":88}"), "encoded as: \(text)")
+    }
+
+    @Test("a threshold naming a group this build does not know is refused, not dropped")
+    func unknownGroupIsRefused() {
+        // The P6.10 rule for shortcuts: silently dropping it would produce
+        // silence with no explanation, and a configuration that says one thing
+        // and does another is what the loader exists to prevent.
+        let unknown = """
+            {"schemaVersion":1,"notifications":{"thresholds":{"flux_capacitor":88}}}
+            """
+        #expect(throws: (any Error).self) {
+            try JSONDecoder().decode(ConfigurationFile.self, from: Data(unknown.utf8))
+        }
+    }
+}

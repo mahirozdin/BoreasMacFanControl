@@ -121,6 +121,7 @@ enum HelperCommands {
             ("--trigger-drill", TriggerDrill.run),
             ("--a11y-drill", AccessibilityDrill.run),
             ("--layout-drill", LayoutDrill.run),
+            ("--notification-drill", NotificationDrill.run),
         ]
         for drill in drills where arguments.contains(drill.flag) {
             drill.run(report)
@@ -183,6 +184,7 @@ struct BoreasApp: App {
     @State private var visibility = StatusItemVisibilityModel()
     @State private var store: ConfigurationStore
     @State private var shortcuts = GlobalShortcuts()
+    @State private var notifications: NotificationModel
     @Environment(\.openWindow) private var openWindowAction
 
     init() {
@@ -200,6 +202,7 @@ struct BoreasApp: App {
         let monitor = MonitorModel(store: configuration)
         _model = State(initialValue: monitor)
         _control = State(initialValue: ControlModel(monitor: monitor, store: configuration))
+        _notifications = State(initialValue: NotificationModel(store: configuration))
         // Handled before any window exists so the commands can run from a
         // terminal without the menu bar item appearing.
         if MainActor.assumeIsolated({ HelperCommands.handleIfPresent() }) {
@@ -252,6 +255,12 @@ struct BoreasApp: App {
                 .task {
                     model.start()
                     installShortcuts()
+                    // Reads the permission the system already holds; it never
+                    // asks. Asking happens only from the settings switch.
+                    notifications.refreshAuthorization()
+                    model.onCycle = { [notifications, model, control] in
+                        notifications.observe(monitor: model, control: control)
+                    }
                     // The visibility monitor lives at app level: the label
                     // itself is rendered to an image by MenuBarExtra, so
                     // nothing inside it can ever measure a window.
@@ -282,7 +291,7 @@ struct BoreasApp: App {
         ) {
             SettingsWindow(
                 store: store, model: model, control: control, setup: setup,
-                shortcuts: shortcuts)
+                shortcuts: shortcuts, notifications: notifications)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)

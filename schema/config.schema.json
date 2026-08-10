@@ -362,6 +362,109 @@
         },
         "additionalProperties": false
       }
+    },
+    "notifications": {
+      "type": "object",
+      "description": "Notification triggers and noise control (P7.01). Optional and additive: a file without this section is valid and means the defaults, which leave notifications OFF. The permission macOS requires is requested when the user switches them on, never at launch.",
+      "properties": {
+        "isEnabled": {
+          "type": "boolean",
+          "description": "The master switch. False by default: delivering a notification needs the user's permission, and this application does not ask for one until asked to."
+        },
+        "suppressionWindowMinutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120,
+          "description": "A notification of the same kind and subject does not repeat inside this window. Clamped into range by the type; a value outside it is corrected, not refused."
+        },
+        "enabledKinds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "thresholdCrossed",
+              "thermalState",
+              "panicEngaged",
+              "fanAnomaly",
+              "daemonLost",
+              "profileChanged",
+              "batteryHealth"
+            ]
+          },
+          "description": "Which triggers fire once notifications are enabled. 'panicEngaged' is always delivered whether or not it appears here, and no noise-control mechanism can drop it — the same reasoning as G2 one level up."
+        },
+        "quietHours": {
+          "type": "object",
+          "description": "A window of the day in which ordinary notifications are held back. Spans midnight when start > end, which is the usual case. Full-speed cooling is still announced.",
+          "properties": {
+            "startMinuteOfDay": {
+              "type": "integer",
+              "description": "Minutes from midnight. Out-of-range values wrap rather than clamp, so 1500 means 01:00 the next day."
+            },
+            "endMinuteOfDay": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "startMinuteOfDay",
+            "endMinuteOfDay"
+          ]
+        },
+        "thresholds": {
+          "type": "object",
+          "description": "Per-group temperature thresholds in °C, keyed by sensor group name. Empty by default and deliberately so: there is no sensible default, because what counts as hot depends on the machine and on what its owner is doing with it. A group name this build does not know is REFUSED rather than dropped.",
+          "propertyNames": {
+            "enum": [
+              "compute",
+              "compute.performance",
+              "compute.efficiency",
+              "graphics",
+              "memory",
+              "storage",
+              "power",
+              "battery",
+              "chassis",
+              "airflow",
+              "wireless",
+              "uncategorized"
+            ]
+          },
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 120
+          }
+        }
+      }
+    },
+    "shortcuts": {
+      "type": "array",
+      "description": "Global shortcuts (P6.10), empty by default. NOTE ON THE FORMAT: this is an alternating array of action name and key combination — [\"boost\", {...}] — because Swift encodes a dictionary with an enum key that way. It round-trips correctly and is awkward to edit by hand; correcting it to an object is a tracked task. Published here as the format really is rather than as it should be, because a schema that describes an intention is worse than none.",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "enum": [
+              "openMainWindow",
+              "openSettings",
+              "boost",
+              "releaseToFirmware"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "keyCode": {
+                "type": "integer"
+              },
+              "modifiers": {
+                "type": "integer",
+                "description": "Bit set. At least one of Command, Option or Control is required; a combination without one is refused, because a bare letter would be swallowed in every application."
+              }
+            }
+          }
+        ]
+      }
     }
   },
   "additionalProperties": true

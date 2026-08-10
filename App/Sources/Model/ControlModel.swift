@@ -35,8 +35,8 @@ public final class ControlModel {
         case engine
     }
 
-    public private(set) var state: ControlState = .monitoring
-    public private(set) var activeLayer: SafetyLayer?
+    public internal(set) var state: ControlState = .monitoring
+    public internal(set) var activeLayer: SafetyLayer?
     public private(set) var lastProblem: String?
 
     /// The configuration this model reads its profiles and safety limits

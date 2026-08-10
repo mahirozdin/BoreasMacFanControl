@@ -138,6 +138,26 @@ extension HardwareDrills {
         line("system selected")
         let released = hardware()
 
+        // **This comparison is weakest exactly where it matters most, and the
+        // 350 rpm tolerance is a coincidence of where the test curve saturates.**
+        // Measured in P7.01 across three machine temperatures:
+        //
+        //   52.6 °C → 4691 vs 4705 expected (14 rpm)
+        //   59.1 °C → 4153 vs 3774 expected (379 rpm)  FAIL
+        //   63.9 °C → 3766 vs 3395 expected (371 rpm)  FAIL
+        //
+        // Cool, the steep curve asks for ~100% duty, so the fan sits pinned at
+        // its ceiling and matches to within a rounding error — but any steep
+        // curve would give that answer, so it confirms very little. On the
+        // curve's *slope*, the fan's own cooling lowers the temperature during
+        // the 16 settling cycles, so `expected` is recomputed at a temperature
+        // the fan has already left and the fan legitimately sits above it.
+        //
+        // The honest fix is the P6.09 insight — compare against the temperature
+        // that *drove* the final target, sampled a cycle late, rather than the
+        // one measured after the fan has already changed it. That is a change to
+        // this drill's pass condition and is tracked as **P7.11**, not smuggled
+        // into the task that happened to notice it.
         let passed =
             stock.mode == "1" && edited.mode == "1"
             && abs(edited.rpm - expected) <= 350

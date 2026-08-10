@@ -30,9 +30,22 @@ FORBIDDEN = {
     "tr": ["arızalı", "bozuk", "kusurlu", "hasarlı"],
 }
 
-# Only the diagnostic wording is bound by it: the sentence that *explains*
-# the rule necessarily contains the word it forbids.
-DIAGNOSTIC_PREFIXES = ("diagnostics.finding.", "diagnostics.cause.", "diagnostics.step.")
+# Which keys the rule binds. Not every string: the sentence that *explains* the
+# rule necessarily contains the word it forbids, and so does a settings label
+# describing what a check does.
+#
+# `notify.` joined the list in P7.01, and it should have been obvious sooner: a
+# notification makes exactly the same claim about somebody's hardware that a
+# diagnostic finding does, and it makes it *unprompted*, on top of whatever they
+# were doing. If any wording in this product needs holding to the honesty rule,
+# an interruption does. Proven by planting the Turkish word for "faulty" in a
+# notification body and watching this turn red.
+DIAGNOSTIC_PREFIXES = (
+    "diagnostics.finding.",
+    "diagnostics.cause.",
+    "diagnostics.step.",
+    "notify.",
+)
 
 
 def main(path):

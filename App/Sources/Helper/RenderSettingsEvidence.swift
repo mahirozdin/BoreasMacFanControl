@@ -19,6 +19,14 @@ extension RenderEvidence {
         let directory = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
             .appendingPathComponent("boreas-render-settings", isDirectory: true)
         let store = ConfigurationStore(directory: directory)
+        // Notifications on in the fixture: a tab photographed entirely greyed
+        // out would prove only that `.disabled` works.
+        store.update {
+            $0.notifications.isEnabled = true
+            $0.notifications.quietHours = QuietHours(
+                startMinuteOfDay: 22 * 60, endMinuteOfDay: 7 * 60)
+            $0.notifications.thresholds = [.compute: 88]
+        }
 
         func reading(_ raw: String, _ group: SensorGroup, _ celsius: Double) -> SensorReading {
             SensorClassifier.makeReading(rawName: raw, celsius: celsius)
@@ -74,7 +82,35 @@ extension RenderEvidence {
                 AnyView(ControlSettings(store: fixture.store, control: fixture.control))
             ),
             (
-                "5-advanced",
+                "5-notifications",
+                AnyView(
+                    NotificationSettingsTab(
+                        store: fixture.store, model: fixture.monitor,
+                        // A model over a recording sink: the camera must not
+                        // touch the real notification centre, and a granted
+                        // authorization is the state worth photographing —
+                        // the "not asked yet" note is the other one, and the
+                        // fixture below renders it.
+                        notifications: NotificationModel(
+                            sink: RecordingNotificationSink(authorization: .granted),
+                            store: fixture.store,
+                            fixedAuthorizationForRendering: .granted)))
+            ),
+            (
+                "6-notifications-denied",
+                AnyView(
+                    NotificationSettingsTab(
+                        store: fixture.store, model: fixture.monitor,
+                        notifications: NotificationModel(
+                            sink: RecordingNotificationSink(authorization: .denied),
+                            store: fixture.store,
+                            // The refusal, which is the state the tab most
+                            // needs to be honest about: a switch reading "on"
+                            // while macOS shows nothing.
+                            fixedAuthorizationForRendering: .denied)))
+            ),
+            (
+                "7-advanced",
                 AnyView(
                     AdvancedSettings(
                         store: fixture.store, control: fixture.control, setup: fixture.setup))

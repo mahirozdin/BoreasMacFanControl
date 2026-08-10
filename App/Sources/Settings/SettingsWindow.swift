@@ -3,12 +3,12 @@ import SwiftUI
 
 /// The settings window (P6.08).
 ///
-/// The blueprint lists seven tabs. Five are here — the five whose subjects
-/// exist. **Notifications and Recording are deliberately absent rather than
-/// present and inert:** their subsystems arrive in P7.01 and P7.02, and a
-/// tab full of switches that change nothing is the kind of thing the
-/// honesty rule exists to prevent. Those two tasks own their tabs; the end
-/// state is still seven.
+/// The blueprint lists seven tabs. Six are here. **Notifications joined them
+/// in P7.01, when its subsystem arrived** — P6.08 left it out on the grounds
+/// that a tab full of switches changing nothing is what the honesty rule exists
+/// to prevent, and that reasoning held until there was something for the
+/// switches to change. Recording is still absent on the same grounds; P7.02
+/// owns it.
 struct SettingsWindow: View {
     static let windowID = "settings"
 
@@ -17,6 +17,7 @@ struct SettingsWindow: View {
     let control: ControlModel
     let setup: HelperSetupModel
     let shortcuts: GlobalShortcuts
+    let notifications: NotificationModel
 
     var body: some View {
         TabView {
@@ -32,6 +33,12 @@ struct SettingsWindow: View {
             SettingsScroll { ControlSettings(store: store, control: control) }
                 .tabItem { tabLabel(controlTitle, systemImage: "slider.horizontal.3") }
 
+            SettingsScroll {
+                NotificationSettingsTab(
+                    store: store, model: model, notifications: notifications)
+            }
+            .tabItem { tabLabel(notificationsTitle, systemImage: "bell") }
+
             SettingsScroll { AdvancedSettings(store: store, control: control, setup: setup) }
                 .tabItem { tabLabel(advancedTitle, systemImage: "wrench.and.screwdriver") }
         }
@@ -44,6 +51,12 @@ struct SettingsWindow: View {
         } icon: {
             Image(systemName: systemImage)
         }
+    }
+
+    private var notificationsTitle: String {
+        String(
+            localized: "settings.tab.notifications", defaultValue: "Notifications",
+            comment: "Settings tab: which events produce a notification, and how often")
     }
 
     private var generalTitle: String {

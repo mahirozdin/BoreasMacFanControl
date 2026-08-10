@@ -6,8 +6,8 @@ import Foundation
 /// This is the wire model: field names match the published schema, and the
 /// conversion into engine types is where validation happens. Everything the
 /// engine consumes today is here; sections that belong to later phases
-/// (notifications, logging, sensor overrides) pass through untouched as raw
-/// JSON so a file carrying them round-trips without loss.
+/// (logging) pass through untouched as raw JSON so a file carrying them
+/// round-trips without loss. Notifications joined the model in P7.01.
 public struct ConfigurationFile: Sendable, Hashable, Codable {
 
     /// The version this build reads and writes.
@@ -90,6 +90,14 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
     /// behaviour that makes menu bar utilities unwelcome.
     public var shortcuts: [HotKeyAction: HotKey]
 
+    /// Notification triggers and noise control (P7.01).
+    ///
+    /// Optional and additive like `sensorOverrides`: a file written before this
+    /// section existed decodes to the defaults, which is why it needs no schema
+    /// version bump. The defaults leave the subsystem **off** — see
+    /// `NotificationSettings.isEnabled`.
+    public var notifications: NotificationSettings
+
     public init(
         schemaVersion: Int = ConfigurationFile.currentSchemaVersion,
         general: General = General(),
@@ -101,7 +109,8 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         // driving profile would take the fans over before anyone asked.
         // The user chooses when that changes.
         defaultProfileName: String = "System",
-        shortcuts: [HotKeyAction: HotKey] = [:]
+        shortcuts: [HotKeyAction: HotKey] = [:],
+        notifications: NotificationSettings = NotificationSettings()
     ) {
         self.schemaVersion = schemaVersion
         self.general = general
@@ -110,6 +119,7 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         self.sensorOverrides = sensorOverrides
         self.defaultProfileName = defaultProfileName
         self.shortcuts = shortcuts
+        self.notifications = notifications
     }
 
     /// The defaults this build starts from.
@@ -123,6 +133,7 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
         case sensorOverrides
         case defaultProfileName
         case shortcuts
+        case notifications
     }
 
     /// Missing sections mean their defaults — a minimal file is a valid
@@ -150,7 +161,9 @@ public struct ConfigurationFile: Sendable, Hashable, Codable {
                 // configuration that says one thing and does another is
                 // what the loader exists to prevent.
                 shortcuts: try container.decodeIfPresent(
-                    [HotKeyAction: HotKey].self, forKey: .shortcuts) ?? [:]
+                    [HotKeyAction: HotKey].self, forKey: .shortcuts) ?? [:],
+                notifications: try container.decodeIfPresent(
+                    NotificationSettings.self, forKey: .notifications) ?? NotificationSettings()
             )
         } else {
             // A foreign version: do not try to interpret the rest.

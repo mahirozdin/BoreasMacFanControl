@@ -75,13 +75,14 @@ BOREAS=~/Library/Developer/Xcode/DerivedData/Boreas-*/Build/Products/Debug/Borea
 | `--control-drill` | The manual duty path end to end (P4.08) |
 | `--profile-drill` | Selecting a profile drives the fan along its curve (P6.02) |
 | `--override-drill` | A timed override expires back to the **engine**, not the firmware (P6.05) |
-| `--curve-drill` | An edited curve reaches the fans within a cycle (P6.06) |
+| `--curve-drill` | An edited curve reaches the fans within a cycle (P6.06). **Its tolerance is temperature-dependent** — reliable only where the test curve saturates, and it misses by ~370 rpm on the curve's slope because the fan's own cooling moves the target underneath it. Measured in P7.01, tracked as P7.11 |
 | `--config-drill` | Settings survive a restart; a broken file falls back; a hostile one is clamped (P6.08) |
 | `--diagnostics-drill` | A healthy fan is not accused — the false positive risk (P6.09) |
 | `--shortcut-drill` | Global shortcuts register with **no accessibility permission** (P6.10) |
 | `--trigger-drill` | A trigger selects its profile, and a manual choice still overrides it (P6.14) |
 | `--a11y-drill` | The drawn colours are exactly Core's, and their measured contrast clears the requirement each role carries — in four appearances (P6.12) |
 | `--layout-drill` | No fixed-width text container clips its content in any shipped language, plus a 1.4× expansion budget (P6.13) |
+| `--notification-drill` | No permission is requested at launch; a panic survives every noise-control mechanism; a refused permission switches the feature back off; settings persist and a hostile file is clamped (P7.01) |
 | **Render evidence — writes PNGs into a directory** | |
 | `--render-setup <dir>` | The helper setup window in every phase |
 | `--render-design <dir>` | The design system swatch sheet, both appearances |

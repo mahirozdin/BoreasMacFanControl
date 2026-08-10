@@ -197,6 +197,13 @@ public final class MonitorModel {
         }
     }
 
+    /// Called after every completed sample, on the main actor.
+    ///
+    /// Set by the app so `NotificationModel` can look for state transitions
+    /// without the monitor depending on it. Optional so every drill and render
+    /// fixture that builds a monitor keeps working untouched.
+    public var onCycle: (() -> Void)?
+
     public func start() {
         guard task == nil else { return }
         isRunning = true
@@ -249,6 +256,11 @@ public final class MonitorModel {
         }
 
         recordHistory(at: Date())
+        // The notification model watches for *edges* in what this cycle
+        // observed (P7.01). A closure rather than the model holding a
+        // reference back: the monitor is the thing that knows when a sample
+        // is complete, and it has no business knowing what a notification is.
+        onCycle?()
     }
 
     /// Re-derives every reading through the classifier with the user's

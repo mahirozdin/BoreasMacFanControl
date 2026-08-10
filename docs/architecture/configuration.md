@@ -1,6 +1,6 @@
 # Configuration
 
-> Last updated: 2026-08-05 — P6.08
+> Last updated: 2026-08-10 — P7.01
 > Source: blueprint §10 · Decision: [ADR 0013](adr/0013-json-config-zero-deps.md)
 
 ## Format and location
@@ -23,7 +23,11 @@
   "defaultProfileName": "Balanced",
   "profiles":          [ { name, binding, perFan, triggers[], priority,
                            smoothing, hysteresis, slew, enginePaused } ],
-  "sensorOverrides":   { "<raw sensor name>": { displayName, group, hidden } }
+  "sensorOverrides":   { "<raw sensor name>": { displayName, group, hidden } },
+  "shortcuts":         [ "<action>", { keyCode, modifiers }, … ],
+  "notifications":     { isEnabled, suppressionWindowMinutes, enabledKinds[],
+                         quietHours: { startMinuteOfDay, endMinuteOfDay },
+                         thresholds: { "<sensor group>": celsius } }
 }
 ```
 
@@ -40,6 +44,30 @@
 > still able to trigger the panic layer. `defaultProfileName` and
 > `sensorOverrides` are both optional: a file without them is valid, which
 > is why adding them in P6.08 needed no version bump.
+
+> **`notifications` is optional and additive** (P7.01): a file without it is
+> valid and means the defaults, which leave notifications **off**. `isEnabled`
+> being false is not a placeholder — macOS requires a permission to deliver a
+> notification, and this application does not request one until the user turns
+> the switch on. → [`docs/operations/notifications.md`](../operations/notifications.md)
+>
+> `notifications.thresholds` is **empty by default and deliberately so**: what
+> counts as hot depends on the machine and on what its owner is doing with it, so
+> there is no honest default to ship. A group name this build does not recognise
+> is **refused**, taking the section down to its defaults, rather than dropped —
+> the P6.10 rule for shortcuts, and for the same reason: a configuration that
+> says one thing and does another is what the loader exists to prevent.
+
+> **`shortcuts` has an awkward on-disk shape, and it is documented as it is
+> rather than as it should be.** It is an alternating array — `["boost", {…}]` —
+> because Swift encodes a dictionary with an enum key that way, and nobody
+> noticed in P6.10 because all four shortcuts ship unset, so it has never been
+> written to a real file. It round-trips correctly and is unpleasant to edit by
+> hand, which matters for a file this project expects people to edit.
+> `notifications.thresholds` avoids it with a hand-written `encode(to:)`;
+> correcting `shortcuts` the same way is **P7.10**. A schema that describes an
+> intention would be worse than none, so the published schema says what the
+> format really is.
 
 **Who reads and writes it:** `App/Sources/Model/ConfigurationStore.swift`
 does the disk work — atomic writes, coalesced so a slider drag writes once,

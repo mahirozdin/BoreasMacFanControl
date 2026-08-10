@@ -2611,6 +2611,258 @@
         }
       }
     },
+    "notify.battery.body": {
+      "comment": "Notification body for the battery health trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system reports a change in battery condition."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem, pil durumunda bir değişiklik bildiriyor."
+          }
+        }
+      }
+    },
+    "notify.battery.title": {
+      "comment": "Notification title: battery health degraded",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery health has changed"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pil durumu değişti"
+          }
+        }
+      }
+    },
+    "notify.daemon.body": {
+      "comment": "Notification body for the daemon connection lost trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The fans are back under the system's control. Nothing is at risk — this is what is supposed to happen."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanlar yeniden sistemin denetiminde. Bir risk yok — olması gereken tam olarak bu."
+          }
+        }
+      }
+    },
+    "notify.daemon.title": {
+      "comment": "Notification title: the helper connection dropped or the watchdog fired",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan control handed back"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan denetimi sisteme geri verildi"
+          }
+        }
+      }
+    },
+    "notify.fan.body": {
+      "comment": "Notification body for the fan anomaly trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The fans are not following their targets as closely as expected. Diagnostics has the details and some things to try."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fanlar hedeflerini beklendiği kadar yakın izlemiyor. Tanılama bölümünde ayrıntılar ve denenebilecek birkaç şey var."
+          }
+        }
+      }
+    },
+    "notify.fan.title": {
+      "comment": "Notification title: a fan check raised a concern",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fan check is worth a look"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir fan kontrolü bakmaya değer"
+          }
+        }
+      }
+    },
+    "notify.panic.body": {
+      "comment": "Notification body for the panic layer trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A sensor crossed the panic threshold, so the fans are at full speed until it falls back."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir sensör panik eşiğini geçti; eşiğin altına düşene kadar fanlar tam hızda."
+          }
+        }
+      }
+    },
+    "notify.panic.title": {
+      "comment": "Notification title: the panic layer engaged",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cooling at full speed"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tam hızda soğutma"
+          }
+        }
+      }
+    },
+    "notify.profile.body": {
+      "comment": "Notification body naming the profile that became active",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now running: %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şimdi çalışan profil: %@"
+          }
+        }
+      }
+    },
+    "notify.profile.title": {
+      "comment": "Notification title: the active profile changed",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile changed"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profil değişti"
+          }
+        }
+      }
+    },
+    "notify.thermal.body": {
+      "comment": "Notification body for the thermal state trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system reports raised thermal pressure. The fans are responding."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem artan termal baskı bildiriyor. Fanlar buna yanıt veriyor."
+          }
+        }
+      }
+    },
+    "notify.thermal.title": {
+      "comment": "Notification title: the system thermal state reached serious or above",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system is under thermal load"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem termal yük altında"
+          }
+        }
+      }
+    },
+    "notify.threshold.body": {
+      "comment": "Notification body: which sensor groups crossed the threshold",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Above your threshold: %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eşiğinin üzerinde olan gruplar: %@"
+          }
+        }
+      }
+    },
+    "notify.threshold.title": {
+      "comment": "Notification title: a sensor group crossed the user's threshold",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperature threshold reached"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıcaklık eşiğine ulaşıldı"
+          }
+        }
+      }
+    },
     "panel.fan.parked": {
       "comment": "Shown when the firmware has switched a fan off entirely",
       "extractionState": "manual",
@@ -4177,6 +4429,402 @@
         }
       }
     },
+    "settings.notify.battery": {
+      "comment": "Notification settings: the battery health trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery condition changes"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pil durumu değiştiğinde"
+          }
+        }
+      }
+    },
+    "settings.notify.daemon": {
+      "comment": "Notification settings: the daemon connection trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan control is handed back to the system"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fan denetimi sisteme geri verildiğinde"
+          }
+        }
+      }
+    },
+    "settings.notify.enable": {
+      "comment": "Main switch for the whole notification subsystem",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send notifications"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bildirim gönder"
+          }
+        }
+      }
+    },
+    "settings.notify.fan": {
+      "comment": "Notification settings: the fan anomaly trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fan check is worth a look"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir fan kontrolü bakmaya değer olduğunda"
+          }
+        }
+      }
+    },
+    "settings.notify.panic": {
+      "comment": "Notification settings: the panic layer trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cooling goes to full speed"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soğutma tam hıza çıktığında"
+          }
+        }
+      }
+    },
+    "settings.notify.panic.note": {
+      "comment": "Notification settings: why the panic trigger cannot be switched off",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always on, like the panic threshold itself"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panik eşiğinin kendisi gibi, her zaman açık"
+          }
+        }
+      }
+    },
+    "settings.notify.permission.denied": {
+      "comment": "Shown when the system has refused the notification permission",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS is not allowing notifications from Boreas. You can change that in System Settings, under Notifications."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS, Boreas'ın bildirim göstermesine izin vermiyor. Bunu Sistem Ayarları içindeki Bildirimler bölümünden değiştirebilirsiniz."
+          }
+        }
+      }
+    },
+    "settings.notify.permission.notasked": {
+      "comment": "Explains that the notification permission is only requested on demand",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turning this on asks macOS for permission to show notifications. Nothing is requested before then."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bunu açmak, bildirim gösterme izni için macOS'a sorar. Öncesinde hiçbir izin istenmez."
+          }
+        }
+      }
+    },
+    "settings.notify.profile": {
+      "comment": "Notification settings: the profile change trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The active profile changes"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etkin profil değiştiğinde"
+          }
+        }
+      }
+    },
+    "settings.notify.quiet": {
+      "comment": "Switch enabling the notification quiet hours window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quiet hours"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessiz saatler"
+          }
+        }
+      }
+    },
+    "settings.notify.quiet.from": {
+      "comment": "Start of the quiet hours window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başlangıç"
+          }
+        }
+      }
+    },
+    "settings.notify.quiet.note": {
+      "comment": "Explains that the panic notification ignores quiet hours",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full-speed cooling is still announced during quiet hours. Everything else waits."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tam hızda soğutma sessiz saatlerde de bildirilir. Diğer her şey bekler."
+          }
+        }
+      }
+    },
+    "settings.notify.quiet.to": {
+      "comment": "End of the quiet hours window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitiş"
+          }
+        }
+      }
+    },
+    "settings.notify.section.noise": {
+      "comment": "Heading of the notification noise control section",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeping it quiet"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessizliği korumak"
+          }
+        }
+      }
+    },
+    "settings.notify.section.thresholds": {
+      "comment": "Heading of the per-group notification threshold list",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperature thresholds"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sıcaklık eşikleri"
+          }
+        }
+      }
+    },
+    "settings.notify.section.triggers": {
+      "comment": "Heading of the notification trigger list",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tell me when"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şu durumlarda haber ver"
+          }
+        }
+      }
+    },
+    "settings.notify.thermal": {
+      "comment": "Notification settings: the thermal state trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system reports raised thermal pressure"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem artan termal baskı bildirdiğinde"
+          }
+        }
+      }
+    },
+    "settings.notify.threshold": {
+      "comment": "Notification settings: the threshold trigger",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A sensor group crosses a threshold"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir sensör grubu eşiği geçtiğinde"
+          }
+        }
+      }
+    },
+    "settings.notify.threshold.value": {
+      "comment": "A notification threshold in degrees Celsius",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld °C"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld °C"
+          }
+        }
+      }
+    },
+    "settings.notify.thresholds.note": {
+      "comment": "Explains why notification thresholds ship unset",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no default: what counts as hot depends on the machine and on what you are doing with it. Set one only for the groups you want to hear about."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varsayılan bir değer yok: neyin sıcak sayıldığı makineye ve onunla ne yaptığınıza bağlı. Yalnızca haberdar olmak istediğiniz gruplar için bir değer girin."
+          }
+        }
+      }
+    },
+    "settings.notify.window": {
+      "comment": "Label of the notification suppression window stepper",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do not repeat the same notice for"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aynı bildirimi tekrarlamadan önce beklenecek süre"
+          }
+        }
+      }
+    },
+    "settings.notify.window.value": {
+      "comment": "The suppression window in minutes",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dk"
+          }
+        }
+      }
+    },
     "settings.sensors.group": {
       "comment": "Sensor settings column: which group the sensor belongs to",
       "extractionState": "manual",
@@ -4551,6 +5199,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Genel"
+          }
+        }
+      }
+    },
+    "settings.tab.notifications": {
+      "comment": "Settings tab: which events produce a notification, and how often",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bildirimler"
           }
         }
       }

@@ -100,11 +100,35 @@ generate: ## Generate the Xcode project from project.yml
 
 PACKAGES := Core SharedIPC HardwareKit
 
+# ----------------------------------------------------------------------------
+# FAKE GATE, found in P7.01 — READ THIS BEFORE TOUCHING THE TWO TARGETS BELOW.
+#
+# Both used to pipe into `tail`:
+#
+#   ( cd Packages/$$p && swift test 2>&1 | grep … | tail -1 ) || exit 1
+#
+# A subshell's exit status is the status of the LAST command in the pipeline,
+# and `tail` always succeeds. So `swift test`'s status was discarded and
+# `make test` exited 0 **with failing tests** — proven by breaking a test on
+# purpose and watching the target come back green. CI runs `make test`, so a
+# failing test would not have broken the build.
+#
+# It also explains the `HardwareKit error: fatalError` that the P6.10 run log
+# recorded as unexplained: the same `grep | tail` surfaces a stderr line from an
+# otherwise-passing run and prints it where the result belongs.
+#
+# The output is captured first and the status kept explicitly. Do not
+# reintroduce a pipeline here — and note the note fifteen lines below, where the
+# same mistake was already found once in `make lint`.
+# ----------------------------------------------------------------------------
+
 .PHONY: build
 build: ## Build all SPM packages
 	@for p in $(PACKAGES); do \
 		printf '  %-12s ' "$$p"; \
-		( cd Packages/$$p && swift build 2>&1 | tail -1 ) || exit 1; \
+		out=$$( cd Packages/$$p && swift build 2>&1 ); status=$$?; \
+		printf '%s\n' "$$out" | tail -1; \
+		if [ $$status -ne 0 ]; then echo "  ✗ $$p failed to build"; exit 1; fi; \
 	done
 
 .PHONY: test
@@ -112,7 +136,9 @@ test: ## Run all tests
 	@for p in $(PACKAGES); do \
 		if [ -d "Packages/$$p/Tests" ]; then \
 			printf '  %-12s ' "$$p"; \
-			( cd Packages/$$p && swift test 2>&1 | grep -E 'Test run with|error:' | tail -1 ) || exit 1; \
+			out=$$( cd Packages/$$p && swift test 2>&1 ); status=$$?; \
+			printf '%s\n' "$$out" | grep -E 'Test run with|error:' | tail -1; \
+			if [ $$status -ne 0 ]; then echo "  ✗ $$p tests failed"; exit 1; fi; \
 		fi; \
 	done
 
