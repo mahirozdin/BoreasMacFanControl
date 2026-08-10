@@ -1135,6 +1135,60 @@
         }
       }
     },
+    "diagnostics.cause.battery.aged": {
+      "comment": "Possible cause offered first for a worn battery: it is expected",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normal ageing — every battery holds less as it goes through charge cycles"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normal yaşlanma — her pil şarj döngüleri geçtikçe daha az şarj tutar"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.battery.service": {
+      "comment": "Possible cause for a worn battery, phrased without diagnosing it",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A condition worth having looked at, if the figure keeps falling faster than the cycles explain"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Değer, döngü sayısının açıkladığından daha hızlı düşmeye devam ederse baktırmaya değer bir durum"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.battery.temperature": {
+      "comment": "Possible cause for a warm battery",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Charging while the machine is already warm, or in a warm room"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makine zaten sıcakken ya da sıcak bir odada şarj etmek"
+          }
+        }
+      }
+    },
     "diagnostics.cause.connection": {
       "comment": "Possible explanation for a fan not following its command",
       "extractionState": "manual",
@@ -1167,6 +1221,60 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fanların makinenin farklı bölümlerini soğutuyor ve farklı dönmeleri gerekiyor olması"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.disk.full": {
+      "comment": "Possible cause for a nearly full drive",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Very little free space left on the drive"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diskte çok az boş alan kalmış olması"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.disk.snapshots": {
+      "comment": "Possible cause for a nearly full drive",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Large files, or local backup snapshots the system is keeping"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Büyük dosyalar ya da sistemin tuttuğu yerel yedek anlık görüntüleri"
+          }
+        }
+      }
+    },
+    "diagnostics.cause.disk.writes": {
+      "comment": "Possible cause for a warm drive",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sustained writing, which warms the drive's controller"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diskin denetleyicisini ısıtan sürekli yazma işlemi"
           }
         }
       }
@@ -1387,6 +1495,24 @@
         }
       }
     },
+    "diagnostics.check.battery": {
+      "comment": "Diagnostic check: battery cycles, capacity and temperature",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery health"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pil sağlığı"
+          }
+        }
+      }
+    },
     "diagnostics.check.response": {
       "comment": "Diagnostic check: whether the fans follow their targets",
       "extractionState": "manual",
@@ -1419,6 +1545,42 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sensör geçerliliği"
+          }
+        }
+      }
+    },
+    "diagnostics.check.smart": {
+      "comment": "Diagnostic check: NVMe SMART wear data, which this build cannot read",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drive wear"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disk yıpranması"
+          }
+        }
+      }
+    },
+    "diagnostics.check.storage": {
+      "comment": "Diagnostic check: drive capacity and temperature",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Storage"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depolama"
           }
         }
       }
@@ -1527,6 +1689,96 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hiçbir fan hızı okunamadı."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.battery.absent": {
+      "comment": "Battery check on a desktop: a complete answer, not a gap",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac has no battery, so there is nothing to report here."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu Mac'te pil yok, dolayısıyla burada bildirilecek bir şey yok."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.battery.healthy": {
+      "comment": "Battery check: cycles and capacity, both unremarkable",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The battery has been through %lld charge cycles and holds %lld%% of the charge it was built to hold."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pil %1$lld şarj döngüsünden geçti ve üretildiğinde taşıdığı şarjın %2$lld%%'ini tutuyor."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.battery.unreadable": {
+      "comment": "Battery check: the reading did not come back",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system did not report any battery figures."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem herhangi bir pil değeri bildirmedi."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.battery.warm": {
+      "comment": "Battery check: the battery is running warm",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The battery is at %lld °C — warm for a battery. %lld charge cycles, holding %lld%%."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pil %1$lld °C — bir pil için sıcak sayılır. %2$lld şarj döngüsü, tuttuğu şarj %3$lld%%."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.battery.worn": {
+      "comment": "Battery check: capacity has fallen below the rated service level",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After %lld charge cycles the battery holds %lld%% of the charge it was built to hold."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld şarj döngüsünden sonra pil, üretildiğinde taşıdığı şarjın %2$lld%%'ini tutuyor."
           }
         }
       }
@@ -1671,6 +1923,114 @@
           "stringUnit": {
             "state": "translated",
             "value": "Şu anda okunan sensör yok."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.storage.full": {
+      "comment": "Storage check: very little free space, which also warms the drive",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The drive has only %lld%% of its space free, and its sensors report %lld °C. A drive with little room left works harder and runs warmer."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diskin alanının yalnızca %1$lld%%'i boş ve sensörleri %2$lld °C bildiriyor. Yeri azalan bir disk daha çok çalışır ve daha çok ısınır."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.storage.full.nosensor": {
+      "comment": "Storage check: very little free space, no storage sensor",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The drive has only %lld%% of its space free."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diskin alanının yalnızca %lld%%'i boş."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.storage.healthy": {
+      "comment": "Storage check: free space and drive temperature",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The drive has %lld%% of its space free and its sensors report %lld °C."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diskin alanının %1$lld%%'i boş ve sensörleri %2$lld °C bildiriyor."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.storage.healthy.nosensor": {
+      "comment": "Storage check: free space, on a Mac with no storage sensor",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The drive has %lld%% of its space free."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diskin alanının %lld%%'i boş."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.storage.smart": {
+      "comment": "Storage check: SMART wear data exists but is deliberately unread",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The drive keeps its own record of how much of its rated life it has used. Reading it needs a privilege Boreas does not ask for, so that figure is not shown here."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disk, ömrünün ne kadarını kullandığını kendisi kaydeder. Bunu okumak Boreas'ın istemediği bir yetki gerektirir, bu yüzden o değer burada gösterilmez."
+          }
+        }
+      }
+    },
+    "diagnostics.finding.storage.unreadable": {
+      "comment": "Storage check: capacity could not be read",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system did not report the drive's capacity."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem diskin kapasitesini bildirmedi."
           }
         }
       }
@@ -1826,13 +2186,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Battery health and storage health are not among the checks above. They need hardware readings this build does not take yet, and neither can be verified on the Mac this was developed on. They are listed here so their absence is visible rather than implied."
+            "value": "Your drive keeps wear data — how much of its rated life it has used. Reading it needs a privilege Boreas does not ask for, so the check above reports capacity and temperature only. Battery figures come from the system and, on a Mac without a battery, that is what they say."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pil sağlığı ve depolama sağlığı yukarıdaki kontroller arasında değil. Bu sürümün henüz almadığı donanım okumalarını gerektiriyorlar ve ikisi de bu uygulamanın geliştirildiği Mac'te doğrulanamıyor. Yoklukları ima edilmesin diye burada adlarıyla anılıyorlar."
+            "value": "Diskiniz yıpranma verisi tutar — ömrünün ne kadarını kullandığını. Bunu okumak Boreas'ın istemediği bir yetki gerektirir, bu yüzden yukarıdaki kontrol yalnızca kapasiteyi ve sıcaklığı bildirir. Pil değerleri sistemden gelir ve pili olmayan bir Mac'te söyledikleri de bundan ibarettir."
           }
         }
       }
@@ -1851,6 +2211,78 @@
           "stringUnit": {
             "state": "translated",
             "value": "Henüz kontrol edilmiyor"
+          }
+        }
+      }
+    },
+    "diagnostics.step.battery": {
+      "comment": "Suggested next step for a battery notice",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compare with the battery information in System Settings"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem Ayarları'ndaki pil bilgileriyle karşılaştırın"
+          }
+        }
+      }
+    },
+    "diagnostics.step.battery.heat": {
+      "comment": "Suggested next step for a warm battery",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Let the machine cool before charging it hard"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makineyi zorlayarak şarj etmeden önce soğumasını bekleyin"
+          }
+        }
+      }
+    },
+    "diagnostics.step.disk.snapshots": {
+      "comment": "Suggested next step for a nearly full drive",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check whether local backup snapshots are holding space"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yerel yedek anlık görüntülerinin yer tutup tutmadığını kontrol edin"
+          }
+        }
+      }
+    },
+    "diagnostics.step.disk.space": {
+      "comment": "Suggested next step for a nearly full drive",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free up some space on the drive"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diskte biraz yer açın"
           }
         }
       }

@@ -138,6 +138,91 @@ extension DiagnosticFinding {
                     Peak temperature: \(Self.peakText(peak)).
                     """,
                 comment: "Thermal history check: the system reported pressure during the session")
+        case .batteryAbsent:
+            return String(
+                localized: "diagnostics.finding.battery.absent",
+                defaultValue: "This Mac has no battery, so there is nothing to report here.",
+                comment: "Battery check on a desktop: a complete answer, not a gap")
+
+        case .batteryUnreadable:
+            return String(
+                localized: "diagnostics.finding.battery.unreadable",
+                defaultValue: "The system did not report any battery figures.",
+                comment: "Battery check: the reading did not come back")
+
+        case .batteryHealthy(let cycleCount, let capacityPercent):
+            return String(
+                localized: "diagnostics.finding.battery.healthy",
+                defaultValue: """
+                    The battery has been through \(cycleCount) charge cycles and holds \
+                    \(capacityPercent)% of the charge it was built to hold.
+                    """,
+                comment: "Battery check: cycles and capacity, both unremarkable")
+
+        case .batteryWorn(let cycleCount, let capacityPercent):
+            return String(
+                localized: "diagnostics.finding.battery.worn",
+                defaultValue: """
+                    After \(cycleCount) charge cycles the battery holds \
+                    \(capacityPercent)% of the charge it was built to hold.
+                    """,
+                comment: "Battery check: capacity has fallen below the rated service level")
+
+        case .batteryWarm(let celsius, let cycleCount, let capacityPercent):
+            return String(
+                localized: "diagnostics.finding.battery.warm",
+                defaultValue: """
+                    The battery is at \(Int(celsius.rounded())) °C — warm for a battery. \
+                    \(cycleCount) charge cycles, holding \(capacityPercent)%.
+                    """,
+                comment: "Battery check: the battery is running warm")
+
+        case .storageUnreadable:
+            return String(
+                localized: "diagnostics.finding.storage.unreadable",
+                defaultValue: "The system did not report the drive's capacity.",
+                comment: "Storage check: capacity could not be read")
+
+        case .storageHealthy(let freePercent, let nandCelsius):
+            guard let nandCelsius else {
+                return String(
+                    localized: "diagnostics.finding.storage.healthy.nosensor",
+                    defaultValue: "The drive has \(freePercent)% of its space free.",
+                    comment: "Storage check: free space, on a Mac with no storage sensor")
+            }
+            return String(
+                localized: "diagnostics.finding.storage.healthy",
+                defaultValue: """
+                    The drive has \(freePercent)% of its space free and its sensors \
+                    report \(Int(nandCelsius.rounded())) °C.
+                    """,
+                comment: "Storage check: free space and drive temperature")
+
+        case .storageNearlyFull(let freePercent, let nandCelsius):
+            guard let nandCelsius else {
+                return String(
+                    localized: "diagnostics.finding.storage.full.nosensor",
+                    defaultValue: "The drive has only \(freePercent)% of its space free.",
+                    comment: "Storage check: very little free space, no storage sensor")
+            }
+            return String(
+                localized: "diagnostics.finding.storage.full",
+                defaultValue: """
+                    The drive has only \(freePercent)% of its space free, and its \
+                    sensors report \(Int(nandCelsius.rounded())) °C. A drive with \
+                    little room left works harder and runs warmer.
+                    """,
+                comment: "Storage check: very little free space, which also warms the drive")
+
+        case .storageSmartUnavailable:
+            return String(
+                localized: "diagnostics.finding.storage.smart",
+                defaultValue: """
+                    The drive keeps its own record of how much of its rated life it \
+                    has used. Reading it needs a privilege Boreas does not ask for, \
+                    so that figure is not shown here.
+                    """,
+                comment: "Storage check: SMART wear data exists but is deliberately unread")
         }
     }
 
@@ -229,6 +314,48 @@ extension DiagnosticCause {
                 localized: "diagnostics.cause.quietcurve",
                 defaultValue: "A fan curve that is quieter than this workload wants",
                 comment: "Possible explanation for thermal pressure")
+        case .batteryAgedNormally:
+            return String(
+                localized: "diagnostics.cause.battery.aged",
+                defaultValue: """
+                    Normal ageing — every battery holds less as it goes through \
+                    charge cycles
+                    """,
+                comment: "Possible cause offered first for a worn battery: it is expected")
+        case .batteryChargedHotOrCold:
+            return String(
+                localized: "diagnostics.cause.battery.temperature",
+                defaultValue: """
+                    Charging while the machine is already warm, or in a warm room
+                    """,
+                comment: "Possible cause for a warm battery")
+        case .batteryNeedsServiceCheck:
+            return String(
+                localized: "diagnostics.cause.battery.service",
+                defaultValue: """
+                    A condition worth having looked at, if the figure keeps falling \
+                    faster than the cycles explain
+                    """,
+                comment: "Possible cause for a worn battery, phrased without diagnosing it")
+        case .diskAlmostFull:
+            return String(
+                localized: "diagnostics.cause.disk.full",
+                defaultValue: "Very little free space left on the drive",
+                comment: "Possible cause for a nearly full drive")
+        case .largeFilesOrSnapshots:
+            return String(
+                localized: "diagnostics.cause.disk.snapshots",
+                defaultValue: """
+                    Large files, or local backup snapshots the system is keeping
+                    """,
+                comment: "Possible cause for a nearly full drive")
+        case .sustainedWritesWarmTheDrive:
+            return String(
+                localized: "diagnostics.cause.disk.writes",
+                defaultValue: """
+                    Sustained writing, which warms the drive's controller
+                    """,
+                comment: "Possible cause for a warm drive")
         }
     }
 }
@@ -266,6 +393,26 @@ extension DiagnosticStep {
                 localized: "diagnostics.step.earlierprofile",
                 defaultValue: "Try a profile that engages the fans earlier",
                 comment: "Suggested next step")
+        case .checkBatteryInSystemSettings:
+            return String(
+                localized: "diagnostics.step.battery",
+                defaultValue: "Compare with the battery information in System Settings",
+                comment: "Suggested next step for a battery notice")
+        case .avoidChargingInHeat:
+            return String(
+                localized: "diagnostics.step.battery.heat",
+                defaultValue: "Let the machine cool before charging it hard",
+                comment: "Suggested next step for a warm battery")
+        case .freeUpDiskSpace:
+            return String(
+                localized: "diagnostics.step.disk.space",
+                defaultValue: "Free up some space on the drive",
+                comment: "Suggested next step for a nearly full drive")
+        case .reviewSnapshotsAndBackups:
+            return String(
+                localized: "diagnostics.step.disk.snapshots",
+                defaultValue: "Check whether local backup snapshots are holding space",
+                comment: "Suggested next step for a nearly full drive")
         }
     }
 }

@@ -30,7 +30,38 @@ struct DiagnosticsTests {
                 seriousSeconds: 0, criticalSeconds: 0, sessionSeconds: 3_600, peakCelsius: 60),
             DiagnosticChecks.thermalHistory(
                 seriousSeconds: 40, criticalSeconds: 5, sessionSeconds: 3_600, peakCelsius: 96),
-        ]
+            // P7.03. Added here rather than tested only in isolation, so the
+            // honesty rules below apply to them for free — which is the whole
+            // point of keeping one list.
+            DiagnosticChecks.batteryHealth(nil),
+            DiagnosticChecks.batteryHealth(Self.battery(installed: false)),
+            DiagnosticChecks.batteryHealth(Self.battery(capacity: 0.94)),
+            DiagnosticChecks.batteryHealth(Self.battery(capacity: 0.71, cycles: 940)),
+            DiagnosticChecks.batteryHealth(Self.battery(capacity: 0.92, celsius: 38)),
+            DiagnosticChecks.storageHealth(nil),
+            DiagnosticChecks.storageHealth(Self.storage(freeFraction: 0.42)),
+            DiagnosticChecks.storageHealth(Self.storage(freeFraction: 0.03)),
+        ] + [DiagnosticChecks.storageSmart(Self.storage(freeFraction: 0.42))].compactMap { $0 }
+    }
+
+    // MARK: - P7.03 fixtures
+
+    private static func battery(
+        installed: Bool = true, capacity: Double? = 0.9, cycles: Int = 120,
+        celsius: Double? = 28
+    ) -> DiagnosticChecks.BatteryReading {
+        DiagnosticChecks.BatteryReading(
+            isInstalled: installed, cycleCount: cycles, capacityFraction: capacity,
+            celsius: celsius)
+    }
+
+    private static func storage(
+        freeFraction: Double, nandCelsius: Double? = 41.5, advertisesSmart: Bool = true
+    ) -> DiagnosticChecks.StorageReading {
+        let total: Int64 = 494_384_795_648
+        return DiagnosticChecks.StorageReading(
+            totalBytes: total, freeBytes: Int64(Double(total) * freeFraction),
+            nandCelsius: nandCelsius, advertisesSmart: advertisesSmart)
     }
 
     // MARK: - The rule itself
@@ -140,5 +171,103 @@ struct DiagnosticsTests {
             DiagnosticChecks.thermalHistory(
                 seriousSeconds: 40, criticalSeconds: 5, sessionSeconds: 3_600, peakCelsius: 96
             ).verdict == .needsAttention)
+    }
+
+    // MARK: - Battery (P7.03)
+
+    @Test("a Mac with no battery is told so definitely, not left unknown")
+    func absentBatteryIsDefinite() {
+        // The distinction the probe made possible: `AppleSmartBattery` answers on
+        // desktops too and reports `BatteryInstalled = 0`, so "this Mac has no
+        // battery" and "the battery could not be read" are different facts and
+        // must not share a sentence.
+        let absent = DiagnosticChecks.batteryHealth(Self.battery(installed: false))
+        #expect(absent.verdict == .notApplicable)
+        #expect(absent.finding == .batteryAbsent)
+
+        let unreadable = DiagnosticChecks.batteryHealth(nil)
+        #expect(unreadable.verdict == .indeterminate)
+        #expect(unreadable.finding == .batteryUnreadable)
+        #expect(absent.finding != unreadable.finding)
+    }
+
+    @Test("a worn battery is described as aged, never as failing")
+    func wornBatteryLeadsWithNormalAgeing() {
+        // 71% after 940 cycles is a battery that has done exactly what a battery
+        // does. The first cause offered has to say so, or the notice reads as an
+        // accusation against the hardware.
+        let worn = DiagnosticChecks.batteryHealth(Self.battery(capacity: 0.71, cycles: 940))
+        #expect(worn.verdict == .needsAttention)
+        #expect(worn.possibleCauses.first == .batteryAgedNormally)
+    }
+
+    @Test("the worn threshold is the published one, not an invented one")
+    func wornThresholdIsTheServiceFigure() {
+        // 80% is the figure Apple's own service documentation uses for the end of
+        // a battery's rated life, so it is the one number here a user may already
+        // have seen. A different threshold would be this project inventing a
+        // standard.
+        #expect(DiagnosticChecks.batteryWornCapacityFraction == 0.80)
+        #expect(
+            DiagnosticChecks.batteryHealth(Self.battery(capacity: 0.81)).verdict == .healthy)
+        #expect(
+            DiagnosticChecks.batteryHealth(Self.battery(capacity: 0.79)).verdict
+                == .needsAttention)
+    }
+
+    @Test("a warm battery is reported without asking the fans to do anything")
+    func warmBatteryIsInformationOnly() {
+        // A battery temperature is not something a fan can fix, so this is
+        // information and must never read as a reason to raise fan speed.
+        let warm = DiagnosticChecks.batteryHealth(Self.battery(capacity: 0.92, celsius: 38))
+        #expect(warm.verdict == .needsAttention)
+        #expect(warm.nextSteps.contains(.avoidChargingInHeat))
+        #expect(!warm.nextSteps.contains(.tryProfileThatEngagesEarlier))
+    }
+
+    @Test("a capacity of zero reads as unreadable rather than as a dead battery")
+    func zeroCapacityIsUnreadable() {
+        // The honesty rule at its sharpest: a battery reporting 0% design
+        // capacity is almost certainly a read failure, and calling it a failed
+        // battery would be the exact false positive the rule exists to prevent.
+        let zero = DiagnosticChecks.batteryHealth(Self.battery(capacity: 0))
+        #expect(zero.verdict == .indeterminate)
+        #expect(zero.finding == .batteryUnreadable)
+    }
+
+    // MARK: - Storage (P7.03)
+
+    @Test("a nearly full drive is a thermal observation as well as a capacity one")
+    func nearlyFullMentionsWarming() {
+        let full = DiagnosticChecks.storageHealth(Self.storage(freeFraction: 0.03))
+        #expect(full.verdict == .needsAttention)
+        #expect(full.possibleCauses.contains(.sustainedWritesWarmTheDrive))
+        #expect(full.finding == .storageNearlyFull(freePercent: 3, nandCelsius: 41.5))
+    }
+
+    @Test("a healthy capacity verdict never implies a healthy drive")
+    func smartIsAlwaysItsOwnFinding() {
+        // Kept apart deliberately: a single combined sentence would invite
+        // reading "42% free" as "the drive is fine", and the drive's wear is
+        // exactly what this build cannot measure.
+        let reading = Self.storage(freeFraction: 0.42)
+        #expect(DiagnosticChecks.storageHealth(reading).verdict == .healthy)
+        let smart = DiagnosticChecks.storageSmart(reading)
+        #expect(smart?.verdict == .indeterminate)
+        #expect(smart?.finding == .storageSmartUnavailable)
+    }
+
+    @Test("a drive that does not advertise SMART produces no unmeasured claim")
+    func noSmartClaimWithoutSmart() {
+        let noSmart = Self.storage(freeFraction: 0.42, advertisesSmart: false)
+        #expect(DiagnosticChecks.storageSmart(noSmart) == nil)
+    }
+
+    @Test("an unreadable drive is indeterminate, never healthy")
+    func unreadableStorageIsIndeterminate() {
+        #expect(DiagnosticChecks.storageHealth(nil).verdict == .indeterminate)
+        let empty = DiagnosticChecks.StorageReading(
+            totalBytes: 0, freeBytes: 0, nandCelsius: nil, advertisesSmart: false)
+        #expect(DiagnosticChecks.storageHealth(empty).verdict == .indeterminate)
     }
 }

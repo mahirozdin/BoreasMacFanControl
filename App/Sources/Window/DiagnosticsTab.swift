@@ -154,6 +154,35 @@ struct DiagnosticsContent: View {
                     comment: "Diagnostic check: time spent under thermal pressure"),
                 thermalHistory
             ),
+            (
+                String(
+                    localized: "diagnostics.check.battery", defaultValue: "Battery health",
+                    comment: "Diagnostic check: battery cycles, capacity and temperature"),
+                DiagnosticChecks.batteryHealth(model.batteryReading)
+            ),
+            (
+                String(
+                    localized: "diagnostics.check.storage", defaultValue: "Storage",
+                    comment: "Diagnostic check: drive capacity and temperature"),
+                DiagnosticChecks.storageHealth(model.storageReading)
+            ),
+        ] + smartFinding
+    }
+
+    /// The SMART finding, present only when the drive advertises the capability.
+    ///
+    /// Its own row rather than a line inside the storage check: a healthy
+    /// capacity verdict must not be read as a healthy verdict about the drive's
+    /// wear, and one combined sentence would invite exactly that.
+    private var smartFinding: [(title: String, finding: Diagnostic)] {
+        guard let smart = DiagnosticChecks.storageSmart(model.storageReading) else { return [] }
+        return [
+            (
+                String(
+                    localized: "diagnostics.check.smart", defaultValue: "Drive wear",
+                    comment: "Diagnostic check: NVMe SMART wear data, which this build cannot read"),
+                smart
+            )
         ]
     }
 
@@ -188,8 +217,13 @@ struct DiagnosticsContent: View {
             peakCelsius: model.statistics.values.compactMap(\.maximum).max())
     }
 
-    /// Named rather than silently missing: a diagnostics tab that quietly
-    /// omitted two of the six checks would be overstating its coverage by
+    /// What is still not measured, named rather than left to be inferred.
+    ///
+    /// P6.09 used this to name battery and storage health; **P7.03 built both**,
+    /// so what remains is narrower and more specific: the drive's *wear* data,
+    /// which the hardware has and this build cannot reach. Keeping the section
+    /// and shrinking it is the point — a diagnostics tab that quietly stopped
+    /// mentioning what it cannot see would be overstating its coverage by
     /// omission, which is the same failure the honesty rule is about.
     private var pendingChecks: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -206,11 +240,11 @@ struct DiagnosticsContent: View {
                     localized: "diagnostics.pending.detail",
                     defaultValue:
                         """
-                        Battery health and storage health are not among the checks \
-                        above. They need hardware readings this build does not take \
-                        yet, and neither can be verified on the Mac this was developed \
-                        on. They are listed here so their absence is visible rather \
-                        than implied.
+                        Your drive keeps wear data — how much of its rated life it \
+                        has used. Reading it needs a privilege Boreas does not ask \
+                        for, so the check above reports capacity and temperature \
+                        only. Battery figures come from the system and, on a Mac \
+                        without a battery, that is what they say.
                         """,
                     comment: "Explains which diagnostic checks are missing and why")
             )

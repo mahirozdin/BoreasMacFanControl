@@ -32,6 +32,28 @@ public enum DiagnosticFinding: Sendable, Hashable {
     case thermalSessionTooShort
     case thermalCalm(peakCelsius: Double?)
     case thermalPressure(seriousSeconds: Int, criticalSeconds: Int, peakCelsius: Double?)
+
+    // Battery (P7.03). `batteryAbsent` is a **definite** answer, not an
+    // unknown: `AppleSmartBattery` is present on desktops too and reports
+    // `BatteryInstalled = 0`, so a machine with no battery can be told apart
+    // from one whose battery could not be read — which are different facts and
+    // must not share a sentence.
+    case batteryAbsent
+    case batteryUnreadable
+    case batteryHealthy(cycleCount: Int, capacityPercent: Int)
+    case batteryWorn(cycleCount: Int, capacityPercent: Int)
+    case batteryWarm(celsius: Double, cycleCount: Int, capacityPercent: Int)
+
+    // Storage (P7.03).
+    case storageUnreadable
+    /// Capacity and the NAND temperature, both readable without privileges.
+    case storageHealthy(freePercent: Int, nandCelsius: Double?)
+    /// Nearly full. A drive with almost no free space throttles and runs
+    /// hotter, so this is a thermal observation as much as a capacity one.
+    case storageNearlyFull(freePercent: Int, nandCelsius: Double?)
+    /// The drive advertises SMART and its values are not readable here. Its own
+    /// finding rather than a footnote, because "not measured" has to be visible.
+    case storageSmartUnavailable
 }
 
 /// A possible explanation. Never one on its own — see `Diagnostic`.
@@ -49,6 +71,13 @@ public enum DiagnosticCause: Sendable, Hashable, CaseIterable {
     case sustainedHeavyWork
     case restrictedAirflow
     case quieterCurveThanWorkload
+    // P7.03. Every one of these is a *possible* explanation, never a verdict.
+    case batteryAgedNormally
+    case batteryChargedHotOrCold
+    case batteryNeedsServiceCheck
+    case diskAlmostFull
+    case largeFilesOrSnapshots
+    case sustainedWritesWarmTheDrive
 }
 
 /// Something the user could try. May be empty: inventing a step is its own
@@ -60,6 +89,11 @@ public enum DiagnosticStep: Sendable, Hashable, CaseIterable {
     case compareUnderLoad
     case reportUnknownSensor
     case tryProfileThatEngagesEarlier
+    // P7.03.
+    case checkBatteryInSystemSettings
+    case avoidChargingInHeat
+    case freeUpDiskSpace
+    case reviewSnapshotsAndBackups
 }
 
 /// One diagnostic result.

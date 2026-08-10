@@ -115,17 +115,40 @@ final class NotificationModel {
         events.append(contentsOf: profileEvents(control))
         events.append(contentsOf: helperEvents(control))
         events.append(contentsOf: thresholdEvents(monitor))
-        guard !events.isEmpty else { return }
-        deliver(events, now: now)
+        if !events.isEmpty {
+            deliver(events, now: now)
+        }
+        // Separate call rather than folded in: the health checks are level
+        // triggered and deduplicated by the once-per-session rule, while
+        // everything above is edge triggered. Mixing the two in one batch would
+        // make the distinction invisible to whoever reads this next.
+        observeHealth(monitor: monitor, control: control, now: now)
     }
 
-    /// A fan check raising a concern. Pushed in by the diagnostics rather than
-    /// polled: the check is expensive enough that running it every cycle to see
-    /// whether to notify would be the notification tail wagging the diagnostic
-    /// dog.
-    func report(fanAnomaly: Bool, now: Date = Date()) {
-        guard fanAnomaly else { return }
-        deliver([NotificationEvent(kind: .fanAnomaly)], now: now)
+    /// The two hardware health triggers, connected in P7.03.
+    ///
+    /// P7.01 shipped them wired and **inert**, because nothing produced the
+    /// findings yet — and said so. Both now run the real `Core` checks over the
+    /// same readings the diagnostics tab uses, so a notification and the tab can
+    /// never disagree about whether something is worth a look.
+    ///
+    /// Both kinds are once-per-session by `NotificationKind.isOncePerSession`,
+    /// which is what makes it safe to call this on every cycle: a fan that is not
+    /// tracking its targets will still not be tracking them in fifteen minutes,
+    /// and the policy already refuses to say so twice.
+    func observeHealth(monitor: MonitorModel, control: ControlModel, now: Date = Date()) {
+        var events: [NotificationEvent] = []
+
+        if DiagnosticChecks.fanResponse(samples: control.fanResponseSamples).verdict
+            == .needsAttention
+        {
+            events.append(NotificationEvent(kind: .fanAnomaly))
+        }
+        if DiagnosticChecks.batteryHealth(monitor.batteryReading).verdict == .needsAttention {
+            events.append(NotificationEvent(kind: .batteryHealth))
+        }
+        guard !events.isEmpty else { return }
+        deliver(events, now: now)
     }
 
     // MARK: - Edges

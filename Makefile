@@ -120,6 +120,12 @@ PACKAGES := Core SharedIPC HardwareKit
 # The output is captured first and the status kept explicitly. Do not
 # reintroduce a pipeline here — and note the note fifteen lines below, where the
 # same mistake was already found once in `make lint`.
+#
+# **On failure the FULL captured output is printed**, not the filtered tail. That
+# is P7.12's doing: the intermittent `HardwareKit error: fatalError` has now
+# happened three times across three sessions and every time the `grep` threw away
+# the only evidence that could have explained it. A summary line is for a passing
+# run; a failing one gets everything.
 # ----------------------------------------------------------------------------
 
 .PHONY: build
@@ -138,7 +144,11 @@ test: ## Run all tests
 			printf '  %-12s ' "$$p"; \
 			out=$$( cd Packages/$$p && swift test 2>&1 ); status=$$?; \
 			printf '%s\n' "$$out" | grep -E 'Test run with|error:' | tail -1; \
-			if [ $$status -ne 0 ]; then echo "  ✗ $$p tests failed"; exit 1; fi; \
+			if [ $$status -ne 0 ]; then \
+				echo "  ✗ $$p tests failed — full output follows"; \
+				printf '%s\n' "$$out" | sed 's/^/      /'; \
+				exit 1; \
+			fi; \
 		fi; \
 	done
 

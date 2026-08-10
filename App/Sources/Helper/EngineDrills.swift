@@ -58,6 +58,29 @@ extension HardwareDrills {
         control.select(profileName: "System")
         pump(6)
 
+        // The two checks P7.03 added, on this machine's real readings.
+        let battery = DiagnosticChecks.batteryHealth(monitor.batteryReading)
+        report("battery: \(battery.verdict.rawValue) — \(battery.finding.text)")
+        let storage = DiagnosticChecks.storageHealth(monitor.storageReading)
+        report("storage: \(storage.verdict.rawValue) — \(storage.finding.text)")
+        if let smart = DiagnosticChecks.storageSmart(monitor.storageReading) {
+            report("wear   : \(smart.verdict.rawValue) — \(smart.finding.text)")
+        }
+
+        // **This machine has no battery, and that is the assertion.** A desktop
+        // must come back `notApplicable` with `batteryAbsent` — not
+        // `indeterminate`, which would mean the read failed, and certainly not a
+        // concern about a battery that does not exist. It is the one battery
+        // branch this hardware can verify (R8); the rest live in
+        // `MockHealthSource` and in the Core tests.
+        let batteryIsHonestlyAbsent =
+            battery.verdict == .notApplicable && battery.finding == .batteryAbsent
+
+        // Storage must produce a real verdict rather than degrade: capacity is
+        // readable without privileges, so `indeterminate` here would mean the
+        // reader is broken.
+        let storageAnswered = storage.verdict == .healthy || storage.verdict == .needsAttention
+
         let passed =
             before.verdict == .indeterminate
             && control.fanResponseSamples.count >= DiagnosticChecks.minimumSamples
@@ -65,6 +88,8 @@ extension HardwareDrills {
             && driving.verdict == .healthy
             && sensors.verdict == .healthy
             && balance.verdict == .notApplicable
+            && batteryIsHonestlyAbsent
+            && storageAnswered
 
         report(passed ? "DIAGNOSTICS DRILL PASS" : "DIAGNOSTICS DRILL FAIL")
         exit(passed ? 0 : 1)

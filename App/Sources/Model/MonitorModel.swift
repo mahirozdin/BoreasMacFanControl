@@ -63,6 +63,16 @@ public final class MonitorModel {
     /// assumes it was watching.
     public private(set) var thermalSeconds: [ThermalPressure: Double] = [:]
 
+    /// Battery and drive health, refreshed far more slowly than the sensors
+    /// (P7.03).
+    ///
+    /// **Every two minutes, not every two seconds.** A cycle count changes a few
+    /// hundred times over a machine's life and free space changes in megabytes;
+    /// walking the IO registry on the sampling cycle would be work nobody asked
+    /// for, forty times a minute, for numbers that had not moved.
+    public private(set) var batteryReading: DiagnosticChecks.BatteryReading?
+    public private(set) var storageReading: DiagnosticChecks.StorageReading?
+
     private var lastSampleAt: Date?
 
     /// The last three minutes of the hottest reading — the menu bar
@@ -83,6 +93,10 @@ public final class MonitorModel {
     private var sensors: LiveSensorSource?
     private var fanSource: LiveFanSource?
     private let powerSource = LivePowerSource()
+    /// Injected so the laptop path is reachable at all: this machine has no
+    /// battery, so `MockHealthSource` is the only way those branches run (R8).
+    private let healthSource: any HealthSource
+    private var lastHealthReadAt: Date?
     private var task: Task<Void, Never>?
     private let logger = Logger(subsystem: "com.bubiapps.boreas", category: "ui")
 
@@ -98,8 +112,12 @@ public final class MonitorModel {
         .seconds(store?.configuration.general.samplingIntervalSeconds ?? 2)
     }
 
-    public init(store: ConfigurationStore? = nil) {
+    public init(
+        store: ConfigurationStore? = nil,
+        healthSource: any HealthSource = LiveHealthSource()
+    ) {
         self.store = store
+        self.healthSource = healthSource
     }
 
     /// Render support (`--render-panel`, `--render-status`): a monitor
@@ -112,9 +130,16 @@ public final class MonitorModel {
         groupHistory: [SensorGroup: [(Date, Double)]] = [:],
         fanHistory: [Int: [(Date, Double)]] = [:],
         sessionStart: Date? = nil,
-        thermalSeconds: [ThermalPressure: Double] = [:]
+        thermalSeconds: [ThermalPressure: Double] = [:],
+        // Defaults to the desktop mock, which is what the development machine
+        // actually is — a render fixture that invented a battery would be
+        // photographing a Mac nobody has.
+        healthSource: any HealthSource = MockHealthSource.desktop
     ) {
         self.store = nil
+        self.healthSource = healthSource
+        self.batteryReading = healthSource.battery()
+        self.storageReading = healthSource.storage(nandCelsius: nil)
         self.readings = readings
         self.allReadings = readings
         if let sessionStart { self.sessionStart = sessionStart }
@@ -256,12 +281,36 @@ public final class MonitorModel {
         }
 
         recordHistory(at: Date())
+        refreshHealthIfDue(at: Date())
         // The notification model watches for *edges* in what this cycle
         // observed (P7.01). A closure rather than the model holding a
         // reference back: the monitor is the thing that knows when a sample
         // is complete, and it has no business knowing what a notification is.
         onCycle?()
     }
+
+    /// Reads battery and drive health, at most once every `healthInterval`.
+    ///
+    /// The interval is the whole design: these are slow-moving facts and the read
+    /// walks the IO registry, so doing it on the sampling cycle would be pure
+    /// waste. The first sample happens immediately, so a diagnostics tab opened
+    /// straight after launch has something to show.
+    private func refreshHealthIfDue(at now: Date) {
+        if let last = lastHealthReadAt, now.timeIntervalSince(last) < Self.healthInterval {
+            return
+        }
+        lastHealthReadAt = now
+        batteryReading = healthSource.battery()
+        // The hottest storage-group reading, handed in rather than read again:
+        // the sensor stack already has it, and a second reader would be a second
+        // answer to the same question.
+        let nand = allReadings.filter { $0.group == .storage }.map(\.celsius).max()
+        storageReading = healthSource.storage(nandCelsius: nand)
+    }
+
+    /// How often health is re-read. Two minutes: often enough that a drive
+    /// filling up during a long session is noticed, rare enough to be free.
+    private static let healthInterval: TimeInterval = 120
 
     /// Re-derives every reading through the classifier with the user's
     /// corrections applied (P6.08).

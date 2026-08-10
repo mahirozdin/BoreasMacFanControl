@@ -38,6 +38,18 @@ The permission is requested at the moment the switch is turned on, and if the
 user refuses, **the switch goes back off** rather than staying on and delivering
 nothing.
 
+### The two health triggers, connected in P7.03
+
+P7.01 shipped `fanAnomaly` and `batteryHealth` **wired and inert** — the switches
+existed and nothing could produce the findings — and said so rather than hiding
+it. P7.03 connected both to the real `Core` checks over the same readings the
+diagnostics tab uses, so a notification and the tab can never disagree about
+whether something is worth a look.
+
+They are the two `isOncePerSession` kinds, which is what makes it safe to evaluate
+them on every cycle: they describe a *condition*, not an event, and the policy
+already refuses to say so twice in one launch.
+
 ### One trigger cannot be switched off
 
 `Panic layer (K3) engaged` is always delivered, and no mechanism in the next
