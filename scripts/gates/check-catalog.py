@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-"""String Catalog checks for gate-i18n (Y2, Y4 and the honesty rule).
+"""String Catalog checks for gate-i18n (Y2, Y4, the honesty rule, origin).
+
+WHAT P7.07 ADDED AND WHY IT LIVES HERE:
+    ADR 0016's addendum ships three languages without native speaker review
+    and makes one thing compensate for it: TRANSLATORS.md states the origin
+    of every language, so a user knows how much to trust what they read.
+    Its Enforcement section deferred the check to P7 — "TRANSLATORS.md
+    contains an origin line for every language" — because a file whose
+    accuracy nothing enforces is a promise, not a mechanism.
+
+    It belongs in this script rather than its own because the question is
+    "does the declaration match what the product actually ships", and the
+    catalogue is what ships. The language set is read from it, never
+    written down a second time.
 
 WHAT CHANGED IN P6.11 AND WHY:
     The gate used to `grep` the catalogue for five language codes and pass
@@ -99,7 +112,116 @@ def translated_values(localization):
     return found
 
 
-def main(path):
+# ---------------------------------------------------------------------------
+# TRANSLATORS.md — the origin declaration (ADR 0016 addendum, enforced in P7.07)
+# ---------------------------------------------------------------------------
+
+# The heading whose table is the data. Read the section rather than the first
+# table in the file: the section *below* it defines this vocabulary, and its
+# own first column holds these very words — a parser that took any four cell
+# row would read the glossary as if it were a language.
+ORIGIN_HEADING = "## Origin per language"
+
+# What a language's origin may say. Anything else is a claim nobody defined,
+# and the point of the file is that the reader knows what the word buys them.
+ORIGINS = {
+    "source": "written in this language, not translated into it",
+    "project": "produced by the project, awaiting native speaker review",
+    "reviewed": "read and approved by a named native speaker",
+}
+
+# A reviewer cell holding one of these names nobody. Both dash characters are
+# accepted because a table written by hand will use whichever one is to hand.
+NO_REVIEWER = {"", "-", "—", "–", "n/a"}
+
+
+def parse_origin_table(path):
+    """{language: (origin, reviewer)} from the origin section of TRANSLATORS.md.
+
+    Returns (rows, error). `error` is a sentence for the operator when the file
+    or its table cannot be read at all — which is itself a failure, not a reason
+    to skip: a missing declaration is exactly the state ADR 0016 forbids.
+    """
+    try:
+        with open(path, encoding="utf-8") as handle:
+            lines = handle.read().splitlines()
+    except OSError as exc:
+        return {}, f"{path} could not be read: {exc}"
+
+    try:
+        start = next(i for i, line in enumerate(lines) if line.strip() == ORIGIN_HEADING)
+    except StopIteration:
+        return {}, f'{path} has no "{ORIGIN_HEADING}" section'
+
+    rows = {}
+    duplicates = []
+    for line in lines[start + 1 :]:
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            break
+        if not stripped.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if len(cells) != 4:
+            continue
+        language = cells[0].strip("`")
+        # Skip the header row and its `|---|` separator without pattern
+        # matching on them: neither is a plausible language code.
+        if language.lower() in ("code", "") or set(language) <= set("-: "):
+            continue
+        if language in rows:
+            duplicates.append(language)
+        rows[language] = (cells[2].strip("`").lower(), cells[3])
+
+    if not rows:
+        return {}, f"{path}: the origin table is empty"
+    if duplicates:
+        return {}, f"{path}: more than one row for {', '.join(sorted(set(duplicates)))}"
+    return rows, None
+
+
+def check_origins(shipped, path):
+    """Every shipped language declares an origin, and no row outlives its language.
+
+    Checked in both directions on purpose. A missing row is the gap the file
+    exists to close; a leftover row is a claim about something that no longer
+    ships, which is the same dishonesty pointing the other way.
+    """
+    rows, error = parse_origin_table(path)
+    if error:
+        print(f"  ✗ {error}")
+        return True
+
+    failed = False
+
+    undeclared = sorted(shipped - set(rows))
+    if undeclared:
+        print(f"  ✗ {path} declares no origin for: {', '.join(undeclared)}")
+        print("      a shipped language whose origin is undeclared (ADR 0016)")
+        failed = True
+
+    unshipped = sorted(set(rows) - shipped)
+    if unshipped:
+        print(f"  ✗ {path} declares a language the product does not ship: {', '.join(unshipped)}")
+        failed = True
+
+    for language in sorted(set(rows) & shipped):
+        origin, reviewer = rows[language]
+        if origin not in ORIGINS:
+            print(f'  ✗ {path}: unknown origin for {language}: "{origin}"')
+            print(f"      expected one of: {', '.join(sorted(ORIGINS))}")
+            failed = True
+        elif origin == "reviewed" and reviewer.strip("*` ").lower() in NO_REVIEWER:
+            print(f"  ✗ {path} claims {language} is reviewed but names no reviewer")
+            print("      a review nobody signed is the quality claim the file exists to avoid")
+            failed = True
+
+    if not failed:
+        print(f"  ✓ {path} declares an origin for all {len(shipped)} shipped languages")
+    return failed
+
+
+def main(path, translators):
     try:
         data = json.load(open(path))
     except Exception as exc:
@@ -172,8 +294,12 @@ def main(path):
     if accusations == 0 and not blind:
         print("  ✓ no diagnostic wording names a fault, in any language")
 
+    # The origin declaration, against the languages actually present above.
+    if check_origins(present, translators):
+        failed = True
+
     return 1 if failed else 0
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1]))
+    sys.exit(main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else "TRANSLATORS.md"))

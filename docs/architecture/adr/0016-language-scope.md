@@ -82,6 +82,16 @@ A pseudo-locale layout test in CI: overflow checking with artificially lengthene
 
 **Enforcement.** `make gate-i18n` already checks that all five languages are present and that `comment` fields are filled. In addition, P7 will add a check that `TRANSLATORS.md` contains an origin line for every language.
 
+> **Done in P7.07**, and made stricter than the sentence above asked for. The
+> check takes its language set **from the String Catalog** rather than from a
+> list written here a second time, and it reads in both directions: a shipped
+> language with no origin line fails, and so does a row for a language that no
+> longer ships — a stale claim is the same dishonesty pointing the other way. It
+> also refuses an origin outside the three defined words, and refuses a row
+> claiming `reviewed` while naming nobody, since an unsigned review is precisely
+> the unbacked quality claim this addendum exists to prevent. Rules and evidence:
+> [`docs/development/localization.md`](../../development/localization.md).
+
 ## Addendum — 2026-08-10 (P7.06): the deferred evaluation, answered
 
 **Context.** The addendum above ends with a consequence marked *"to be evaluated in

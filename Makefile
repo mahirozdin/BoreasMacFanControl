@@ -61,7 +61,7 @@ strings:
 strings-check:
 	@python3 scripts/build-string-catalog.py --check
 
-gate-i18n: ## Y1/Y2 — hard coded user facing text
+gate-i18n: ## Y1/Y2/Y4 — hard coded text, comments, completeness, translation origin
 	@$(GATES)/check-i18n.sh
 
 .PHONY: gate-a11y

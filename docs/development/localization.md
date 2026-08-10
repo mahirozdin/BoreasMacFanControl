@@ -1,6 +1,6 @@
 # Localisation
 
-> Last updated: 2026-08-10 — P7.06
+> Last updated: 2026-08-10 — P7.07
 > Source: blueprint §9.7 · Decision: [ADR 0016](../architecture/adr/0016-language-scope.md)
 
 ## Scope
@@ -131,9 +131,37 @@ layout is static and the group *can* occur.
 
 ## Translation maintenance
 
-- `TRANSLATORS.md` — responsible contributors per language
+- [`TRANSLATORS.md`](../../TRANSLATORS.md) — **the origin of every language**, and the reviewer once a language has one
 - When a new string is added and translations are missing, CI **warns** (not an error — it does not block a release)
 - Translation quality approval requires a **native speaker** → a manual task
+
+### The origin declaration (P7.07)
+
+Three of the five languages ship without native speaker review, and
+[ADR 0016's addendum](../architecture/adr/0016-language-scope.md) made one thing
+compensate for that: the origin is **stated**, per language, rather than left to
+be assumed. Three words carry it:
+
+| Origin | Meaning |
+|---|---|
+| `source` | Written in this language, not translated into it — `en` and `tr` |
+| `project` | Produced by the project, awaiting native speaker review — `ru`, `es`, `zh-Hans` |
+| `reviewed` | Read and approved by a **named** native speaker |
+
+**The declaration is checked, not trusted**, because a file whose accuracy
+nothing enforces is a promise rather than a mechanism. `make gate-i18n` fails on:
+a shipped language with no row; a row for a language that no longer ships; an
+origin outside those three words; and a row claiming `reviewed` while naming
+nobody — an unsigned review being exactly the unbacked quality claim the whole
+arrangement exists to avoid.
+
+**The language set comes from the catalogue, never from a list written here
+again.** That is deliberate and it is the third time this project has had to
+learn it: P6.11 hard-coded five language codes that asserted a future, and P7.06
+found `FORBIDDEN` carrying vocabulary for two of five languages, so the honesty
+rule silently applied to none of the new ones. Both were a hand-written list
+sitting beside a list that changes. Adding a sixth language now turns the gate
+red until its origin is declared.
 
 ## Text writing principle
 
@@ -202,6 +230,7 @@ English underneath it changed.
 | Y2 | Every string carries a translator comment |
 | Y4 | **Every language present covers every string** — no half translated language ships |
 | Honesty rule | No diagnostic wording names a fault, **in any language** |
+| Origin (P7.07) | `TRANSLATORS.md` declares an origin for every shipped language, and for no other — see [The origin declaration](#the-origin-declaration-p707) |
 
 The completeness rule replaced a `grep` for five language codes that would
 have passed with a single translated string, and that went red for the

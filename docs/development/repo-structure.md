@@ -36,7 +36,7 @@ These are **work items**, tracked in `TODO.md`:
 | `README.md` + 4 translations | P8 | Per `docs/release/readme-spec.md` |
 | `CONTRIBUTING.md` | P1 | Setup, style, PR process, **independent development declaration** |
 | `CODE_OF_CONDUCT.md` | P1 | Contributor Covenant 2.1 |
-| `TRANSLATORS.md` | P7 | Responsible contributors per language |
+| `TRANSLATORS.md` | P7.07 | **The origin of every language** (`source` / `project` / `reviewed`) and the reviewer once there is one. Checked by `make gate-i18n` |
 | `CHANGELOG.md` | P1 | Keep a Changelog format |
 | `.github/PULL_REQUEST_TEMPLATE.md` | P1 | Declaration checkboxes + test checklist |
 | `.github/ISSUE_TEMPLATE/` | P1 | Bug, feature, **unknown sensor report** |
