@@ -33,7 +33,11 @@ struct ProfilePickerSection: View {
                 )
             )
 
-            HStack(spacing: 6) {
+            // Wrapping, not a row (P8.10). Five chips do not fit across 292 pt
+            // of panel, and an `HStack` resolved that by truncating the labels
+            // to `Balan…` and `Performa…` — in English, before any of the
+            // longer languages got a turn.
+            FlowLayout(spacing: 6, lineSpacing: 6) {
                 // "Automatic" first, because it is the state that lets the
                 // triggers decide — and without it a manual choice would
                 // be a permanent veto on every one of them (P6.14).

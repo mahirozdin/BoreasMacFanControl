@@ -161,6 +161,9 @@ enum LayoutDrill {
         // than being guessed — P6.12 measured these at 10 pt and 13 pt.
         let caption = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold)
         let callout = NSFont.preferredFont(forTextStyle: .body)
+        // The chips declare `.font(.caption)` — regular, not the semibold
+        // the table headers use.
+        let chipFont = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
 
         var containers: [Container] = []
 
@@ -180,6 +183,33 @@ enum LayoutDrill {
                 strings: SensorGroup.allCases.map { localised($0.localizationKey, in: bundle) },
                 available: SensorTable.width(of: .group),
                 font: callout))
+
+        // The menu bar panel's profile chips (P8.10).
+        //
+        // Not a fixed-width container in the sense above — the chips wrap now,
+        // so a row can never clip. What *can* still clip is a single chip whose
+        // own label is wider than the line it gets, and that is what this
+        // measures: every profile name plus the padding the chip draws around
+        // it, against the panel's real content width.
+        //
+        // This is the check whose absence let the defect ship. `make layout`
+        // was green the whole time the panel was truncating, because its
+        // inventory was the two tables and nothing else.
+        let chipStrings =
+            [
+                "panel.profile.automatic", "profile.quiet", "profile.balanced",
+                "profile.performance", "profile.system",
+            ]
+            .map { localised($0, in: bundle) }
+        containers.append(
+            Container(
+                place: "menu bar panel profile chip",
+                strings: chipStrings,
+                // The chip's own horizontal padding (8 + 8) and the checkmark
+                // it shows when selected (8 pt glyph + 3 pt spacing) come out
+                // of the line before the label does.
+                available: MenuBarPanel.contentWidth - 16 - 11,
+                font: chipFont))
 
         // The numeric curve table's two columns (P6.07).
         containers.append(

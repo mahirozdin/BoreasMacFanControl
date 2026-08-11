@@ -62,9 +62,18 @@ struct MenuBarPanel: View {
             Divider()
             footer
         }
-        .padding(14)
-        .frame(width: 320)
+        .padding(Self.padding)
+        .frame(width: Self.width)
     }
+
+    /// The panel's fixed geometry, exposed so `--layout-drill` measures the
+    /// real numbers instead of a second copy that could drift (P8.10) — the
+    /// same reason `SensorTable.width(of:)` is not a literal in the drill.
+    static let width: CGFloat = 320
+    static let padding: CGFloat = 14
+
+    /// What is actually available to a row inside the panel.
+    static var contentWidth: CGFloat { width - padding * 2 }
 
     private var header: some View {
         HStack {
@@ -94,7 +103,16 @@ struct MenuBarPanel: View {
     }
 
     private var footer: some View {
-        HStack {
+        // Wrapping, for the same reason the profile picker does (P8.10). Four
+        // entries plus a status word do not fit across 292 pt, and an `HStack`
+        // broke "Fan Control…" across two lines mid-phrase. Wrapping moves the
+        // whole button to the next line instead of splitting its label.
+        //
+        // `Spacer()` cannot survive that — a flow layout has no single row to
+        // push against — so `Quit` is simply the last entry rather than being
+        // pinned right. A footer that reads left to right in one order is a
+        // fair trade for one that never breaks a word in half.
+        FlowLayout(spacing: 10, lineSpacing: 6) {
             Button {
                 openWindow(id: MainWindow.windowID)
                 // An LSUIElement app is never frontmost on its own; without
@@ -154,8 +172,6 @@ struct MenuBarPanel: View {
                         .foregroundStyle(.secondary)
                 }
             }
-
-            Spacer()
 
             Button {
                 NSApplication.shared.terminate(nil)

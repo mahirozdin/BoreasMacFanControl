@@ -60,6 +60,16 @@ The product's signature interface.
 
 **Implementation (P6.06, P6.07):** the monotonicity constraint is enforced by **clamping the input**, not by validating the result — the editing operations in [`Core/Engine/CurveEditing.swift`](../../Packages/Core/Sources/Core/Engine/CurveEditing.swift) are total, so an invalid curve is unrepresentable rather than merely rejected, and 10 000 hostile edits are thrown at them in the tests. The plot ([`CurveEditor.swift`](../../App/Sources/Window/CurveEditor.swift)) contributes the gesture and nothing else. The numeric table ([`CurvePointTable.swift`](../../App/Sources/Window/CurvePointTable.swift)) edits the same curve through the same operations, so the two entry points cannot disagree about what is legal. Edits reach the running engine within one cycle (`ControlModel.updateActiveProfile`) and, since P6.08, are written to the configuration file. Proven on hardware by `--curve-drill`.
 
+**Implementation (P8.10):** the panel's profile picker and footer lay out with
+[`FlowLayout`](../../App/Sources/Design/FlowLayout.swift) rather than an
+`HStack`. Five chips do not fit across the panel's 292 pt of content width, and
+an `HStack` resolved that by **truncating** the labels — `Balan…`,
+`Performa…` — which the localisation rule forbids everywhere except the menu bar
+item itself. Wrapping is what that rule already prescribes; the panel grows
+downwards instead. Russian, the longest language, now shows every profile name
+in full across two lines. `Quit` lost its right-hand `Spacer()` in the footer,
+because a flow layout has no single row to push against.
+
 ## Settings
 
 Tabs: **General · Appearance · Sensors · Control · Notifications · Recording · Advanced**

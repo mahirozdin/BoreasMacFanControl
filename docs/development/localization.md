@@ -3,7 +3,7 @@
 
 # Localisation
 
-> Last updated: 2026-08-10 — P7.13
+> Last updated: 2026-08-11 — P8.10
 > Source: blueprint §9.7 · Decision: [ADR 0016](../architecture/adr/0016-language-scope.md)
 
 ## Scope
@@ -84,6 +84,12 @@ Russian strings can run **30–50% longer** than English; Chinese is markedly sh
 
 > **There is no text container with a fixed pixel width or height.** All labels grow with their content and wrap when needed. Except for the menu bar item, overflow is never solved by truncation (`…`).
 
+**Wrapping needs somewhere to wrap to.** An `HStack` of five chips in a 320 pt
+panel has no second line to use, so SwiftUI truncates instead — which is how the
+panel broke the rule while every fixed-width container passed. `FlowLayout`
+(P8.10) gives the picker and the footer that second line; the panel grows
+downwards, which a menu bar panel can afford and a row of labels cannot.
+
 CI checks this with a **pseudo-locale** (artificially lengthened strings) layout test.
 
 ### Implementation (P6.13) — and the rule as it is actually enforced
@@ -112,9 +118,17 @@ The flag is still used, for *renders a human looks at*: `LAYOUT_RENDER_DIR=<dir>
 writes the doubled interface in both languages.
 
 **The inventory of containers derives from the views' own declarations** —
-`SensorColumn.allCases` with `SensorTable.width(of:)`, and
-`CurvePointTable.temperatureColumnWidth` — so a column that is resized or renamed
-is re-measured without anybody remembering to update a list. The `localizationKey`
+`SensorColumn.allCases` with `SensorTable.width(of:)`,
+`CurvePointTable.temperatureColumnWidth`, and since P8.10 the menu bar panel's
+profile chips against `MenuBarPanel.contentWidth` — so a container that is
+resized or renamed is re-measured without anybody remembering to update a list.
+
+> **The inventory being derived does not make it complete, and P8.10 is the
+> proof.** `make layout` was green for five phases while the panel truncated its
+> profile names to `Balan…` and `Performa…`, because the picker was not in the
+> inventory at all — deriving each entry from its view says nothing about the
+> entries nobody added. It was found by looking at a screenshot for the README,
+> not by a check. The `localizationKey`
 those columns expose is derived from `rawValue` rather than written twice, and the
 drill checks the derivation still resolves to what the view shows, because a
 renamed key would otherwise make it measure the key text and pass.
