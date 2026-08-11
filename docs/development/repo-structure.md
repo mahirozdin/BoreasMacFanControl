@@ -38,7 +38,8 @@ These are **work items**, tracked in `TODO.md`:
 |---|---|---|
 | `LICENSE` | P1 | Full Apache-2.0 text (downloaded from the canonical source) |
 | `NOTICE` | P1 | Copyright notice, attributions, acknowledgements |
-| `README.md` + 4 translations | P8 | Per `docs/release/readme-spec.md` |
+| `README.md` | P8.05 | Per [`docs/release/readme-spec.md`](../release/readme-spec.md). Screenshots in `docs/images/`, produced by the render commands rather than photographed: a fixture render carries no machine name or account of anybody's |
+| `README.{tr,ru,es,zh-Hans}.md` | P8.06 | Translations + a "may lag behind" note |
 | `CONTRIBUTING.md` | P1 | Setup, style, PR process, **independent development declaration** |
 | `CODE_OF_CONDUCT.md` | P1 | Contributor Covenant 2.1 |
 | `TRANSLATORS.md` | P7.07 | **The origin of every language** (`source` / `project` / `reviewed`) and the reviewer once there is one. Checked by `make gate-i18n` |

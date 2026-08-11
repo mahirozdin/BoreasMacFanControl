@@ -18,11 +18,19 @@ Free and open source. No kernel extension, no SIP changes, no telemetry.
 
 ---
 
-> **Status: in development.** The monitoring half works — Boreas reads named
-> temperature sensors and fan speeds from real hardware today. Fan control is
-> being built. There is no release yet; see [the roadmap](#roadmap).
+> **Status: not released yet.** The software is feature complete and runs on the
+> developer's machine — it reads sensors, drives fans through a privileged
+> helper, and hands them back on every failure path, all measured on real
+> hardware. What is missing is **signing and notarisation**, without which macOS
+> will not run the privileged helper on your Mac. Until then the only route is
+> [building from source](#installation). See [the roadmap](#roadmap).
 
 ## What it does
+
+<div align="center">
+<img src="docs/images/panel-light.png" width="330" alt="The menu bar panel in light appearance: a profile picker, one fan at 2755 rpm, and temperatures grouped by compute, graphics, memory, storage and power">
+<img src="docs/images/panel-dark.png" width="330" alt="The same menu bar panel in dark appearance">
+</div>
 
 Boreas is a menu bar app that shows what is happening inside your Mac and lets
 you decide how it should be cooled.
@@ -34,6 +42,13 @@ you decide how it should be cooled.
   on/off rules, so speed changes are smooth instead of stepped
 - **Switch profiles automatically** based on power source, running app, time of
   day or thermal pressure
+- **Record measurements** to JSONL or CSV, with a disk ceiling it will not cross
+- **Get told when something changes** — thresholds, thermal pressure, a fan that
+  stops tracking — with noise controls that a panic can still get through
+- **Wire it into your own tools** with a webhook or a script, instead of an
+  email client nobody wants to maintain
+- **Read it in five languages** — English, Turkish, Russian, Spanish and
+  Simplified Chinese
 - **Stay quiet or stay cool** — the trade-off is yours to make, not the
   firmware's
 
@@ -66,8 +81,13 @@ than a long compatibility table.
 
 | Hardware | Status |
 |---|---|
-| Mac mini (M4, 2024) — `Mac16,10` | Verified: 40 named sensors, 1 fan |
-| Everything else | Should work; **not verified** |
+| Mac mini (M4, 2024) — `Mac16,10` | **Verified on real hardware**: 40 named sensors, 1 fan measured from 1000 up to 4021 rpm on an edited curve and handed back on every failure path |
+| Every other Apple Silicon Mac | **Should work; not verified.** Nobody has run it on one |
+
+**What "not verified" means in practice.** Sensor naming differs between chip
+generations, and multi-fan models exercise balancing code that has never met a
+second fan. Nothing here is theoretical — the mapping is a heuristic over
+hardware keys, and yours may produce sensors Boreas does not recognise.
 
 If your Mac shows sensors as `uncategorized`, that is useful information —
 **Settings → Sensors → Report These Sensors** opens a pre-filled
@@ -75,6 +95,38 @@ If your Mac shows sensors as `uncategorized`, that is useful information —
 in your browser, carrying your Mac's model identifier, chip, the unrecognised
 sensor names and the fan count, and nothing else. Unmapped sensors are shown
 rather than hidden precisely so they can be reported.
+
+## Installation
+
+**There is no release to install yet.** When there is, it will be a Homebrew
+cask as the primary channel and a signed, notarised DMG as the alternative.
+Neither exists today, and this section will say so until they do.
+
+Until then, build it yourself:
+
+```bash
+git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
+cd boreas-mac-fan-control
+brew bundle          # xcodegen, swiftlint, xcbeautify
+make generate        # produces the Xcode project from project.yml
+```
+
+Then open `Boreas.xcodeproj` and run. **Monitoring works unsigned.** Fan control
+needs the privileged helper, and macOS will only register a helper that is
+signed with a Developer ID — so you will need your own signing identity in
+`Local.xcconfig` (copy `Local.xcconfig.example` and fill in your team
+identifier). Without it Boreas is a complete monitor that asks for nothing.
+
+## Quick start
+
+1. **Open Boreas.** It appears in the menu bar and starts reading sensors
+   immediately — no permission, no setup, nothing to configure.
+2. **Pick a profile** from the panel: Quiet, Balanced, Performance, or System to
+   hand everything back to the firmware.
+3. **Enable fan control** when you want the curve to actually drive the fans.
+   This is the one step that asks for your administrator password, once.
+
+Steps 1 and 2 are useful on their own. Step 3 is optional and reversible.
 
 ## Permissions
 
@@ -122,6 +174,17 @@ four methods: describe the fans, apply targets, hand them back, and a heartbeat.
 
 It reads no configuration, opens no network connection and starts no processes.
 
+## The curve editor
+
+<div align="center">
+<img src="docs/images/curve-editor.png" width="820" alt="The control tab: a fan curve plotted from 0 to 120 degrees with five draggable points, a numeric point table, hysteresis and rate limit sliders, the five armed safety layers, and a manual override with a duration">
+</div>
+
+The curve is continuous, not a ladder of thresholds. Drag a point, double-click
+to add one, right-click to remove. The shape cannot be made invalid — edits are
+clamped rather than rejected, so no sequence of drags produces a curve that
+falls as it gets hotter. Every edit reaches the fans within a cycle.
+
 ## Safety
 
 Fan control software that gets this wrong damages hardware, so the design puts
@@ -142,58 +205,94 @@ because the cases that matter are exactly the ones where it cannot.
 
 Every layer can only raise fan speed. None of them can lower it.
 
+**What Boreas cannot do:** it cannot cool a Mac whose firmware has already
+stopped the fans, and it cannot exceed the maximum speed the hardware reports.
+Where the firmware refuses a command, the helper refuses it too rather than
+retrying.
+
 ## Privacy
 
 - **No telemetry.** No analytics SDK, no crash reporting SDK, no advertising ID
-- **No network by default.** Out of the box, Boreas makes no connections at all
+- **No network by default.** Out of the box, Boreas makes no connections at all.
+  The only code that can open one lives in a single directory, and only runs if
+  you configure a webhook yourself
 - **Your data stays yours**, in files you can read, on your machine
 
 These are not promises about intent. They are checked on every commit by a
 [gate that fails the build](scripts/gates/check-privacy.sh) if an analytics
 symbol or an unexpected network call appears.
 
-## Development
+## Configuration
 
-```bash
-git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
-cd boreas-mac-fan-control
-brew bundle          # xcodegen, swiftlint, xcbeautify
-make bootstrap       # checks the tools actually run, not just that they exist
-make generate        # produces the Xcode project from project.yml
-make next            # tells you which task is next
+Everything lives in one file you can read, edit and put under version control:
+
+```
+~/Library/Application Support/Boreas/config.json
 ```
 
-| Command | What it does |
-|---|---|
-| `make next` | Prints the next actionable task |
-| `make check` | Runs every gate — must be green before pushing |
-| `make build` / `make test` | Swift packages |
-| `make lint` / `make format` | SwiftLint and swift-format |
-| `make smoke` | Hardware smoke test on a real Mac |
+```json
+{
+  "schemaVersion": 1,
+  "general": { "samplingIntervalSeconds": 2 },
+  "safety": { "panicTemperatureCelsius": 95, "watchdogTimeoutSeconds": 15 },
+  "profiles": [
+    {
+      "name": "Quiet",
+      "priority": 0,
+      "binding": {
+        "input": { "group": "compute", "aggregate": "max" },
+        "curve": [
+          { "celsius": 40, "duty": 0    },
+          { "celsius": 58, "duty": 0.15 },
+          { "celsius": 72, "duty": 0.4  },
+          { "celsius": 82, "duty": 0.7  },
+          { "celsius": 88, "duty": 1    }
+        ]
+      },
+      "hysteresis": 5,
+      "smoothing": 0.2,
+      "slew": { "maxRisePerSecond": 300, "maxFallPerSecond": 100 }
+    }
+  ]
+}
+```
 
-The built application also answers a set of drill and render arguments used to reproduce the evidence in the run log — see [`docs/development/setup.md`](docs/development/setup.md#the-applications-own-commands).
+That fragment is copied from a real `boreas export`, not written by hand — a
+sample that does not load is worse than no sample.
 
-There is also a `boreas` command line tool — `status`, `sensors`, `profile`, `install`, `uninstall`, `export`, `import` — documented in the same place.
+A broken file can only ever fall back: Boreas keeps running on the last valid
+state and leaves the fans with the firmware rather than acting on a document it
+does not understand. `config.backup.json` is refreshed before every write.
+Values out of range are clamped, not rejected.
 
-This repository uses a document driven workflow with machine enforced rules.
-Start at [`BOOT.md`](BOOT.md), then [`AGENTS.md`](AGENTS.md), then
-[`TODO.md`](TODO.md). Contribution guide: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Full schema: [`schema/config.schema.json`](schema/config.schema.json) ·
+Reference: [`docs/architecture/configuration.md`](docs/architecture/configuration.md)
 
-## Roadmap
+## Command line
 
-| Phase | Status |
-|---|---|
-| Documentation system and gates | ✅ Done |
-| Toolchain and project scaffold | ✅ Done |
-| Sensor and fan reading | ✅ Done |
-| Privileged helper and XPC | 🔨 In progress |
-| Fan control and safety chain | ⏳ Next |
-| Control engine — curves, hysteresis, profiles | ⏳ |
-| User interface and curve editor | ⏳ |
-| Notifications, logging, diagnostics, CLI | ⏳ |
-| Signing, notarisation, release | ⏳ |
+`boreas` does everything the menu bar can, on a machine with no window server:
 
-Current status and next task: [`TODO.md`](TODO.md).
+```
+boreas status            temperatures, fans and power at a glance
+boreas sensors [--raw]   every sensor, grouped; --raw shows hardware names
+boreas profile [name]    list profiles, or activate one now
+boreas profile --auto    hand the decision back to the profile triggers
+boreas install           install the fan control helper
+boreas uninstall [--all] remove the helper; --all also deletes saved settings
+boreas export [file]     write the configuration; stdout when no file is given
+boreas import <file>     replace the configuration, after validating it
+```
+
+```console
+$ boreas status
+power    : adapter
+sensors  : 40  hottest PMU Die 1 75.1 C
+fan 0    : Fan 1 1000 rpm (1000-4900, 0%)
+control  : enabled
+```
+
+A profile chosen from the command line is **live only and never written to
+disk** — a stored choice would override every profile trigger for good.
 
 ## Troubleshooting
 
@@ -213,6 +312,49 @@ short version is worth having in front of you:
 
 Full detail, including what to collect before opening an issue:
 [`docs/operations/troubleshooting.md`](docs/operations/troubleshooting.md).
+
+## Uninstall
+
+```bash
+boreas uninstall --all
+```
+
+That removes the privileged helper and deletes
+`~/Library/Application Support/Boreas`. Then drag the app to the Trash.
+
+Without `--all` the helper is removed and your settings are kept. Either way:
+
+- **The fans go back to the firmware immediately** — the helper hands them over
+  as it stops, and the watchdog would do it anyway
+- No firmware setting, NVRAM variable or system file is touched, because none
+  was ever written
+- Nothing is left in `LaunchDaemons`, and `launchctl` no longer knows the
+  service
+
+This was verified from five angles rather than assumed — `SMAppService` status,
+`launchctl`, the system folders, the deleted support directory and the absent
+process. **It is not re-checked automatically:** `install` and `uninstall` change
+the helper's registration and prompt for a password, so the command line test
+suite deliberately exercises everything except those two.
+
+## Roadmap
+
+| Phase | Status |
+|---|---|
+| Documentation system and gates | ✅ Done |
+| Toolchain and project scaffold | ✅ Done |
+| Sensor and fan reading | ✅ Done |
+| Privileged helper and XPC | ✅ Done |
+| Fan control and safety chain | ✅ Done |
+| Control engine — curves, hysteresis, profiles | ✅ Done |
+| User interface and curve editor | ✅ Done (a VoiceOver pass is outstanding) |
+| Notifications, logging, diagnostics, CLI, automation | ✅ Done |
+| Signing, notarisation, release | 🔨 **In progress — the only thing between here and a download** |
+
+Later, and deliberately not before 1.0: a WidgetKit widget, App Intents, a local
+metrics endpoint, configuration sharing, and in-app updates.
+
+Current status and next task: [`TODO.md`](TODO.md).
 
 ## Questions people actually ask
 
@@ -240,6 +382,12 @@ within seconds. This is tested, not assumed.
 No. Intel Macs use a different sensor and SMC layout, and supporting both would
 double a code base maintained by one person.
 
+**Can it email me when my Mac gets hot?**
+Not directly, and that is deliberate. A webhook or a one-line script can, and
+neither makes this project responsible for storing your mail password — there is
+a ready-made example in
+[`docs/operations/notifications.md`](docs/operations/notifications.md).
+
 ## Contributing
 
 Bug reports, hardware reports and translation fixes are all welcome. Please read
@@ -247,13 +395,30 @@ Bug reports, hardware reports and translation fixes are all welcome. Please read
 and the rules this project enforces on itself.
 
 The most useful thing you can contribute right now is a **sensor report from a
-Mac that is not an M4 mini**.
+Mac that is not an M4 mini**. Three of the five interface languages have not been
+read by a native speaker either, and
+[`TRANSLATORS.md`](TRANSLATORS.md) says exactly which.
+
+### Development
+
+```bash
+make next            # tells you which task is next
+make check           # runs every gate — must be green before pushing
+make test            # Swift package tests
+make smoke           # hardware smoke test on a real Mac
+```
+
+This repository uses a document driven workflow with machine enforced rules.
+Start at [`BOOT.md`](BOOT.md), then [`AGENTS.md`](AGENTS.md), then
+[`TODO.md`](TODO.md). Setup and the application's own diagnostic commands:
+[`docs/development/setup.md`](docs/development/setup.md).
 
 ## Disclaimer
 
-Boreas is provided as is, without warranty. Lowering fan speeds increases
-thermal risk and the responsibility for that is yours. This project is not
-affiliated with, authorised by or endorsed by Apple Inc.
+Boreas is provided as is, without warranty of any kind. **Lowering fan speeds
+increases thermal risk, and the responsibility for that is yours.** Any effect on
+your hardware warranty is likewise yours. This project is not affiliated with,
+authorised by or endorsed by Apple Inc.
 
 ## License
 
