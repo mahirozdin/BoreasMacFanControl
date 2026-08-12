@@ -93,6 +93,23 @@ jobs:
             exit 1
           fi
 
+          # **Is this actually a .p12?** A DER certificate and a PKCS#12 archive
+          # share their first bytes, so a size check cannot tell them apart —
+          # but only the certificate parses as one, and that needs no password.
+          # Worth the four lines: the failure it names is the easy mistake to
+          # make, since Apple's own download is a .cer.
+          if openssl x509 -inform DER -in cert.p12 -noout -subject >/dev/null 2>&1; then
+            echo "::error::this is a DER certificate (.cer), not a .p12 archive"
+            echo "  A .cer holds the certificate only. Signing needs the PRIVATE KEY too,"
+            echo "  which never leaves your Mac in an Apple download — it is created locally"
+            echo "  and lives in your keychain. Export the pair instead:"
+            echo "    Keychain Access -> login -> My Certificates -> expand the"
+            echo "    'Developer ID Application' row, confirm a key is listed under it,"
+            echo "    select the certificate, right-click -> Export -> .p12"
+            echo "  Then: base64 -i cert.p12 | pbcopy, and replace DEVELOPER_ID_P12_BASE64."
+            exit 1
+          fi
+
           if ! security import cert.p12 -k "$KEYCHAIN" -P "$P12_PASSWORD" \
             -A -T /usr/bin/codesign -T /usr/bin/security 2>&1 | sed 's/^/    /'; then
             echo "::error::security import failed — wrong password, or an archive macOS will not read"
