@@ -79,9 +79,25 @@ jobs:
           # successfully and then reported "0 valid identities found".
           security list-keychains -d user -s "$KEYCHAIN" login.keychain
 
+          # `set -o pipefail` matters here and its absence cost a run: piping
+          # `security import` into `sed` returned sed's status, so a failed
+          # import looked like a successful one and the step carried on to
+          # report zero identities without ever saying why.
+          set -o pipefail
+
           printf '%s' "$P12_BASE64" | base64 --decode > cert.p12
-          security import cert.p12 -k "$KEYCHAIN" -P "$P12_PASSWORD" \
-            -A -T /usr/bin/codesign -T /usr/bin/security 2>&1 | sed 's/^/    /'
+          BYTES=$(wc -c < cert.p12 | tr -d ' ')
+          echo "    decoded $BYTES bytes from the secret"
+          if [ "$BYTES" -lt 1000 ]; then
+            echo "::error::the decoded .p12 is $BYTES bytes — the secret looks truncated or is not base64"
+            exit 1
+          fi
+
+          if ! security import cert.p12 -k "$KEYCHAIN" -P "$P12_PASSWORD" \
+            -A -T /usr/bin/codesign -T /usr/bin/security 2>&1 | sed 's/^/    /'; then
+            echo "::error::security import failed — wrong password, or an archive macOS will not read"
+            exit 1
+          fi
           # Lets codesign use the key without an interactive prompt, which a
           # runner has no way to answer.
           security set-key-partition-list -S apple-tool:,apple:,codesign: \
