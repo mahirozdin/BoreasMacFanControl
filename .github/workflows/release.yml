@@ -120,6 +120,39 @@ jobs:
             exit 1
           fi
 
+          # **What is in the archive, before importing it.** `security import`
+          # accepts a .p12 holding only a private key, succeeds, prints nothing
+          # and leaves no signing identity behind — which is exactly what
+          # happened here for six runs. `-info -noout` prints bag types and
+          # algorithm names only: no key material, no certificate contents.
+          BAGS=$(openssl pkcs12 -in cert.p12 -info -noout \
+            -passin pass:"$P12_PASSWORD" 2>&1 || true)
+          HAS_CERT=$(printf '%s' "$BAGS" | grep -ci "certificate bag" || true)
+          HAS_KEY=$(printf '%s' "$BAGS" | grep -ci "keybag" || true)
+          echo "    archive contains: $HAS_CERT certificate bag(s), $HAS_KEY key bag(s)"
+
+          if printf '%s' "$BAGS" | grep -qi "mac verify"; then
+            echo "::error::the archive did not decrypt — DEVELOPER_ID_P12_PASSWORD does not match the one used at export"
+            exit 1
+          fi
+          if [ "$HAS_KEY" -gt 0 ] && [ "$HAS_CERT" -eq 0 ]; then
+            echo "::error::this .p12 holds the PRIVATE KEY but no certificate"
+            echo "  In Keychain Access the certificate row was expanded and the KEY"
+            echo "  beneath it was exported. Select the row above it — the one named"
+            echo "  'Developer ID Application: …' — and export that instead; it carries"
+            echo "  both halves. An identity is a certificate and its key together."
+            exit 1
+          fi
+          if [ "$HAS_CERT" -gt 0 ] && [ "$HAS_KEY" -eq 0 ]; then
+            echo "::error::this .p12 holds the certificate but no private key"
+            echo "  Export from the 'My Certificates' category, not 'Certificates'."
+            exit 1
+          fi
+          if [ "$HAS_CERT" -eq 0 ] && [ "$HAS_KEY" -eq 0 ]; then
+            echo "::error::no certificate and no key in the archive — not a usable .p12"
+            exit 1
+          fi
+
           IMPORT_OUTPUT=$(security import cert.p12 -k "$KEYCHAIN" -P "$P12_PASSWORD" \
             -A -T /usr/bin/codesign -T /usr/bin/security 2>&1) || IMPORT_FAILED=1
           printf '%s\n' "${IMPORT_OUTPUT:-(no output)}" | sed 's/^/    /'
