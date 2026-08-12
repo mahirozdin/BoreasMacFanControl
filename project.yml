@@ -109,6 +109,11 @@ targets:
       base:
         PRODUCT_NAME: boreas
         PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas.cli
+        # Manual, like the app and the helper (P8.01). Without it this target
+        # signs automatically for development and then conflicts with the
+        # Developer ID identity Local.xcconfig specifies — the app and the
+        # daemon already said Manual, and the CLI was simply forgotten.
+        CODE_SIGN_STYLE: Manual
 
   # ------------------------------------------------------------------ daemon
   BoreasFanHelper:

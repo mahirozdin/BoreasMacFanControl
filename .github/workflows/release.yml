@@ -1,0 +1,155 @@
+name: Release
+
+# P8.04 — the signing chain, automated.
+#
+# Two ways in, and the difference is only what happens at the very end:
+#
+#   push a v* tag      → build, sign, notarise, staple, and PUBLISH a release
+#   workflow_dispatch  → the identical chain, but the DMG is uploaded as a
+#                        build artifact and nothing is published
+#
+# The dry run exists because the chain has to be provable before anybody is
+# ready to release. Proving it by tagging would mean publishing v0.1.0 of
+# software whose own TODO still lists an outstanding accessibility pass — the
+# evidence would cost more than it is worth.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Sign, notarise, package
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode
+        run: |
+          NEWEST=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$NEWEST" ]; then echo "::error::No Xcode found"; exit 1; fi
+          sudo xcode-select -s "$NEWEST"
+          swift --version
+
+      # ------------------------------------------------------------------
+      # B2: no release with a red gate. Run them before spending a
+      # notarisation round trip on a build that should not ship.
+      # ------------------------------------------------------------------
+      - name: Gates
+        run: make check
+
+      - name: Tests
+        run: make test
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      # ------------------------------------------------------------------
+      # The signing identity, in a keychain that exists for this job only.
+      # ------------------------------------------------------------------
+      - name: Import the Developer ID certificate
+        env:
+          P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+        run: |
+          if [ -z "$P12_BASE64" ]; then
+            echo "::error::DEVELOPER_ID_P12_BASE64 is not set — see M03 in TODO.md"
+            exit 1
+          fi
+          KEYCHAIN_PASSWORD=$(uuidgen)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          # Without this the keychain relocks mid-build and codesign fails with
+          # an error that names none of this.
+          security set-keychain-settings -lut 3600 build.keychain
+          printf '%s' "$P12_BASE64" | base64 --decode > cert.p12
+          security import cert.p12 -k build.keychain -P "$P12_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          # Lets codesign use the key without an interactive prompt, which a
+          # runner has no way to answer.
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" build.keychain >/dev/null
+          rm -f cert.p12
+          security find-identity -v -p codesigning | sed 's/^/    /'
+
+      - name: Write the local signing configuration
+        env:
+          TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -z "$TEAM" ]; then
+            echo "::error::APPLE_TEAM_ID is not set — see M03 in TODO.md"
+            exit 1
+          fi
+          # `make generate` seeds this from the example when absent (P7.15),
+          # and the example signs nothing. The real team has to be written
+          # before the project is generated.
+          printf 'DEVELOPMENT_TEAM = %s\nCODE_SIGN_IDENTITY = Developer ID Application\n' \
+            "$TEAM" > Local.xcconfig
+
+      - name: Generate the project
+        run: make generate
+
+      - name: Build the app and the CLI
+        run: |
+          set -o pipefail
+          for scheme in Boreas boreas; do
+            xcodebuild -project Boreas.xcodeproj -scheme "$scheme" \
+              -configuration Release -destination 'platform=macOS,arch=arm64' \
+              -derivedDataPath build/release build | xcbeautify --quieter
+          done
+
+      - name: Sign
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          P=build/release/Build/Products/Release
+          scripts/sign.sh "$P/Boreas.app" "$P/boreas"
+
+      - name: Build the disk image
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          P=build/release/Build/Products/Release
+          scripts/make-dmg.sh "$P/Boreas.app" "$P/boreas"
+
+      # ------------------------------------------------------------------
+      # B4: if this fails, nothing ships. The script exits non-zero on any
+      # verdict other than Accepted, and prints Apple's own log when it does.
+      # ------------------------------------------------------------------
+      - name: Notarise and staple
+        env:
+          NOTARY_KEY_P8_BASE64: ${{ secrets.NOTARY_KEY_P8_BASE64 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: scripts/notarize.sh build/dmg/*.dmg
+
+      - name: Upload the disk image as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: boreas-dmg
+          path: |
+            build/dmg/*.dmg
+            build/dmg/*.sha256
+          if-no-files-found: error
+
+      # ------------------------------------------------------------------
+      # Only a tag publishes. A dispatch run stops at the artifact above,
+      # which is the whole point of having both.
+      # ------------------------------------------------------------------
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file CHANGELOG.md \
+            build/dmg/*.dmg build/dmg/*.sha256
