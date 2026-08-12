@@ -125,11 +125,28 @@ jobs:
           # and leaves no signing identity behind — which is exactly what
           # happened here for six runs. `-info -noout` prints bag types and
           # algorithm names only: no key material, no certificate contents.
-          BAGS=$(openssl pkcs12 -in cert.p12 -info -noout \
-            -passin pass:"$P12_PASSWORD" 2>&1 || true)
-          HAS_CERT=$(printf '%s' "$BAGS" | grep -ci "certificate bag" || true)
+          # `-legacy` first: Keychain Access encrypts the certificate bag with
+          # RC2-40-CBC, which OpenSSL 3 moved into the legacy provider and will
+          # not touch without being asked. Without this the check rejects a
+          # perfectly good archive — it nearly did.
+          BAGS=$(openssl pkcs12 -in cert.p12 -info -noout -legacy \
+            -passin pass:"$P12_PASSWORD" 2>&1 \
+            || openssl pkcs12 -in cert.p12 -info -noout \
+               -passin pass:"$P12_PASSWORD" 2>&1 || true)
+          HAS_CERT=$(printf '%s' "$BAGS" | grep -ci "certificate bag\|encrypted data" || true)
           HAS_KEY=$(printf '%s' "$BAGS" | grep -ci "keybag" || true)
           echo "    archive contains: $HAS_CERT certificate bag(s), $HAS_KEY key bag(s)"
+
+          # **`security` is the authority here, not `openssl`.** If openssl
+          # cannot read the archive's encryption at all, that says something
+          # about openssl's build, not about the file — so the verdict is left
+          # to the import below rather than guessed at from a failed parse.
+          if printf '%s' "$BAGS" | grep -qiE "unsupported|error outputting"; then
+            echo "    openssl cannot read this archive's legacy encryption;"
+            echo "    leaving the verdict to security import, which can"
+            HAS_CERT=-1
+            HAS_KEY=-1
+          fi
 
           if printf '%s' "$BAGS" | grep -qi "mac verify"; then
             echo "::error::the archive did not decrypt — DEVELOPER_ID_P12_PASSWORD does not match the one used at export"
