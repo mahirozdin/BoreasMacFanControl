@@ -266,6 +266,12 @@ jobs:
           NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
         run: scripts/notarize.sh build/dmg/*.dmg
 
+      # The cask carries a version and a SHA-256, both of which are facts about
+      # an artefact that did not exist until the step above. Generated here for
+      # the same reason nothing else in this project is restated by hand.
+      - name: Generate the Homebrew cask
+        run: scripts/make-cask.sh build/dmg/*.dmg build/dmg/boreas.rb
+
       - name: Upload the disk image as an artifact
         uses: actions/upload-artifact@v4
         with:
@@ -273,6 +279,7 @@ jobs:
           path: |
             build/dmg/*.dmg
             build/dmg/*.sha256
+            build/dmg/boreas.rb
           if-no-files-found: error
 
       # ------------------------------------------------------------------
@@ -287,4 +294,4 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
             --notes-file CHANGELOG.md \
-            build/dmg/*.dmg build/dmg/*.sha256
+            build/dmg/*.dmg build/dmg/*.sha256 build/dmg/boreas.rb

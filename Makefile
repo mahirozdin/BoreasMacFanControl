@@ -113,6 +113,17 @@ ci-status: ## The latest CI run's conclusion — a failed run exits non-zero
 		echo "✗ CI $$RESULT — $$TITLE"; echo "    $$URL"; exit 1; \
 	fi
 
+# ---------------------------------------------------------------------------
+# P8.09 — the eight release gates in ARCHITECTURE.md §10.
+#
+# Not part of `make check`: three of the eight cannot be answered by a script
+# at all, and a target that always reports incomplete has no business in the
+# gate suite every commit runs.
+# ---------------------------------------------------------------------------
+.PHONY: release-gates
+release-gates: ## ARCHITECTURE.md §10 — every gate a release must clear
+	@scripts/release-gates.sh
+
 .PHONY: bootstrap
 bootstrap: ## Set up and verify the local development environment
 	@scripts/bootstrap.sh
