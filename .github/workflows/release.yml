@@ -64,21 +64,42 @@ jobs:
             exit 1
           fi
           KEYCHAIN_PASSWORD=$(uuidgen)
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          KEYCHAIN=build.keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security default-keychain -s "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           # Without this the keychain relocks mid-build and codesign fails with
           # an error that names none of this.
-          security set-keychain-settings -lut 3600 build.keychain
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+
+          # **The search list, not just the default.** `default-keychain` only
+          # says where new items go; `find-identity` and `codesign` read the
+          # search list, and a keychain missing from it holds a certificate
+          # nobody can see. The first run of this job imported the identity
+          # successfully and then reported "0 valid identities found".
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain
+
           printf '%s' "$P12_BASE64" | base64 --decode > cert.p12
-          security import cert.p12 -k build.keychain -P "$P12_PASSWORD" \
-            -T /usr/bin/codesign -T /usr/bin/security
+          security import cert.p12 -k "$KEYCHAIN" -P "$P12_PASSWORD" \
+            -A -T /usr/bin/codesign -T /usr/bin/security 2>&1 | sed 's/^/    /'
           # Lets codesign use the key without an interactive prompt, which a
           # runner has no way to answer.
           security set-key-partition-list -S apple-tool:,apple:,codesign: \
-            -s -k "$KEYCHAIN_PASSWORD" build.keychain >/dev/null
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
           rm -f cert.p12
+
+          # **Counted, not glanced at.** `security find-identity` exits 0 with
+          # no identities at all, so printing it proves nothing — the first run
+          # of this job passed this step having imported nothing usable, which
+          # is the silent pass this project refuses everywhere else.
           security find-identity -v -p codesigning | sed 's/^/    /'
+          COUNT=$(security find-identity -v -p codesigning \
+            | grep -c "Developer ID Application" || true)
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::the certificate imported but no Developer ID identity is visible"
+            exit 1
+          fi
+          echo "  ✓ $COUNT Developer ID identity(ies) available" 
 
       - name: Write the local signing configuration
         env:
