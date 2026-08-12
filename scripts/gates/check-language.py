@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# gate-language:quotes-translations — this file NAMES the characters it looks
+# for, so without a declaration it would be its own first violation. The shell
+# half solves the same problem by excluding itself by name.
 """Writing-system half of gate-language (H6), added in P7.13.
 
 WHAT WAS MISSING, AND FOR HOW LONG:
@@ -17,11 +20,17 @@ WHY THIS IS PYTHON AND NOT ANOTHER `grep`:
     reader, so this reads with an explicit encoding and matches on characters.
 
 THE EXEMPTION, AND WHY IT IS NOT A FILE LIST:
-    Some files quote a translation as **evidence** — a comment recording the
-    measured width of a Russian label, a run log entry naming the string a
-    render exposed, a document showing what a plural form looks like. That is
-    the repository working in English *about* another language, which is not
-    what H6 forbids.
+    Some files carry another language on purpose. Most **quote a translation as
+    evidence** — a comment recording the measured width of a Russian label, a run
+    log entry naming the string a render exposed, a document showing what a plural
+    form looks like. One **names a language in its own script**: a README language
+    switcher only works if a Russian reader can scan for the Cyrillic, which is the
+    exception ADR 0021 already grants `TRANSLATORS.md`. Both are the repository
+    working in English *about* another language, which is not what H6 forbids.
+
+    The marker's name is therefore narrower than its meaning, and it was left
+    alone rather than renamed: the P7.13 Run Log entry names it, and that log is
+    append-only.
 
     A hard-coded list of those files would go stale, which is exactly the
     reasoning `LEGAL.md` §5.1 gives for the `gate-names:policy-doc` marker. So
@@ -33,11 +42,10 @@ import pathlib
 import re
 import sys
 
-# This file carries the marker itself, deliberately: it **names the characters
-# it looks for**, so it would otherwise be its own first violation. The shell
-# half handles the same problem by excluding itself by name.
-# gate-language:quotes-translations — the ranges below are the subject of the file.
 MARKER = "gate-language:quotes-translations"
+
+# How far into a file the declaration is looked for.
+MARKER_HEADER_LINES = 10
 
 # The three writing systems the product ships in that Latin letters cannot
 # cover. Turkish is handled by the shell half, which also knows its function
@@ -58,7 +66,13 @@ def offences(path):
         # Not decodable as UTF-8 is not a language violation; a binary file has
         # no prose in it. Skipped rather than reported, quietly on purpose.
         return []
-    if MARKER in text:
+    # **The marker only counts in the header** (P8.06). Anywhere in the file
+    # would mean that any document *describing* this mechanism opts out of it by
+    # mentioning its name — which is how ADR 0021 came to be silently exempt
+    # while containing no other language at all. A declaration belongs at the
+    # top, where a reviewer meets it before the content.
+    header = "\n".join(text.splitlines()[:MARKER_HEADER_LINES])
+    if MARKER in header:
         return None
     found = []
     for system, pattern in SYSTEMS.items():
@@ -83,7 +97,7 @@ def main(paths):
     if exempt:
         # Never silent, the `gate-names` rule: an exemption nobody can see is
         # indistinguishable from a gate that does not run.
-        print(f"    {exempt} file(s) exempt: they quote a translation as evidence")
+        print(f"    {exempt} file(s) declare another language in their header")
 
     if problems:
         print("  ✗ non-English text found (Cyrillic or CJK):")

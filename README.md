@@ -1,3 +1,8 @@
+<!-- gate-language:quotes-translations — the language switcher below names each
+     language in its own script, which is the only way it works: a Russian reader
+     scans for Русский, not for "Russian". Same exception ADR 0021 already grants
+     TRANSLATORS.md, and the rest of this file is English. -->
+
 <div align="center">
 
 <img src="Design/icon/render/boreas-256.png" width="128" alt="Boreas icon">
@@ -13,6 +18,8 @@ Free and open source. No kernel extension, no SIP changes, no telemetry.
 [![Platform](https://img.shields.io/badge/macOS-14.0%2B-lightgrey.svg)](#requirements)
 [![Architecture](https://img.shields.io/badge/arch-Apple%20Silicon-orange.svg)](#requirements)
 [![Swift](https://img.shields.io/badge/Swift-6.2-F05138.svg)](https://swift.org)
+
+[Türkçe](README.tr.md) · **English** · [Русский](README.ru.md) · [Español](README.es.md) · [简体中文](README.zh-Hans.md)
 
 </div>
 

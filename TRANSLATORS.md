@@ -1,6 +1,6 @@
 # Translators
 
-> Last updated: 2026-08-10 — P7.07
+> Last updated: 2026-08-12 — P8.06
 > Decision: [ADR 0016](docs/architecture/adr/0016-language-scope.md) and its
 > 2026-08-03 addendum
 
@@ -34,6 +34,28 @@ exception this file holds to the English-only rule
 `tr` is `source` rather than `reviewed` for a specific reason: it is not a
 translation of the English at all. The two are written separately, and neither
 is downstream of the other.
+
+## The README translations are a separate question (P8.06)
+
+The table above is about **the application's interface**. The four translated
+READMEs are documentation, and their origin is not the same:
+
+| | Interface | README |
+|---|---|---|
+| `en` | Written first; the source | Written first; **authoritative** |
+| `tr` | Written thinking in Turkish, not translated | **A translation of the English README** |
+| `ru`, `es`, `zh-Hans` | Produced by the project, unreviewed | Produced by the project, unreviewed |
+
+**The Turkish row is the one worth reading twice.** The Turkish interface is
+`source` because it is composed in Turkish rather than converted from English —
+that is what ADR 0016 claims for it, and it is true. `README.tr.md` is not: it
+was translated from the English README, sentence by sentence. Calling both
+`source` because they share a language code would be exactly the kind of
+convenient blur this file exists to refuse.
+
+Every translated README carries a note saying it may lag behind the English one,
+which is authoritative. Nothing checks that they stay in step — when the English
+README changes, the four translations silently do not.
 
 ## Why the unreviewed languages ship anyway
 
