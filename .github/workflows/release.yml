@@ -112,7 +112,21 @@ jobs:
           COUNT=$(security find-identity -v -p codesigning \
             | grep -c "Developer ID Application" || true)
           if [ "$COUNT" -eq 0 ]; then
-            echo "::error::the certificate imported but no Developer ID identity is visible"
+            # **An identity is a certificate PLUS its private key.** A .p12 can
+            # hold the certificate alone, and `security import` accepts it
+            # without complaint — so the keychain ends up holding a certificate
+            # that cannot sign anything. Distinguishing the two cases here turns
+            # "0 identities" from a mystery into an instruction.
+            CERTS=$(security find-certificate -a "$KEYCHAIN" \
+              | grep -c "Developer ID Application" || true)
+            if [ "$CERTS" -gt 0 ]; then
+              echo "::error::the .p12 contains the certificate but NOT its private key"
+              echo "  Re-export from Keychain Access under **My Certificates**, not"
+              echo "  Certificates: expand the certificate's disclosure triangle, confirm a"
+              echo "  private key is listed beneath it, and select the pair before exporting."
+            else
+              echo "::error::the .p12 imported nothing usable — wrong password, or not a p12"
+            fi
             exit 1
           fi
           echo "  ✓ $COUNT Developer ID identity(ies) available" 
