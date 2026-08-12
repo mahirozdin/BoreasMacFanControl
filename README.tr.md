@@ -92,6 +92,13 @@ uzun bir uyumluluk tablosundan daha önemli.
 | Mac mini (M4, 2024) — `Mac16,10` | **Gerçek donanımda doğrulandı**: 40 adlandırılmış sensör, düzenlenmiş bir eğride 1000'den 4021 dev/dk'ya kadar ölçülen ve her hata yolunda geri verilen 1 fan |
 | Diğer tüm Apple Silicon Mac'ler | **Çalışması bekleniyor; doğrulanmadı.** Henüz kimse birinde çalıştırmadı |
 
+
+**Dizüstüler için bir not.** Buradaki bütün ölçümler bir masaüstü Mac'ten
+geliyor. Bir MacBook'un termal payı daha az ve daha sert hız kısıyor; yani Mac
+mini'de rahat olan bir eğri bir dizüstünde fazla sessiz kalabilir — pilde ise
+firmware daha da temkinli. Tasarımda masaüstüne özgü hiçbir şey yok; sadece
+orada sınanmadı ve bir MacBook sensör raporu en az diğerleri kadar değerli olur.
+
 **"Doğrulanmadı" pratikte ne demek.** Sensör adlandırması yonga kuşakları
 arasında değişiyor ve çok fanlı modeller, ikinci bir fanla hiç karşılaşmamış
 dengeleme kodunu çalıştırıyor. Buradaki hiçbir şey kuramsal değil — eşleme,
@@ -374,8 +381,9 @@ Güncel durum ve sıradaki iş: [`TODO.md`](TODO.md).
 
 **Mac'im neden ısınıyor?**
 Genellikle sürekli yük — derleme, video dışa aktarma, sanal makine çalıştırma.
-Boreas yonganın hangi bölümünün sıcak olduğunu gösterir, böylece meşgul bir CPU
-ile tıkalı bir havalandırmayı ayırt edebilirsiniz.
+Bir MacBook'ta sıcak bir oda ya da tıkalı bir havalandırma aynı yükü daha erken
+hız kısmaya çevirir. Boreas yonganın hangi bölümünün sıcak olduğunu gösterir,
+böylece meşgul bir CPU ile bir soğutma sorununu ayırt edebilirsiniz.
 
 **Apple Silicon Mac'lerde fan hızı denetlenebilir mi?**
 Evet, System Management Controller üzerinden, küçük bir ayrıcalıklı yardımcıyla.

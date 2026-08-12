@@ -91,6 +91,14 @@ than a long compatibility table.
 | Mac mini (M4, 2024) — `Mac16,10` | **Verified on real hardware**: 40 named sensors, 1 fan measured from 1000 up to 4021 rpm on an edited curve and handed back on every failure path |
 | Every other Apple Silicon Mac | **Should work; not verified.** Nobody has run it on one |
 
+
+**A note for laptops.** Every measurement here comes from a desktop Mac. A
+MacBook has less thermal headroom and throttles harder, so a curve that is
+comfortable on a Mac mini may be too quiet on a laptop — and on battery the
+firmware is more conservative still. Nothing in the design is desktop-specific;
+it is simply untested there, and a MacBook sensor report would be as useful as
+any.
+
 **What "not verified" means in practice.** Sensor naming differs between chip
 generations, and multi-fan models exercise balancing code that has never met a
 second fan. Nothing here is theoretical — the mapping is a heuristic over
@@ -367,8 +375,9 @@ Current status and next task: [`TODO.md`](TODO.md).
 
 **Why is my Mac running hot?**
 Usually sustained load — compiling, exporting video, running virtual machines.
-Boreas shows you which part of the chip is hot, so you can tell a busy CPU from
-a blocked vent.
+On a MacBook, a warm room or a blocked vent turns the same load into throttling
+sooner. Boreas shows you which part of the chip is hot, so you can tell a busy
+CPU from a cooling problem.
 
 **Can you control fan speed on Apple Silicon Macs?**
 Yes, through the System Management Controller, with a small privileged helper.

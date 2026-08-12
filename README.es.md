@@ -93,6 +93,14 @@ importa más que una tabla de compatibilidad larga.
 | Mac mini (M4, 2024) — `Mac16,10` | **Verificado en hardware real**: 40 sensores con nombre y 1 ventilador medido de 1000 hasta 4021 rpm con una curva editada, devuelto al firmware en cada ruta de fallo |
 | Cualquier otro Mac con Apple Silicon | **Debería funcionar; sin verificar.** Nadie lo ha ejecutado en uno |
 
+
+**Una nota sobre los portátiles.** Todas las mediciones de aquí vienen de un Mac
+de sobremesa. Un MacBook tiene menos margen térmico y se estrangula antes, así
+que una curva cómoda en un Mac mini puede quedarse corta en un portátil, y con
+batería el firmware es aún más prudente. Nada del diseño es específico de
+sobremesa: simplemente no se ha probado ahí, y un informe de sensores desde un
+MacBook sería igual de útil.
+
 **Qué significa «sin verificar» en la práctica.** Los nombres de los sensores
 cambian entre generaciones de chips, y los modelos con varios ventiladores
 ejercitan un código de equilibrado que nunca ha visto un segundo ventilador. Nada
@@ -380,8 +388,9 @@ Estado actual y siguiente tarea: [`TODO.md`](TODO.md).
 
 **¿Por qué se calienta mi Mac?**
 Normalmente por carga sostenida: compilar, exportar vídeo, máquinas virtuales.
-Boreas muestra qué parte del chip está caliente, para que distingas una CPU
-ocupada de una rejilla obstruida.
+En un MacBook, una habitación cálida o una rejilla obstruida convierten la misma
+carga en estrangulamiento antes. Boreas muestra qué parte del chip está caliente,
+para que distingas una CPU ocupada de un problema de refrigeración.
 
 **¿Se puede controlar la velocidad de los ventiladores en un Mac con Apple Silicon?**
 Sí, a través del System Management Controller, con un pequeño asistente con

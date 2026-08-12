@@ -2,7 +2,7 @@
 
 <!-- gate-names:policy-doc — This file DESCRIBES forbidden patterns and is therefore exempt from the gate-names scan. See LEGAL.md §5.1 -->
 
-> Last updated: 2026-07-31 — P0.31
+> Last updated: 2026-08-12 — P8.07
 > Source: blueprint §18.4 · Decision: [ADR 0002](../architecture/adr/0002-product-name.md)
 
 ## Principle
@@ -55,3 +55,52 @@ This section does two jobs at once: it answers the user's real question and earn
 | Misleading topic labels | Penalized by the platform |
 | Artificial stars / fake engagement | Risk of account termination, loss of reputation |
 | Unmeasurable performance claims | An unevidenced statement |
+
+---
+
+## As shipped (P8.07)
+
+Verified against the live repository rather than asserted. Every row was checked
+with `gh repo view`; nothing in the layer map needed changing, because **M02
+already set the description and the topics** when the repository was created.
+
+| Layer | State |
+|---|---|
+| Repository name | `boreas-mac-fan-control` — as specified |
+| Repository description | Matches, with `SwiftUI` and `no telemetry` added. Both are true and both are searched for |
+| GitHub topics | **All 15 specified topics present**, plus `hardware-monitoring`, `cpu-temperature`, `fan-speed`, `open-source`, `swift6`. That is **20, which is GitHub's maximum** — adding one now means removing one |
+| README `<h1>` + tagline | As specified |
+| README first paragraph | The tagline and "Free and open source…" sit above the badges, so the keyword-bearing sentences are the first prose on the page |
+| Homebrew cask `desc` | Written below; the cask itself is P8.08, blocked on M05 |
+| Release titles | P8.04, blocked on M03/M04 |
+| README translations | Four, shipped in P8.06 |
+
+### The Homebrew cask description
+
+Homebrew's own style rules apply: no leading article, no product name, no
+trailing full stop, and it has to read as a phrase rather than a sentence.
+
+```ruby
+desc "Fan control and temperature monitoring for Apple Silicon Macs"
+```
+
+61 characters. It carries *fan control*, *temperature monitoring*, *Apple
+Silicon* and *Mac* without repeating any of them, which is the whole job of a
+line shown in `brew search` output.
+
+### The one gap this task found, and what it was not
+
+Checking the target search intents against the README literally showed only one
+of six phrases present as written. **That is the wrong test** — this document's
+own "What not to do" table forbids keyword stuffing, and four of the five
+missing phrases are served in meaning by wording already there.
+
+One was a real gap: **the README never used the word "MacBook"**, in any
+language. `macbook fan control` and `macbook running hot` are both listed target
+intents, and more to the point a laptop owner scanning the page could not find
+their machine. The remedy is a paragraph that says something true and useful —
+every measurement in the project comes from a desktop Mac, a laptop has less
+thermal headroom and throttles sooner, and a MacBook sensor report would be
+genuinely valuable — rather than the phrase dropped in for its own sake. It was
+added to all five READMEs, so the translations did not drift on the day after
+they were written.
