@@ -291,7 +291,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          scripts/release-notes.sh "$VERSION" > /tmp/notes.md
+          # **A 0.x version is a pre-release by definition**, and marking it so
+          # is the difference between GitHub offering it as *the* download and
+          # offering it as one to try. The rule is the version, not a flag
+          # somebody has to remember.
+          PRERELEASE=""
+          case "$VERSION" in
+            0.*|*-beta*|*-rc*) PRERELEASE="--prerelease" ;;
+          esac
           gh release create "${GITHUB_REF_NAME}" \
-            --title "${GITHUB_REF_NAME}" \
-            --notes-file CHANGELOG.md \
+            --title "${GITHUB_REF_NAME} — beta" \
+            --notes-file /tmp/notes.md \
+            $PRERELEASE \
             build/dmg/*.dmg build/dmg/*.sha256 build/dmg/boreas.rb

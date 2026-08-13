@@ -24,14 +24,13 @@ Gratuito y de código abierto. Sin extensión del kernel, sin cambios en SIP, si
 > inglés.** El texto vinculante es siempre [`README.md`](README.md); si algo no
 > coincide, el inglés es el correcto.
 
-> **Estado: todavía no hay una versión publicada.** El software está completo en
-> funciones y se ejecuta en la máquina del desarrollador: lee los sensores,
-> controla los ventiladores mediante un asistente con privilegios y se los
-> devuelve al firmware en cada ruta de fallo, todo medido en hardware real. Lo
-> que falta es la **firma y la notarización**, sin las cuales macOS no ejecutará
-> el asistente con privilegios en tu Mac. Hasta entonces la única vía es
-> [compilar desde el código](#instalación). Consulta la
-> [hoja de ruta](#hoja-de-ruta).
+> **Beta — 0.1.0.** Firmado, notarizado y listo para instalar. Se ha ejecutado en
+> **un solo Mac**, un Mac mini (M4, 2024); cualquier otro modelo con Apple Silicon
+> debería funcionar y ninguno se ha probado. Trátalo como software en pruebas:
+> vigila las temperaturas durante los primeros usos y sal de Boreas si algo no
+> pinta bien — salir devuelve los ventiladores al firmware de inmediato. La
+> monitorización por sí sola no requiere ningún privilegio y no cambia nada, que
+> es la forma segura de empezar.
 
 ## Qué hace
 
@@ -117,11 +116,23 @@ que puedan comunicarse.
 
 ## Instalación
 
-**Todavía no hay nada que instalar.** Cuando lo haya, será un cask de Homebrew
-como canal principal y un DMG firmado y notarizado como alternativa. Hoy no existe
-ninguno de los dos, y esta sección lo dirá hasta que existan.
+**Beta.** Firmado y notarizado, así que se instala sin rodeos con Gatekeeper.
 
-Mientras tanto, compílalo tú:
+```bash
+brew tap mahirozdin/boreas
+brew install --cask boreas
+```
+
+O descarga el `.dmg` firmado desde
+[la última versión](https://github.com/mahirozdin/boreas-mac-fan-control/releases/latest)
+y compruébalo con el `.sha256` publicado a su lado:
+
+```bash
+shasum -a 256 -c Boreas-0.1.0.dmg.sha256
+```
+
+Compilar desde el código también funciona, y es la única vía si quieres cambiar
+algo:
 
 ```bash
 git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
@@ -376,7 +387,7 @@ menos esos dos.
 | Motor de control — curvas, histéresis, perfiles | ✅ Hecho |
 | Interfaz y editor de curvas | ✅ Hecho (queda una pasada con VoiceOver) |
 | Notificaciones, registro, diagnóstico, CLI, automatización | ✅ Hecho |
-| Firma, notarización, publicación | 🔨 **En curso: lo único que separa esto de una descarga** |
+| Firma, notarización, publicación | ✅ Hecho — 0.1.0 firmado, notarizado y publicado como beta |
 
 Más adelante, y deliberadamente no antes de la 1.0: un widget de WidgetKit, App
 Intents, un punto de métricas local, compartir configuraciones y actualizaciones

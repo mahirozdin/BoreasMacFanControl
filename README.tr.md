@@ -24,12 +24,13 @@
 > her zaman [`README.md`](README.md)'dir; bir çelişki görürseniz İngilizce
 > olanı doğru kabul edin.
 
-> **Durum: henüz yayınlanmadı.** Yazılım özellik olarak tamam ve geliştiricinin
-> makinesinde çalışıyor — sensörleri okuyor, fanları ayrıcalıklı bir yardımcı
-> üzerinden sürüyor ve her hata yolunda geri veriyor; hepsi gerçek donanımda
-> ölçüldü. Eksik olan **imzalama ve noter onayı**; onlar olmadan macOS
-> ayrıcalıklı yardımcıyı sizin Mac'inizde çalıştırmaz. O zamana kadar tek yol
-> [kaynaktan derlemek](#kurulum). Bkz. [yol haritası](#yol-haritası).
+> **Beta — 0.1.0.** İmzalı, noter onaylı ve kurulabilir. **Tek bir Mac'te**
+> çalıştı: Mac mini (M4, 2024). Diğer tüm Apple Silicon modellerin çalışması
+> bekleniyor ama hiçbiri denenmedi. Bunu test aşamasındaki bir yazılım gibi
+> değerlendirin: ilk süre boyunca sıcaklıklara göz atın ve bir tuhaflık
+> görürseniz Boreas'tan çıkın — çıkmak fanları anında firmware'e geri verir.
+> Yalnızca izleme hiçbir ayrıcalık gerektirmez ve hiçbir şeyi değiştirmez;
+> başlamanın güvenli yolu odur.
 
 ## Ne yapar
 
@@ -114,11 +115,22 @@ bildirilebilsinler diye gizlenmez, gösterilir.
 
 ## Kurulum
 
-**Henüz kurulacak bir sürüm yok.** Olduğunda, birincil kanal bir Homebrew cask'i,
-alternatifi ise imzalanmış ve noter onaylı bir DMG olacak. Bugün ikisi de yok ve
-bu bölüm, olana kadar bunu söyleyecek.
+**Beta.** İmzalı ve noter onaylı, dolayısıyla Gatekeeper uyarısı olmadan kurulur.
 
-O zamana kadar kendiniz derleyin:
+```bash
+brew tap mahirozdin/boreas
+brew install --cask boreas
+```
+
+Ya da imzalı `.dmg` dosyasını
+[son sürümden](https://github.com/mahirozdin/boreas-mac-fan-control/releases/latest)
+indirip yanındaki `.sha256` ile doğrulayın:
+
+```bash
+shasum -a 256 -c Boreas-0.1.0.dmg.sha256
+```
+
+Kaynaktan derlemek de çalışır ve bir şeyi değiştirmek istiyorsanız tek yol odur:
 
 ```bash
 git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
@@ -369,7 +381,7 @@ bilerek çalıştırır.
 | Kontrol motoru — eğriler, histerezis, profiller | ✅ Bitti |
 | Kullanıcı arayüzü ve eğri editörü | ✅ Bitti (bir VoiceOver geçişi kaldı) |
 | Bildirimler, log, tanılama, CLI, otomasyon | ✅ Bitti |
-| İmzalama, noter onayı, sürüm | 🔨 **Devam ediyor — buradan bir indirmeye kalan tek şey** |
+| İmzalama, noter onayı, sürüm | ✅ Bitti — 0.1.0 imzalı, noter onaylı ve beta olarak yayında |
 
 Sonrasında, ve bilinçli olarak 1.0'dan önce değil: bir WidgetKit widget'ı, App
 Intents, yerel bir metrik uç noktası, yapılandırma paylaşımı ve uygulama içi

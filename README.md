@@ -25,12 +25,12 @@ Free and open source. No kernel extension, no SIP changes, no telemetry.
 
 ---
 
-> **Status: not released yet.** The software is feature complete and runs on the
-> developer's machine — it reads sensors, drives fans through a privileged
-> helper, and hands them back on every failure path, all measured on real
-> hardware. What is missing is **signing and notarisation**, without which macOS
-> will not run the privileged helper on your Mac. Until then the only route is
-> [building from source](#installation). See [the roadmap](#roadmap).
+> **Beta — 0.1.0.** Signed, notarised and installable. It has run on **one Mac**,
+> a Mac mini (M4, 2024); every other Apple Silicon model should work and none has
+> been tried. Treat it as software under test: keep an eye on temperatures for
+> the first while, and quit Boreas if anything looks wrong — quitting hands the
+> fans back to the firmware immediately. Monitoring alone needs no privileges and
+> changes nothing, which is the safe way to start.
 
 ## What it does
 
@@ -113,11 +113,23 @@ rather than hidden precisely so they can be reported.
 
 ## Installation
 
-**There is no release to install yet.** When there is, it will be a Homebrew
-cask as the primary channel and a signed, notarised DMG as the alternative.
-Neither exists today, and this section will say so until they do.
+**Beta.** Signed and notarised, so it installs without a Gatekeeper detour.
 
-Until then, build it yourself:
+```bash
+brew tap mahirozdin/boreas
+brew install --cask boreas
+```
+
+Or download the signed, notarised `.dmg` from
+[the latest release](https://github.com/mahirozdin/boreas-mac-fan-control/releases/latest)
+and verify it against the `.sha256` published beside it:
+
+```bash
+shasum -a 256 -c Boreas-0.1.0.dmg.sha256
+```
+
+Building from source works too, and is the only route if you want to change
+something:
 
 ```bash
 git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
@@ -127,10 +139,10 @@ make generate        # produces the Xcode project from project.yml
 ```
 
 Then open `Boreas.xcodeproj` and run. **Monitoring works unsigned.** Fan control
-needs the privileged helper, and macOS will only register a helper that is
-signed with a Developer ID — so you will need your own signing identity in
+needs the privileged helper, and macOS will only register a helper signed with a
+Developer ID — so a source build needs your own signing identity in
 `Local.xcconfig` (copy `Local.xcconfig.example` and fill in your team
-identifier). Without it Boreas is a complete monitor that asks for nothing.
+identifier).
 
 ## Quick start
 
@@ -364,7 +376,7 @@ suite deliberately exercises everything except those two.
 | Control engine — curves, hysteresis, profiles | ✅ Done |
 | User interface and curve editor | ✅ Done (a VoiceOver pass is outstanding) |
 | Notifications, logging, diagnostics, CLI, automation | ✅ Done |
-| Signing, notarisation, release | 🔨 **In progress — the only thing between here and a download** |
+| Signing, notarisation, release | ✅ Done — 0.1.0 is signed, notarised and published as a beta |
 
 Later, and deliberately not before 1.0: a WidgetKit widget, App Intents, a local
 metrics endpoint, configuration sharing, and in-app updates.

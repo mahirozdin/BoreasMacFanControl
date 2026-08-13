@@ -10,8 +10,12 @@ requires a MAJOR release.
 
 ## [Unreleased]
 
-Nothing released yet. The signing chain is proven — see the notes below for what
-exists — but no version has been tagged.
+Nothing since 0.1.0.
+
+## [0.1.0] — 2026-08-12
+
+**Beta.** Verified on one machine; see the release notes for what that means for
+yours.
 
 ### Added
 
