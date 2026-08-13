@@ -117,6 +117,7 @@ rather than hidden precisely so they can be reported.
 
 ```bash
 brew tap mahirozdin/boreas
+brew trust mahirozdin/boreas   # Homebrew asks before running a third-party tap
 brew install --cask boreas
 ```
 

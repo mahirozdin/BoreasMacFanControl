@@ -104,6 +104,7 @@ MacBook 的传感器报告同样有价值。
 
 ```bash
 brew tap mahirozdin/boreas
+brew trust mahirozdin/boreas   # Homebrew 在运行第三方 tap 之前会要求确认
 brew install --cask boreas
 ```
 

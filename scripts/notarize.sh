@@ -72,6 +72,18 @@ xcrun stapler staple "$TARGET" | sed 's/^/    /'
 xcrun stapler validate "$TARGET" | sed 's/^/    /'
 echo "  ✓ ticket stapled"
 
+# ---------------------------------------------------------------------------
+# The checksum, now that the file has stopped changing.
+#
+# Written here rather than beside the image's creation because stapling rewrites
+# it: whatever mutates the artefact is what should publish its hash. Recorded as
+# a bare filename so `shasum -a 256 -c Boreas-<version>.dmg.sha256` works in the
+# directory somebody downloaded it to, which is the command the README gives.
+# ---------------------------------------------------------------------------
+( cd "$(dirname "$TARGET")" && shasum -a 256 "$(basename "$TARGET")" \
+    | tee "$(basename "$TARGET").sha256" ) | sed 's/^/    /'
+echo "  ✓ checksum published for the stapled image"
+
 # What a user's Mac will actually decide, asked of the same subsystem that
 # decides it. `spctl` is the closest thing to opening the download by hand.
 echo "▶ Gatekeeper assessment"

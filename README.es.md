@@ -120,6 +120,7 @@ que puedan comunicarse.
 
 ```bash
 brew tap mahirozdin/boreas
+brew trust mahirozdin/boreas   # Homebrew pregunta antes de usar un tap de terceros
 brew install --cask boreas
 ```
 

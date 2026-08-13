@@ -52,10 +52,14 @@ codesign --force --sign "$IDENTITY" --timestamp "$DMG"
 codesign --verify --verbose=2 "$DMG" 2>&1 | sed 's/^/    /'
 echo "  ✓ disk image signed"
 
-# Published beside the image: a download nobody can check is a download nobody
-# should trust (ADR 0017).
-shasum -a 256 "$DMG" | tee "$DMG.sha256" | sed 's/^/    /'
 rm -rf "$STAGE"
 
+# **No checksum is written here, and that is the fix for a real defect.**
+# `stapler` rewrites the image when it attaches the notarisation ticket, so a
+# hash taken at this point describes a file that no longer exists by the time
+# anybody downloads it. v0.1.0 shipped exactly that: a `.sha256` a user running
+# `shasum -c` would see fail, which reads as a corrupted or tampered download —
+# worse than publishing no checksum at all. It is written after stapling, by the
+# script that does the stapling.
+
 echo "  ✓ $DMG"
-echo "  ✓ $DMG.sha256"

@@ -37,7 +37,11 @@ cask "boreas" do
 
   # Intel is out of scope by design (ADR 0004), and the minimum is macOS 14
   # (ADR 0003). Declared rather than discovered at launch.
-  depends_on macos: ">= :sonoma"
+  #
+  # The symbol form, not ">= :sonoma": Homebrew deprecated the string
+  # comparison and says so on every tap, which is noise a user should not have
+  # to learn to ignore.
+  depends_on macos: :sonoma
   depends_on arch: :arm64
 
   app "Boreas.app"

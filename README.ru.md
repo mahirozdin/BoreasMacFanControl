@@ -121,6 +121,7 @@ Gatekeeper.
 
 ```bash
 brew tap mahirozdin/boreas
+brew trust mahirozdin/boreas   # Homebrew спрашивает, прежде чем запускать сторонний tap
 brew install --cask boreas
 ```
 

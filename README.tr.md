@@ -119,6 +119,7 @@ bildirilebilsinler diye gizlenmez, gösterilir.
 
 ```bash
 brew tap mahirozdin/boreas
+brew trust mahirozdin/boreas   # Homebrew, üçüncü taraf bir tap'i çalıştırmadan önce onay ister
 brew install --cask boreas
 ```
 
