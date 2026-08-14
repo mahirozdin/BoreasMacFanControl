@@ -24,7 +24,7 @@
 > her zaman [`README.md`](README.md)'dir; bir çelişki görürseniz İngilizce
 > olanı doğru kabul edin.
 
-> **Beta — 0.1.0.** İmzalı, noter onaylı ve kurulabilir. **Tek bir Mac'te**
+> **Beta — 0.1.1.** İmzalı, noter onaylı ve kurulabilir. **Tek bir Mac'te**
 > çalıştı: Mac mini (M4, 2024). Diğer tüm Apple Silicon modellerin çalışması
 > bekleniyor ama hiçbiri denenmedi. Bunu test aşamasındaki bir yazılım gibi
 > değerlendirin: ilk süre boyunca sıcaklıklara göz atın ve bir tuhaflık
@@ -128,7 +128,7 @@ Ya da imzalı `.dmg` dosyasını
 indirip yanındaki `.sha256` ile doğrulayın:
 
 ```bash
-shasum -a 256 -c Boreas-0.1.0.dmg.sha256
+shasum -a 256 -c Boreas-0.1.1.dmg.sha256
 ```
 
 Kaynaktan derlemek de çalışır ve bir şeyi değiştirmek istiyorsanız tek yol odur:
@@ -382,7 +382,7 @@ bilerek çalıştırır.
 | Kontrol motoru — eğriler, histerezis, profiller | ✅ Bitti |
 | Kullanıcı arayüzü ve eğri editörü | ✅ Bitti (bir VoiceOver geçişi kaldı) |
 | Bildirimler, log, tanılama, CLI, otomasyon | ✅ Bitti |
-| İmzalama, noter onayı, sürüm | ✅ Bitti — 0.1.0 imzalı, noter onaylı ve beta olarak yayında |
+| İmzalama, noter onayı, sürüm | ✅ Bitti — 0.1.1 imzalı, noter onaylı ve beta olarak yayında |
 
 Sonrasında, ve bilinçli olarak 1.0'dan önce değil: bir WidgetKit widget'ı, App
 Intents, yerel bir metrik uç noktası, yapılandırma paylaşımı ve uygulama içi

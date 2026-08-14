@@ -140,6 +140,18 @@ layout: ## Y3 — pseudo-locale overflow check (needs the app built)
 cli-test: ## Every boreas command, against real state (needs the CLI built)
 	@scripts/cli-test.sh
 
+.PHONY: icon
+icon: ## Rebuild App/Resources/Boreas.icns from the icon source (needs imagemagick)
+	@scripts/make-icon.sh
+
+.PHONY: dmg-background
+dmg-background: ## Rebuild the disk image background art (needs imagemagick)
+	@scripts/make-dmg-background.sh
+
+.PHONY: dmg-layout
+dmg-layout: ## Re-bake the disk image window layout — MAINTAINER ONLY, drives Finder
+	@scripts/make-dmg-layout.sh
+
 .PHONY: generate
 generate: ## Generate the Xcode project from project.yml
 	@command -v xcodegen >/dev/null 2>&1 \

@@ -293,13 +293,21 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           scripts/release-notes.sh "$VERSION" > /tmp/notes.md
-          # **A 0.x version is a pre-release by definition**, and marking it so
-          # is the difference between GitHub offering it as *the* download and
-          # offering it as one to try. The rule is the version, not a flag
-          # somebody has to remember.
+          # **A pre-release is now something the tag says, not something the
+          # major version implies** (P8.13). The old rule treated every 0.x as
+          # a pre-release, and the cost of that was not a label: GitHub's
+          # "latest release" deliberately skips pre-releases, so
+          # `GET /releases/latest` answered 404, the repository page's Releases
+          # panel had nothing to show, and the only published version of this
+          # product appeared on its own home page as the words "1 tag".
+          # Measured, not guessed — that 404 is what sent this task here.
+          #
+          # A 0.x release is still early software. Saying so is the job of the
+          # release title, the README's banner and the changelog, all of which
+          # do say it. Hiding the download is not the same as warning about it.
           PRERELEASE=""
           case "$VERSION" in
-            0.*|*-beta*|*-rc*) PRERELEASE="--prerelease" ;;
+            *-beta*|*-rc*|*-alpha*) PRERELEASE="--prerelease" ;;
           esac
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME} — beta" \

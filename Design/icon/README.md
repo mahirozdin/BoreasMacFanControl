@@ -59,6 +59,30 @@ Icon Composer ships with Xcode 26 (inside `/Applications/Xcode.app`).
 
 > **Note:** the `.icon` file is not kept in this directory; it is added under `App/Resources/` when the application target is created in P6. This directory holds the **source** assets.
 
+## What actually ships, and why it is not the above (P8.11)
+
+The Icon Composer route describes macOS 26. This product's minimum is macOS
+14.0 (invariant T2), and macOS 14 and 15 cannot read a `.icon` at all — a bundle
+carrying only one would show the generic placeholder on most of the Macs this
+project supports. **`App/Resources/Boreas.icns` is what ships**, built by
+`make icon` (`scripts/make-icon.sh`) from `render/boreas-1024.png`.
+
+Two of the rules above are inverted for that format, because a classic `.icns`
+gets nothing applied to it by the system:
+
+| Rule for `.icon` | What `.icns` needs | Why |
+|---|---|---|
+| No platform mask | The rounded rectangle is **baked in** | Finder applies none |
+| No baked-in shadow | A restrained shadow is **baked in** | Apple's own icons carry theirs in the artwork |
+| Full-bleed, edge to edge | Plate **inset to 824×824 of 1024×1024** | Apple's macOS grid. The full-bleed source measures x 0–1023, y 0–1023, and an icns built straight from it stands about a quarter wider than every icon beside it |
+
+None of this touches the source SVGs, which remain full-bleed and mask-free and
+stay correct for the Icon Composer build whenever macOS 26 becomes the floor.
+
+**This gap went unnoticed for one release.** M08 delivered the design and
+closed; no task ever wired it into a bundle, so v0.1.0 shipped with the
+placeholder. Release gate 9 now checks that the built bundle carries an icon.
+
 ## About the renders
 
 The PNGs under `render/` are **reference** images produced with ImageMagick. Because ImageMagick does not render SVG gradients, the background was produced separately and composited in. For the true appearance, rely on `preview.html` (WebKit) or the Icon Composer preview.

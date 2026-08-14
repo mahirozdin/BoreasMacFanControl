@@ -10,7 +10,50 @@ requires a MAJOR release.
 
 ## [Unreleased]
 
-Nothing since 0.1.0.
+Nothing since 0.1.1.
+
+## [0.1.1] — 2026-08-15
+
+**Beta.** Nothing about monitoring, fan control or the safety chain changed. The
+whole of this release is how the product presents itself, and all three defects
+in it were found the same way: by downloading 0.1.0 and looking at it.
+
+### Fixed
+
+**The application had no icon.** The icon was designed in `Design/icon/` and
+never wired into the bundle — no `.icns`, no `CFBundleIconFile` — so macOS drew
+the generic placeholder in Finder, in `/Applications` and in the disk image
+window. The bundle now carries `Boreas.icns`, built by `make icon`.
+
+The artwork needed a second correction to be a macOS icon rather than a square
+picture: Apple's grid puts the plate at 824×824 inside a 1024×1024 canvas, and
+the source render was full-bleed. Rendered as-is it would have stood about a
+quarter wider than every icon beside it.
+
+**The disk image window was blank.** Three items in a row on an empty
+background, with nothing to say that one of them should be dragged onto another.
+It now opens at a fixed size with a background, the application and
+`/Applications` on one line with an arrow between them, and the command line
+tool below with a caption saying what it is.
+
+**Every 0.x release was hidden from the repository page.** The release workflow
+treated any `0.` version as a pre-release, and GitHub's "latest release"
+deliberately skips those — so `/releases/latest` answered 404, the Releases
+panel had nothing to show, and the only published version of this product
+appeared on its own home page as the words "1 tag". A pre-release is now
+something a tag says (`-beta`, `-rc`, `-alpha`), not something the major version
+implies.
+
+### Changed
+
+The application and its privileged helper take their version from one value
+rather than two literals kept in step by hand. They live inside the same bundle
+and `SMAppService` compares them; a release that bumped one and forgot the other
+would have shipped a mismatch nothing checked for.
+
+A ninth release gate checks that the built bundle carries its icon and that the
+disk image carries its window. It exists because every gate was green while both
+were missing.
 
 ## [0.1.0] — 2026-08-12
 

@@ -77,11 +77,22 @@ targets:
       properties:
         CFBundleName: $(PRODUCT_NAME)
         CFBundleDisplayName: $(PRODUCT_NAME)
-        CFBundleShortVersionString: "0.1.0"
-        CFBundleVersion: "1"
+        # Anchored, and aliased by the helper below. The two used to be
+        # separate literals, which is a drift waiting to happen: the helper
+        # lives inside the app bundle and SMAppService compares versions, so a
+        # release that bumped one and forgot the other would ship a mismatch
+        # nothing checks for.
+        CFBundleShortVersionString: &marketingVersion "0.1.1"
+        CFBundleVersion: &buildVersion "2"
         LSMinimumSystemVersion: "14.0"
         # Menu bar application: no Dock icon (blueprint §9.2)
         LSUIElement: true
+        # LSUIElement suppresses the Dock tile, not the bundle's icon: Finder,
+        # /Applications, Get Info and the disk image window all still draw it.
+        # Without this key they drew the generic placeholder instead — the
+        # defect P8.11 fixed. Built by `make icon`; see scripts/make-icon.sh
+        # for why a classic .icns and not the .icon the design document names.
+        CFBundleIconFile: Boreas
         NSHumanReadableCopyright: "Licensed under the Apache License 2.0"
         # Where the unknown-sensor report (P7.09) files its issue. It lives
         # here rather than in Swift because the address contains the product
@@ -130,8 +141,8 @@ targets:
       properties:
         CFBundleIdentifier: com.bubiapps.boreas.fanhelper
         CFBundleName: BoreasFanHelper
-        CFBundleShortVersionString: "0.1.0"
-        CFBundleVersion: "1"
+        CFBundleShortVersionString: *marketingVersion
+        CFBundleVersion: *buildVersion
     settings:
       base:
         PRODUCT_NAME: com.bubiapps.boreas.fanhelper

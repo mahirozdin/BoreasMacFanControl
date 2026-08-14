@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # ============================================================================
-# P8.09 — the eight release gates in ARCHITECTURE.md §10, checked.
+# P8.09 — the release gates in ARCHITECTURE.md §10, checked. Eight of them are
+# the ones that document names; the ninth was added by P8.11 after v0.1.0
+# shipped with no application icon and a blank disk image window.
 #
 # **The point of this script is what it refuses to claim.** Five of the eight
 # gates are machine-checkable and are run here. Three are not:
@@ -124,6 +126,39 @@ else
   fail "README has no honest tested-hardware section (B6)"
 fi
 
+# --- 9. the shipped image presents itself -----------------------------------
+# **This gate exists because nothing caught the thing it checks.** M08 designed
+# an icon in 2026-08-03 and closed. P8.03 built a disk image and closed. Both
+# were done; the icon was never wired into the bundle and the image was never
+# given a window, so v0.1.0 shipped with the generic placeholder application
+# icon and three loose items on a blank background. Every gate was green. Found
+# by the project owner downloading the release and looking at it (P8.11, P8.12).
+#
+# What is checkable here is presence, and only presence: an icns inside the
+# built bundle, the Info.plist key that points at it, and the two committed
+# assets the disk image window is made of. Whether the artwork is any good, or
+# whether the arrow points at the right place, is not a thing a script knows.
+ICON_APP="${ICON_APP:-build/release/Build/Products/Release/Boreas.app}"
+ICON_OK=1
+if [ -d "$ICON_APP" ]; then
+  ICON_KEY=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIconFile" \
+    "$ICON_APP/Contents/Info.plist" 2>/dev/null || true)
+  [ -n "$ICON_KEY" ] || { echo "      no CFBundleIconFile in $ICON_APP"; ICON_OK=0; }
+  [ -f "$ICON_APP/Contents/Resources/${ICON_KEY:-missing}.icns" ] \
+    || { echo "      no ${ICON_KEY:-?}.icns in the bundle"; ICON_OK=0; }
+else
+  echo "      $ICON_APP not built — set ICON_APP=<path> or build first"
+  ICON_OK=0
+fi
+for asset in Design/dmg/background.png Design/dmg/background@2x.png Design/dmg/DS_Store; do
+  [ -f "$asset" ] || { echo "      missing disk image asset: $asset"; ICON_OK=0; }
+done
+if [ "$ICON_OK" -eq 1 ]; then
+  pass "the bundle carries its icon and the disk image carries its window"
+else
+  fail "the shipped image does not present itself — see the lines above"
+fi
+
 echo ""
 echo "  $PASSED passed · $FAILED failed · $UNVERIFIED unverified"
 if [ "$FAILED" -gt 0 ]; then
@@ -134,4 +169,4 @@ if [ "$UNVERIFIED" -gt 0 ]; then
   echo "✗ release-gates INCOMPLETE — $UNVERIFIED gate(s) unverified, which is not the same as passing"
   exit 1
 fi
-echo "✓ release-gates PASS — all eight satisfied"
+echo "✓ release-gates PASS — all nine satisfied"

@@ -24,7 +24,7 @@ Gratuito y de código abierto. Sin extensión del kernel, sin cambios en SIP, si
 > inglés.** El texto vinculante es siempre [`README.md`](README.md); si algo no
 > coincide, el inglés es el correcto.
 
-> **Beta — 0.1.0.** Firmado, notarizado y listo para instalar. Se ha ejecutado en
+> **Beta — 0.1.1.** Firmado, notarizado y listo para instalar. Se ha ejecutado en
 > **un solo Mac**, un Mac mini (M4, 2024); cualquier otro modelo con Apple Silicon
 > debería funcionar y ninguno se ha probado. Trátalo como software en pruebas:
 > vigila las temperaturas durante los primeros usos y sal de Boreas si algo no
@@ -129,7 +129,7 @@ O descarga el `.dmg` firmado desde
 y compruébalo con el `.sha256` publicado a su lado:
 
 ```bash
-shasum -a 256 -c Boreas-0.1.0.dmg.sha256
+shasum -a 256 -c Boreas-0.1.1.dmg.sha256
 ```
 
 Compilar desde el código también funciona, y es la única vía si quieres cambiar
@@ -388,7 +388,7 @@ menos esos dos.
 | Motor de control — curvas, histéresis, perfiles | ✅ Hecho |
 | Interfaz y editor de curvas | ✅ Hecho (queda una pasada con VoiceOver) |
 | Notificaciones, registro, diagnóstico, CLI, automatización | ✅ Hecho |
-| Firma, notarización, publicación | ✅ Hecho — 0.1.0 firmado, notarizado y publicado como beta |
+| Firma, notarización, publicación | ✅ Hecho — 0.1.1 firmado, notarizado y publicado como beta |
 
 Más adelante, y deliberadamente no antes de la 1.0: un widget de WidgetKit, App
 Intents, un punto de métricas local, compartir configuraciones y actualizaciones

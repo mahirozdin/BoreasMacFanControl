@@ -25,7 +25,7 @@ Free and open source. No kernel extension, no SIP changes, no telemetry.
 
 ---
 
-> **Beta — 0.1.0.** Signed, notarised and installable. It has run on **one Mac**,
+> **Beta — 0.1.1.** Signed, notarised and installable. It has run on **one Mac**,
 > a Mac mini (M4, 2024); every other Apple Silicon model should work and none has
 > been tried. Treat it as software under test: keep an eye on temperatures for
 > the first while, and quit Boreas if anything looks wrong — quitting hands the
@@ -126,7 +126,7 @@ Or download the signed, notarised `.dmg` from
 and verify it against the `.sha256` published beside it:
 
 ```bash
-shasum -a 256 -c Boreas-0.1.0.dmg.sha256
+shasum -a 256 -c Boreas-0.1.1.dmg.sha256
 ```
 
 Building from source works too, and is the only route if you want to change
@@ -377,7 +377,7 @@ suite deliberately exercises everything except those two.
 | Control engine — curves, hysteresis, profiles | ✅ Done |
 | User interface and curve editor | ✅ Done (a VoiceOver pass is outstanding) |
 | Notifications, logging, diagnostics, CLI, automation | ✅ Done |
-| Signing, notarisation, release | ✅ Done — 0.1.0 is signed, notarised and published as a beta |
+| Signing, notarisation, release | ✅ Done — 0.1.1 is signed, notarised and published as a beta |
 
 Later, and deliberately not before 1.0: a WidgetKit widget, App Intents, a local
 metrics endpoint, configuration sharing, and in-app updates.
