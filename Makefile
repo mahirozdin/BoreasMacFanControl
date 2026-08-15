@@ -156,6 +156,10 @@ dmg-layout: ## Re-bake the disk image window layout — MAINTAINER ONLY, needs d
 social-card: ## Rebuild the repository's link preview card (needs imagemagick)
 	@scripts/make-social-card.sh
 
+.PHONY: screenshots
+screenshots: ## Re-render the pictures the READMEs show (needs the app built)
+	@scripts/make-screenshots.sh
+
 .PHONY: generate
 generate: ## Generate the Xcode project from project.yml
 	@command -v xcodegen >/dev/null 2>&1 \
