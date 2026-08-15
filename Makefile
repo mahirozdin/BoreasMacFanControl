@@ -149,8 +149,12 @@ dmg-background: ## Rebuild the disk image background art (needs imagemagick)
 	@scripts/make-dmg-background.sh
 
 .PHONY: dmg-layout
-dmg-layout: ## Re-bake the disk image window layout — MAINTAINER ONLY, drives Finder
+dmg-layout: ## Re-bake the disk image window layout — MAINTAINER ONLY, needs dmgbuild
 	@scripts/make-dmg-layout.sh
+
+.PHONY: social-card
+social-card: ## Rebuild the repository's link preview card (needs imagemagick)
+	@scripts/make-social-card.sh
 
 .PHONY: generate
 generate: ## Generate the Xcode project from project.yml
