@@ -20,6 +20,16 @@ Gratuito y de código abierto. Sin extensión del kernel, sin cambios en SIP, si
 
 ---
 
+<div align="center">
+
+<img src="docs/images/demo.gif" width="760" alt="Boreas siguiendo una carga creciente: el gráfico de temperatura sube de 48 a 76 grados y el del ventilador lo sigue de 1700 a 3700 rpm, ambos en un mismo eje temporal">
+
+<sub>Una ejecución real del motor de control — la temperatura sube, la curva la traduce, el ventilador la sigue.</sub>
+
+</div>
+
+---
+
 > **Esta es una traducción y puede quedarse atrás respecto a la versión en
 > inglés.** El texto vinculante es siempre [`README.md`](README.md); si algo no
 > coincide, el inglés es el correcto.
@@ -35,8 +45,10 @@ Gratuito y de código abierto. Sin extensión del kernel, sin cambios en SIP, si
 ## Qué hace
 
 <div align="center">
-<img src="docs/images/panel-light.png" width="330" alt="El panel de la barra de menús en apariencia clara: selector de perfil, un ventilador a 2755 rpm y temperaturas agrupadas por cómputo, gráficos, memoria, almacenamiento y alimentación">
-<img src="docs/images/panel-dark.png" width="330" alt="El mismo panel de la barra de menús en apariencia oscura">
+<img src="docs/images/main-window.png" width="820" alt="La ventana principal: temperatura más alta y media, perfil activo, estado térmico y velocidad del ventilador como tarjetas de resumen; un gráfico de temperatura por grupo de sensores y un gráfico de velocidad del ventilador en el mismo eje temporal; y una tabla de sensores ordenable">
+<br>
+<img src="docs/images/panel-light.png" width="300" alt="El panel de la barra de menús en apariencia clara: selector de perfil, un ventilador a 2755 rpm y temperaturas agrupadas por cómputo, gráficos, memoria, almacenamiento y alimentación">
+<img src="docs/images/panel-dark.png" width="300" alt="El mismo panel de la barra de menús en apariencia oscura">
 </div>
 
 Boreas es una app de la barra de menús que muestra lo que ocurre dentro de tu Mac
@@ -57,6 +69,70 @@ y te deja decidir cómo debe refrigerarse.
   de un cliente de correo que nadie quiere mantener
 - **Léelo en cinco idiomas**: inglés, turco, ruso, español y chino simplificado
 - **Silencio o frescor**: la decisión es tuya, no del firmware
+
+## Instalación
+
+**Beta.** Firmado y notarizado, así que se instala sin rodeos con Gatekeeper.
+
+```bash
+brew tap mahirozdin/boreas
+brew trust mahirozdin/boreas   # Homebrew pregunta antes de usar un tap de terceros
+brew install --cask boreas
+```
+
+O descarga el `.dmg` firmado desde
+[la última versión](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
+y compruébalo con el `.sha256` publicado a su lado:
+
+```bash
+shasum -a 256 -c Boreas-0.1.1.dmg.sha256
+```
+
+Compilar desde el código también funciona, y es la única vía si quieres cambiar
+algo:
+
+```bash
+git clone https://github.com/mahirozdin/BoreasMacFanControl.git
+cd BoreasMacFanControl
+brew bundle          # xcodegen, swiftlint, xcbeautify
+make generate        # genera el proyecto de Xcode a partir de project.yml
+```
+
+Después abre `Boreas.xcodeproj` y ejecútalo. **La monitorización funciona sin
+firma.** El control de ventiladores necesita el asistente con privilegios, y
+macOS solo registrará uno firmado con un Developer ID, así que necesitarás tu
+propia identidad de firma en `Local.xcconfig` (copia `Local.xcconfig.example` y
+pon tu identificador de equipo). Sin ella, Boreas es un monitor completo que no
+pide nada.
+
+## Primeros pasos
+
+1. **Abre Boreas.** Aparece en la barra de menús y empieza a leer sensores de
+   inmediato: sin permisos, sin configuración, sin nada que ajustar.
+2. **Elige un perfil** en el panel: Silencioso, Equilibrado, Rendimiento o
+   Sistema para devolverlo todo al firmware.
+3. **Activa el control de ventiladores** cuando quieras que la curva los controle
+   de verdad. Es el único paso que pide tu contraseña de administrador, una vez.
+
+Los pasos 1 y 2 son útiles por sí solos. El paso 3 es opcional y reversible.
+
+<details>
+<summary><b>Más de la interfaz</b></summary>
+
+<div align="center">
+
+<img src="docs/images/menu-bar.png" width="640" alt="El elemento de la barra de menús en cinco configuraciones: por defecto, gobernando los ventiladores, con minigráfico, apilado y compacto">
+
+<img src="docs/images/settings.png" width="720" alt="La pestaña de control de la ventana de ajustes">
+
+<img src="docs/images/diagnostics.png" width="720" alt="La pestaña de diagnóstico: seis comprobaciones, ninguna de las cuales nombra un fallo que no pueda conocer">
+
+<img src="docs/images/main-window-dark.png" width="720" alt="La ventana principal en apariencia oscura">
+
+<img src="docs/images/curve-editor-dark.png" width="720" alt="El editor de curvas en apariencia oscura">
+
+</div>
+</details>
 
 ## Por qué
 
@@ -113,52 +189,6 @@ ya rellenado, que lleva el identificador de modelo de tu Mac, su chip, los nombr
 de los sensores no reconocidos y el número de ventiladores, y nada más. Los
 sensores sin correspondencia se muestran en lugar de ocultarse precisamente para
 que puedan comunicarse.
-
-## Instalación
-
-**Beta.** Firmado y notarizado, así que se instala sin rodeos con Gatekeeper.
-
-```bash
-brew tap mahirozdin/boreas
-brew trust mahirozdin/boreas   # Homebrew pregunta antes de usar un tap de terceros
-brew install --cask boreas
-```
-
-O descarga el `.dmg` firmado desde
-[la última versión](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
-y compruébalo con el `.sha256` publicado a su lado:
-
-```bash
-shasum -a 256 -c Boreas-0.1.1.dmg.sha256
-```
-
-Compilar desde el código también funciona, y es la única vía si quieres cambiar
-algo:
-
-```bash
-git clone https://github.com/mahirozdin/BoreasMacFanControl.git
-cd BoreasMacFanControl
-brew bundle          # xcodegen, swiftlint, xcbeautify
-make generate        # genera el proyecto de Xcode a partir de project.yml
-```
-
-Después abre `Boreas.xcodeproj` y ejecútalo. **La monitorización funciona sin
-firma.** El control de ventiladores necesita el asistente con privilegios, y
-macOS solo registrará uno firmado con un Developer ID, así que necesitarás tu
-propia identidad de firma en `Local.xcconfig` (copia `Local.xcconfig.example` y
-pon tu identificador de equipo). Sin ella, Boreas es un monitor completo que no
-pide nada.
-
-## Primeros pasos
-
-1. **Abre Boreas.** Aparece en la barra de menús y empieza a leer sensores de
-   inmediato: sin permisos, sin configuración, sin nada que ajustar.
-2. **Elige un perfil** en el panel: Silencioso, Equilibrado, Rendimiento o
-   Sistema para devolverlo todo al firmware.
-3. **Activa el control de ventiladores** cuando quieras que la curva los controle
-   de verdad. Es el único paso que pide tu contraseña de administrador, una vez.
-
-Los pasos 1 y 2 son útiles por sí solos. El paso 3 es opcional y reversible.
 
 ## Permisos
 

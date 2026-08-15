@@ -20,6 +20,16 @@
 
 ---
 
+<div align="center">
+
+<img src="docs/images/demo.gif" width="760" alt="Boreas 跟随不断上升的负载：温度图表从 48 度升到 76 度，风扇图表随之从 1700 升到 3700 rpm，两者共用同一时间轴">
+
+<sub>控制引擎的一次真实运行 —— 温度上升，曲线映射，风扇跟随。</sub>
+
+</div>
+
+---
+
 > **这是译文，可能落后于英文版。** 具有约束力的始终是
 > [`README.md`](README.md)；若有出入，以英文为准。
 
@@ -32,8 +42,10 @@
 ## 它能做什么
 
 <div align="center">
-<img src="docs/images/panel-light.png" width="330" alt="浅色外观下的菜单栏面板：配置文件选择器、一个转速 2755 rpm 的风扇，以及按计算、图形、内存、存储和电源分组的温度">
-<img src="docs/images/panel-dark.png" width="330" alt="同一个菜单栏面板的深色外观">
+<img src="docs/images/main-window.png" width="820" alt="主窗口：最高温度与平均温度、当前配置文件、热状态和风扇转速的摘要卡片；按传感器分组的温度图表与同一时间轴上的风扇转速图表；以及可排序的传感器表格">
+<br>
+<img src="docs/images/panel-light.png" width="300" alt="浅色外观下的菜单栏面板：配置文件选择器、一个转速 2755 rpm 的风扇，以及按计算、图形、内存、存储和电源分组的温度">
+<img src="docs/images/panel-dark.png" width="300" alt="同一个菜单栏面板的深色外观">
 </div>
 
 Boreas 是一个菜单栏应用，它让你看见 Mac 内部正在发生什么，并由你决定它该如何
@@ -51,6 +63,65 @@ Boreas 是一个菜单栏应用，它让你看见 Mac 内部正在发生什么�
 - **接入你自己的工具**：用 webhook 或脚本，而不是一个没人愿意维护的邮件客户端
 - **以五种语言阅读**：英语、土耳其语、俄语、西班牙语和简体中文
 - **保持安静，或保持凉爽**——这个取舍属于你，而不是固件
+
+## 安装
+
+**测试版。** 已签名并公证，因此安装时不会遇到 Gatekeeper 的阻拦。
+
+```bash
+brew tap mahirozdin/boreas
+brew trust mahirozdin/boreas   # Homebrew 在运行第三方 tap 之前会要求确认
+brew install --cask boreas
+```
+
+或者从[最新发布](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
+下载已签名的 `.dmg`，并用旁边发布的 `.sha256` 校验：
+
+```bash
+shasum -a 256 -c Boreas-0.1.1.dmg.sha256
+```
+
+从源码构建同样可行；如果你想改动什么，那是唯一的途径：
+
+```bash
+git clone https://github.com/mahirozdin/BoreasMacFanControl.git
+cd BoreasMacFanControl
+brew bundle          # xcodegen、swiftlint、xcbeautify
+make generate        # 从 project.yml 生成 Xcode 项目
+```
+
+然后打开 `Boreas.xcodeproj` 运行。**监测无需签名即可工作。** 风扇控制需要特权
+助理，而 macOS 只会注册用 Developer ID 签名的助理——因此你需要在
+`Local.xcconfig` 中填入自己的签名身份（复制 `Local.xcconfig.example` 并填上你的
+团队标识符）。没有它，Boreas 仍是一个什么都不索取的完整监测工具。
+
+## 快速开始
+
+1. **打开 Boreas。** 它出现在菜单栏并立即开始读取传感器——不需要权限、不需要
+   设置、没有要配置的东西。
+2. **在面板中选择一个配置文件**：安静、均衡、性能，或者选择“系统”把一切交回固件。
+3. **启用风扇控制**——当你真的想让曲线驱动风扇时。这是唯一一个会索取管理员密码
+   的步骤，只有一次。
+
+第 1 步和第 2 步本身就有用。第 3 步是可选的，而且可以撤销。
+
+<details>
+<summary><b>更多界面</b></summary>
+
+<div align="center">
+
+<img src="docs/images/menu-bar.png" width="640" alt="菜单栏项目的五种配置：默认、正在驱动风扇、带迷你图表、堆叠和紧凑">
+
+<img src="docs/images/settings.png" width="720" alt="设置窗口的控制标签页">
+
+<img src="docs/images/diagnostics.png" width="720" alt="诊断标签页：六项检查，没有一项会指出它无法确知的故障">
+
+<img src="docs/images/main-window-dark.png" width="720" alt="深色外观下的主窗口">
+
+<img src="docs/images/curve-editor-dark.png" width="720" alt="深色外观下的曲线编辑器">
+
+</div>
+</details>
 
 ## 为什么
 
@@ -97,47 +168,6 @@ MacBook 的传感器报告同样有价值。
 [未知传感器报告](https://github.com/mahirozdin/BoreasMacFanControl/issues/new?template=unknown_sensor.yml)，
 其中包含你 Mac 的机型标识符、芯片、未识别的传感器名称和风扇数量，仅此而已。
 未映射的传感器之所以显示而不隐藏，正是为了让它们能被报告。
-
-## 安装
-
-**测试版。** 已签名并公证，因此安装时不会遇到 Gatekeeper 的阻拦。
-
-```bash
-brew tap mahirozdin/boreas
-brew trust mahirozdin/boreas   # Homebrew 在运行第三方 tap 之前会要求确认
-brew install --cask boreas
-```
-
-或者从[最新发布](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
-下载已签名的 `.dmg`，并用旁边发布的 `.sha256` 校验：
-
-```bash
-shasum -a 256 -c Boreas-0.1.1.dmg.sha256
-```
-
-从源码构建同样可行；如果你想改动什么，那是唯一的途径：
-
-```bash
-git clone https://github.com/mahirozdin/BoreasMacFanControl.git
-cd BoreasMacFanControl
-brew bundle          # xcodegen、swiftlint、xcbeautify
-make generate        # 从 project.yml 生成 Xcode 项目
-```
-
-然后打开 `Boreas.xcodeproj` 运行。**监测无需签名即可工作。** 风扇控制需要特权
-助理，而 macOS 只会注册用 Developer ID 签名的助理——因此你需要在
-`Local.xcconfig` 中填入自己的签名身份（复制 `Local.xcconfig.example` 并填上你的
-团队标识符）。没有它，Boreas 仍是一个什么都不索取的完整监测工具。
-
-## 快速开始
-
-1. **打开 Boreas。** 它出现在菜单栏并立即开始读取传感器——不需要权限、不需要
-   设置、没有要配置的东西。
-2. **在面板中选择一个配置文件**：安静、均衡、性能，或者选择“系统”把一切交回固件。
-3. **启用风扇控制**——当你真的想让曲线驱动风扇时。这是唯一一个会索取管理员密码
-   的步骤，只有一次。
-
-第 1 步和第 2 步本身就有用。第 3 步是可选的，而且可以撤销。
 
 ## 权限
 

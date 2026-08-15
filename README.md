@@ -25,6 +25,16 @@ Free and open source. No kernel extension, no SIP changes, no telemetry.
 
 ---
 
+<div align="center">
+
+<img src="docs/images/demo.gif" width="760" alt="Boreas following a rising load: the temperature chart climbs from 48 to 76 degrees and the fan chart follows it from 1700 to 3700 rpm, both on one time axis">
+
+<sub>A real run of the control engine — the temperature climbs, the curve maps it, the fan follows.</sub>
+
+</div>
+
+---
+
 > **Beta — 0.1.1.** Signed, notarised and installable. It has run on **one Mac**,
 > a Mac mini (M4, 2024); every other Apple Silicon model should work and none has
 > been tried. Treat it as software under test: keep an eye on temperatures for
@@ -35,8 +45,10 @@ Free and open source. No kernel extension, no SIP changes, no telemetry.
 ## What it does
 
 <div align="center">
-<img src="docs/images/panel-light.png" width="330" alt="The menu bar panel in light appearance: a profile picker, one fan at 2755 rpm, and temperatures grouped by compute, graphics, memory, storage and power">
-<img src="docs/images/panel-dark.png" width="330" alt="The same menu bar panel in dark appearance">
+<img src="docs/images/main-window.png" width="820" alt="The main window: hottest and average temperature, the active profile, thermal state and fan speed as summary tiles; a temperature chart per sensor group and a fan speed chart on the same time axis; and a sortable sensor table">
+<br>
+<img src="docs/images/panel-light.png" width="300" alt="The menu bar panel in light appearance: a profile picker, one fan at 2755 rpm, and temperatures grouped by compute, graphics, memory, storage and power">
+<img src="docs/images/panel-dark.png" width="300" alt="The same menu bar panel in dark appearance">
 </div>
 
 Boreas is a menu bar app that shows what is happening inside your Mac and lets
@@ -58,6 +70,69 @@ you decide how it should be cooled.
   Simplified Chinese
 - **Stay quiet or stay cool** — the trade-off is yours to make, not the
   firmware's
+
+## Installation
+
+**Beta.** Signed and notarised, so it installs without a Gatekeeper detour.
+
+```bash
+brew tap mahirozdin/boreas
+brew trust mahirozdin/boreas   # Homebrew asks before running a third-party tap
+brew install --cask boreas
+```
+
+Or download the signed, notarised `.dmg` from
+[the latest release](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
+and verify it against the `.sha256` published beside it:
+
+```bash
+shasum -a 256 -c Boreas-0.1.1.dmg.sha256
+```
+
+Building from source works too, and is the only route if you want to change
+something:
+
+```bash
+git clone https://github.com/mahirozdin/BoreasMacFanControl.git
+cd BoreasMacFanControl
+brew bundle          # xcodegen, swiftlint, xcbeautify
+make generate        # produces the Xcode project from project.yml
+```
+
+Then open `Boreas.xcodeproj` and run. **Monitoring works unsigned.** Fan control
+needs the privileged helper, and macOS will only register a helper signed with a
+Developer ID — so a source build needs your own signing identity in
+`Local.xcconfig` (copy `Local.xcconfig.example` and fill in your team
+identifier).
+
+## Quick start
+
+1. **Open Boreas.** It appears in the menu bar and starts reading sensors
+   immediately — no permission, no setup, nothing to configure.
+2. **Pick a profile** from the panel: Quiet, Balanced, Performance, or System to
+   hand everything back to the firmware.
+3. **Enable fan control** when you want the curve to actually drive the fans.
+   This is the one step that asks for your administrator password, once.
+
+Steps 1 and 2 are useful on their own. Step 3 is optional and reversible.
+
+<details>
+<summary><b>More of the interface</b></summary>
+
+<div align="center">
+
+<img src="docs/images/menu-bar.png" width="640" alt="The menu bar item in five configurations: default, driving the fans, with a mini chart, stacked, and compact">
+
+<img src="docs/images/settings.png" width="720" alt="The settings window's control tab">
+
+<img src="docs/images/diagnostics.png" width="720" alt="The diagnostics tab: six checks, none of which names a fault it cannot know">
+
+<img src="docs/images/main-window-dark.png" width="720" alt="The main window in dark appearance">
+
+<img src="docs/images/curve-editor-dark.png" width="720" alt="The curve editor in dark appearance">
+
+</div>
+</details>
 
 ## Why
 
@@ -110,51 +185,6 @@ If your Mac shows sensors as `uncategorized`, that is useful information —
 in your browser, carrying your Mac's model identifier, chip, the unrecognised
 sensor names and the fan count, and nothing else. Unmapped sensors are shown
 rather than hidden precisely so they can be reported.
-
-## Installation
-
-**Beta.** Signed and notarised, so it installs without a Gatekeeper detour.
-
-```bash
-brew tap mahirozdin/boreas
-brew trust mahirozdin/boreas   # Homebrew asks before running a third-party tap
-brew install --cask boreas
-```
-
-Or download the signed, notarised `.dmg` from
-[the latest release](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
-and verify it against the `.sha256` published beside it:
-
-```bash
-shasum -a 256 -c Boreas-0.1.1.dmg.sha256
-```
-
-Building from source works too, and is the only route if you want to change
-something:
-
-```bash
-git clone https://github.com/mahirozdin/BoreasMacFanControl.git
-cd BoreasMacFanControl
-brew bundle          # xcodegen, swiftlint, xcbeautify
-make generate        # produces the Xcode project from project.yml
-```
-
-Then open `Boreas.xcodeproj` and run. **Monitoring works unsigned.** Fan control
-needs the privileged helper, and macOS will only register a helper signed with a
-Developer ID — so a source build needs your own signing identity in
-`Local.xcconfig` (copy `Local.xcconfig.example` and fill in your team
-identifier).
-
-## Quick start
-
-1. **Open Boreas.** It appears in the menu bar and starts reading sensors
-   immediately — no permission, no setup, nothing to configure.
-2. **Pick a profile** from the panel: Quiet, Balanced, Performance, or System to
-   hand everything back to the firmware.
-3. **Enable fan control** when you want the curve to actually drive the fans.
-   This is the one step that asks for your administrator password, once.
-
-Steps 1 and 2 are useful on their own. Step 3 is optional and reversible.
 
 ## Permissions
 

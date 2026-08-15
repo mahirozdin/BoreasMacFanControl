@@ -7,6 +7,7 @@
 #   2. Every target in the traceability matrix actually exists
 #   3. ADR files  ==  ADR index  ==  ARCHITECTURE.md table
 #   4. make commands in documentation == Makefile targets
+#   5. Pictures shown with <img> tags exist (P9.05)
 # ============================================================================
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
@@ -127,6 +128,42 @@ if [ -f Makefile ]; then
   else
     ok "make targets in documentation match the Makefile"
   fi
+fi
+
+# ---------------------------------------------------------------------------
+# 5. Do the pictures the documentation shows exist? (P9.05)
+# ---------------------------------------------------------------------------
+# Check 1 follows markdown links and does not look inside HTML. The READMEs
+# show their screenshots with <img> tags, because markdown cannot set a width
+# and a 1720 pixel picture at full size is not a page anybody reads. So the
+# fifty picture references across the five READMEs were checked by nothing:
+# rename a screenshot and all five break, silently, in the one file every
+# visitor sees first.
+#
+# Not hypothetical — `make screenshots` renames what it publishes whenever the
+# table inside it changes, which is exactly the kind of edit made without
+# opening a README.
+MISSING_IMG=""
+for file in $(git ls-files '*.md' | grep -vE '^(BLUEPRINT\.md|docs/blueprint/)'); do
+  for src in $(grep -oE '<img[^>]+src="[^"]+"' "$file" 2>/dev/null \
+    | sed 's/.*src="//; s/"$//'); do
+    case "$src" in
+      http://*|https://*|data:*) continue ;;
+    esac
+    # Relative to the file that references it, as a browser would resolve it.
+    base=$(dirname "$file")
+    [ "$base" = "." ] && target="$src" || target="$base/$src"
+    if [ ! -f "$target" ]; then
+      MISSING_IMG="$MISSING_IMG    $file → $src"$'\n'
+    fi
+  done
+done
+
+if [ -n "$MISSING_IMG" ]; then
+  fail "picture shown in documentation but not in the repository:"
+  printf '%s' "$MISSING_IMG"
+else
+  ok "every picture the documentation shows exists"
 fi
 
 echo

@@ -20,6 +20,16 @@
 
 ---
 
+<div align="center">
+
+<img src="docs/images/demo.gif" width="760" alt="Boreas yükselen bir yükü takip ediyor: sıcaklık grafiği 48 dereceden 76 dereceye çıkıyor, fan grafiği onu 1700'den 3700 dev/dk'ya izliyor, ikisi de aynı zaman ekseninde">
+
+<sub>Kontrol motorunun gerçek bir koşusu — sıcaklık yükseliyor, eğri onu eşliyor, fan takip ediyor.</sub>
+
+</div>
+
+---
+
 > **Bu bir çeviridir ve İngilizce sürümün gerisinde kalabilir.** Bağlayıcı metin
 > her zaman [`README.md`](README.md)'dir; bir çelişki görürseniz İngilizce
 > olanı doğru kabul edin.
@@ -35,8 +45,10 @@
 ## Ne yapar
 
 <div align="center">
-<img src="docs/images/panel-light.png" width="330" alt="Açık temada menü çubuğu paneli: profil seçici, 2755 dev/dk'da bir fan ve işlemci, grafik, bellek, depolama ve güç olarak gruplanmış sıcaklıklar">
-<img src="docs/images/panel-dark.png" width="330" alt="Aynı menü çubuğu paneli, koyu temada">
+<img src="docs/images/main-window.png" width="820" alt="Ana pencere: en sıcak ve ortalama sıcaklık, etkin profil, termal durum ve fan hızı özet kartları; sensör grubu başına sıcaklık grafiği ve aynı zaman ekseninde fan hızı grafiği; sıralanabilir sensör tablosu">
+<br>
+<img src="docs/images/panel-light.png" width="300" alt="Açık temada menü çubuğu paneli: profil seçici, 2755 dev/dk'da bir fan ve işlemci, grafik, bellek, depolama ve güç olarak gruplanmış sıcaklıklar">
+<img src="docs/images/panel-dark.png" width="300" alt="Aynı menü çubuğu paneli, koyu temada">
 </div>
 
 Boreas, Mac'inizin içinde neler olduğunu gösteren ve nasıl soğutulacağına sizin
@@ -59,6 +71,69 @@ karar vermenizi sağlayan bir menü çubuğu uygulamasıdır.
 - **Beş dilde okuyun** — İngilizce, Türkçe, Rusça, İspanyolca ve Basitleştirilmiş
   Çince
 - **Sessiz kalın ya da serin kalın** — bu takas firmware'in değil, sizin
+
+## Kurulum
+
+**Beta.** İmzalı ve noter onaylı, dolayısıyla Gatekeeper uyarısı olmadan kurulur.
+
+```bash
+brew tap mahirozdin/boreas
+brew trust mahirozdin/boreas   # Homebrew, üçüncü taraf bir tap'i çalıştırmadan önce onay ister
+brew install --cask boreas
+```
+
+Ya da imzalı `.dmg` dosyasını
+[son sürümden](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
+indirip yanındaki `.sha256` ile doğrulayın:
+
+```bash
+shasum -a 256 -c Boreas-0.1.1.dmg.sha256
+```
+
+Kaynaktan derlemek de çalışır ve bir şeyi değiştirmek istiyorsanız tek yol odur:
+
+```bash
+git clone https://github.com/mahirozdin/BoreasMacFanControl.git
+cd BoreasMacFanControl
+brew bundle          # xcodegen, swiftlint, xcbeautify
+make generate        # Xcode projesini project.yml'den üretir
+```
+
+Sonra `Boreas.xcodeproj`'i açıp çalıştırın. **İzleme imzasız çalışır.** Fan
+kontrolü ayrıcalıklı yardımcıyı gerektirir ve macOS yalnızca Developer ID ile
+imzalanmış bir yardımcıyı kaydeder — yani `Local.xcconfig` içinde kendi imzalama
+kimliğiniz gerekir (`Local.xcconfig.example` dosyasını kopyalayıp takım
+kimliğinizi girin). O olmadan Boreas hiçbir şey istemeyen eksiksiz bir izleyicidir.
+
+## Hızlı başlangıç
+
+1. **Boreas'ı açın.** Menü çubuğunda belirir ve hemen sensörleri okumaya başlar —
+   izin yok, kurulum yok, yapılandıracak bir şey yok.
+2. **Panelden bir profil seçin**: Sessiz, Dengeli, Performans ya da her şeyi
+   firmware'e geri vermek için Sistem.
+3. **Fan kontrolünü etkinleştirin** — eğrinin fanları gerçekten sürmesini
+   istediğinizde. Yönetici parolanızı isteyen tek adım budur, bir kez.
+
+1. ve 2. adımlar tek başlarına da işe yarar. 3. adım isteğe bağlı ve geri
+alınabilir.
+
+<details>
+<summary><b>Arayüzden daha fazlası</b></summary>
+
+<div align="center">
+
+<img src="docs/images/menu-bar.png" width="640" alt="Menü çubuğu ögesi beş ayarda: varsayılan, fanları sürerken, mini grafikli, dikey ve kompakt">
+
+<img src="docs/images/settings.png" width="720" alt="Ayarlar penceresinin kontrol sekmesi">
+
+<img src="docs/images/diagnostics.png" width="720" alt="Tanılama sekmesi: altı kontrol, hiçbiri bilemeyeceği bir arızayı adlandırmıyor">
+
+<img src="docs/images/main-window-dark.png" width="720" alt="Ana pencere, koyu temada">
+
+<img src="docs/images/curve-editor-dark.png" width="720" alt="Eğri editörü, koyu temada">
+
+</div>
+</details>
 
 ## Neden
 
@@ -112,51 +187,6 @@ bir [bilinmeyen sensör raporu](https://github.com/mahirozdin/BoreasMacFanContro
 açar; içinde Mac'inizin model kimliği, yongası, tanınmayan sensör adları ve fan
 sayısı bulunur, başka hiçbir şey yoktur. Eşlenmemiş sensörler tam da
 bildirilebilsinler diye gizlenmez, gösterilir.
-
-## Kurulum
-
-**Beta.** İmzalı ve noter onaylı, dolayısıyla Gatekeeper uyarısı olmadan kurulur.
-
-```bash
-brew tap mahirozdin/boreas
-brew trust mahirozdin/boreas   # Homebrew, üçüncü taraf bir tap'i çalıştırmadan önce onay ister
-brew install --cask boreas
-```
-
-Ya da imzalı `.dmg` dosyasını
-[son sürümden](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
-indirip yanındaki `.sha256` ile doğrulayın:
-
-```bash
-shasum -a 256 -c Boreas-0.1.1.dmg.sha256
-```
-
-Kaynaktan derlemek de çalışır ve bir şeyi değiştirmek istiyorsanız tek yol odur:
-
-```bash
-git clone https://github.com/mahirozdin/BoreasMacFanControl.git
-cd BoreasMacFanControl
-brew bundle          # xcodegen, swiftlint, xcbeautify
-make generate        # Xcode projesini project.yml'den üretir
-```
-
-Sonra `Boreas.xcodeproj`'i açıp çalıştırın. **İzleme imzasız çalışır.** Fan
-kontrolü ayrıcalıklı yardımcıyı gerektirir ve macOS yalnızca Developer ID ile
-imzalanmış bir yardımcıyı kaydeder — yani `Local.xcconfig` içinde kendi imzalama
-kimliğiniz gerekir (`Local.xcconfig.example` dosyasını kopyalayıp takım
-kimliğinizi girin). O olmadan Boreas hiçbir şey istemeyen eksiksiz bir izleyicidir.
-
-## Hızlı başlangıç
-
-1. **Boreas'ı açın.** Menü çubuğunda belirir ve hemen sensörleri okumaya başlar —
-   izin yok, kurulum yok, yapılandıracak bir şey yok.
-2. **Panelden bir profil seçin**: Sessiz, Dengeli, Performans ya da her şeyi
-   firmware'e geri vermek için Sistem.
-3. **Fan kontrolünü etkinleştirin** — eğrinin fanları gerçekten sürmesini
-   istediğinizde. Yönetici parolanızı isteyen tek adım budur, bir kez.
-
-1. ve 2. adımlar tek başlarına da işe yarar. 3. adım isteğe bağlı ve geri
-alınabilir.
 
 ## İzinler
 
