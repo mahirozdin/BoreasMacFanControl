@@ -31,6 +31,7 @@ enum HelperCommands {
             ("--render-status", RenderEvidence.status),
             ("--render-window", RenderEvidence.window),
             ("--render-settings", RenderEvidence.settings),
+            ("--render-film", RenderEvidence.film),
         ]
         for command in commands {
             if let index = arguments.firstIndex(of: command.flag), index + 1 < arguments.count {

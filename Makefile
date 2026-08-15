@@ -160,6 +160,10 @@ social-card: ## Rebuild the repository's link preview card (needs imagemagick)
 screenshots: ## Re-render the pictures the READMEs show (needs the app built)
 	@scripts/make-screenshots.sh
 
+.PHONY: demo
+demo: ## Re-encode the README's demo loop (needs the app built + imagemagick)
+	@scripts/make-demo.sh
+
 .PHONY: generate
 generate: ## Generate the Xcode project from project.yml
 	@command -v xcodegen >/dev/null 2>&1 \

@@ -31,7 +31,11 @@ extension RenderEvidence {
     /// exactly what the curve editor's trail layer exists to show. A
     /// fixture sitting perfectly on the curve would prove the layer draws,
     /// and nothing about what it means.
-    private static func windowSeries(fan: FanState) -> [SensorGroup: [(Date, Double)]] {
+    /// Internal rather than private because `RenderFilmEvidence` steps
+    /// through this same series one frame at a time (P9.04). The moving
+    /// picture and the still pictures have to come from one generator, or
+    /// the film would be showing something the screenshots do not.
+    static func windowSeries(fan: FanState) -> [SensorGroup: [(Date, Double)]] {
         let curve = BuiltInProfiles.all().first { $0.name == "Balanced" }?.binding.curve
         var compute: [(Date, Double)] = []
         var graphics: [(Date, Double)] = []
@@ -71,14 +75,29 @@ extension RenderEvidence {
         ]
     }
 
-    private static let windowStep = 2.0
-    private static let windowSampleCount = 1_200
+    static let windowStep = 2.0
+    static let windowSampleCount = 1_200
 
-    private static func windowFixture() -> WindowFixture {
+    /// The instant a fixture truncated to `samples` is standing at.
+    ///
+    /// The series runs backwards from `fixedNow`, so a truncated one ends
+    /// earlier. Passing the untruncated `fixedNow` as the film's clock would
+    /// put every frame's "now" beyond the data it is drawing, and the charts
+    /// would show a growing empty margin on the right instead of scrolling.
+    static func windowNow(samples: Int) -> Date {
+        fixedNow.addingTimeInterval(Double(samples - windowSampleCount) * windowStep)
+    }
+
+    /// `samples` truncates the history, which is the whole mechanism behind
+    /// the film: frame *n* is this fixture built from the first *n* samples
+    /// of the same series, so the moving picture is the still picture's own
+    /// history being replayed rather than a second thing drawn to match.
+    static func windowFixture(samples: Int = windowSampleCount) -> WindowFixture {
         let fan = FanState(
             id: 0, name: "Fan 0", currentRPM: 2_310,
             minimumRPM: 1_000, maximumRPM: 4_900, isPoweredOff: false)
-        let series = windowSeries(fan: fan)
+        let cut = Swift.max(2, Swift.min(samples, windowSampleCount))
+        let series = windowSeries(fan: fan).mapValues { Array($0.prefix(cut)) }
         let compute = series[.compute] ?? []
         let graphics = series[.graphics] ?? []
         let fanSpeeds = series[.uncategorized] ?? []
@@ -88,15 +107,21 @@ extension RenderEvidence {
                 rawName: "PMU tdie5", displayName: "PMU tdie5", group: .compute,
                 celsius: compute.last?.1 ?? 60),
             SensorReading(
-                rawName: "PMU tdie1", displayName: "PMU tdie1", group: .compute, celsius: 61.2),
+                rawName: "PMU tdie1", displayName: "PMU tdie1", group: .compute,
+                celsius: (compute.last?.1 ?? 61.2) - 20.9),
             SensorReading(
                 rawName: "GPU tdie0", displayName: "GPU tdie0", group: .graphics,
                 celsius: graphics.last?.1 ?? 52),
+            // Memory and storage read off their own series rather than
+            // sitting at a constant. Frozen, they were harmless in a still
+            // picture; in the film they would be two rows visibly refusing to
+            // move while everything around them did.
             SensorReading(
-                rawName: "LPDDR temp", displayName: "LPDDR temp", group: .memory, celsius: 46.4),
+                rawName: "LPDDR temp", displayName: "LPDDR temp", group: .memory,
+                celsius: series[.memory]?.last?.1 ?? 46.4),
             SensorReading(
                 rawName: "NAND CH0 temp", displayName: "NAND CH0 temp", group: .storage,
-                celsius: 41.5),
+                celsius: series[.storage]?.last?.1 ?? 41.5),
         ]
 
         // The displayed fan carries the speed its own history ends at: a

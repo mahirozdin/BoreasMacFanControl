@@ -16,6 +16,23 @@
 # Gate result
 GATE_FAIL=0
 
+# ---------------------------------------------------------------------------
+# Reproducible image output (P9.04).
+#
+# ImageMagick stamps `date:create` and `date:modify` into every file it writes,
+# so an artwork script rerun with no change at all still produces different
+# bytes — and `git status` shows a modified picture that is pixel for pixel the
+# one already committed. Measured: `magick compare -metric AE` reported 0 while
+# the checksums differed.
+#
+# That matters more than tidiness. The evidence rule in this repository leans on
+# "regenerate it and see whether it changed"; a generator that always looks
+# changed makes that check useless. `SOURCE_DATE_EPOCH` is the reproducible
+# builds convention and ImageMagick honours it. Exported here because every
+# artwork script sources this file.
+# ---------------------------------------------------------------------------
+export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-0}"
+
 ok()   { printf '  ✓ %s\n' "$*"; }
 fail() { printf '  ✗ %s\n' "$*"; GATE_FAIL=1; }
 warn() { printf '  ! %s\n' "$*"; }
