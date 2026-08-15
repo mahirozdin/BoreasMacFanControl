@@ -22,7 +22,7 @@ fi
 
 VERSION=$(basename "$DMG" .dmg | sed 's/^Boreas-//')
 SHA=$(shasum -a 256 "$DMG" | awk '{print $1}')
-REPO="${CASK_REPOSITORY:-mahirozdin/boreas-mac-fan-control}"
+REPO="${CASK_REPOSITORY:-mahirozdin/BoreasMacFanControl}"
 
 cat > "$OUT" <<CASK
 cask "boreas" do

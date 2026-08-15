@@ -19,7 +19,7 @@ The product name is **Boreas** — in Greek mythology, the god of the north wind
 | Field | Value |
 |---|---|
 | Product name | Boreas |
-| Repository | `boreas-mac-fan-control` |
+| Repository | `BoreasMacFanControl` — was `boreas-mac-fan-control` until [0024](0024-repository-name-readability.md) |
 | Bundle ID | `com.bubiapps.boreas` |
 | Daemon | `com.bubiapps.boreas.fanhelper` |
 | CLI | `boreas` |

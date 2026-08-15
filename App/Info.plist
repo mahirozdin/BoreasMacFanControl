@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>BORepositoryURL</key>
-	<string>https://github.com/mahirozdin/boreas-mac-fan-control</string>
+	<string>https://github.com/mahirozdin/BoreasMacFanControl</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

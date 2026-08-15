@@ -14,8 +14,8 @@ to get from a clean checkout to a merged pull request.
 ## Getting started
 
 ```bash
-git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
-cd boreas-mac-fan-control
+git clone https://github.com/mahirozdin/BoreasMacFanControl.git
+cd BoreasMacFanControl
 brew bundle          # xcodegen, swiftlint, xcbeautify
 make bootstrap       # verifies the tools actually run, not just that they exist
 make generate        # produces Boreas.xcodeproj from project.yml

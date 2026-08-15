@@ -34,6 +34,7 @@ Format: Michael Nygard — `Context` / `Decision` / `Alternatives` / `Consequenc
 | [0021](0021-english-only-repository.md) | The repository is written in English | Accepted | Governance |
 | [0022](0022-panic-threshold-ceiling.md) | The panic threshold's ceiling is its default (95 °C) | Accepted | Safety |
 | [0023](0023-watchdog-timeout-not-user-settable.md) | The watchdog timeout is not user settable | Accepted | Safety |
+| [0024](0024-repository-name-readability.md) | The repository name is read before it is searched | Accepted | Release |
 
 ## Writing a new ADR
 

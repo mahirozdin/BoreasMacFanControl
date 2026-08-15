@@ -7,7 +7,7 @@ The six decisions settled at the project's founding. Each is tied to an ADR.
 
 | # | Decision | Outcome | ADR |
 |---|---|---|---|
-| **A1** | Product name | **Boreas** · repository `boreas-mac-fan-control` · bundle `com.bubiapps.boreas` · CLI `boreas`. The trademark search was done by the project owner; no obstacle was found (2026-08-03) | [0002](../architecture/adr/0002-product-name.md) |
+| **A1** | Product name | **Boreas** · repository `BoreasMacFanControl` · bundle `com.bubiapps.boreas` · CLI `boreas`. The trademark search was done by the project owner; no obstacle was found (2026-08-03). The repository was renamed from `boreas-mac-fan-control` on 2026-08-15; the old name redirects | [0002](../architecture/adr/0002-product-name.md) · [0024](../architecture/adr/0024-repository-name-readability.md) |
 | **A2** | Minimum macOS | **14.0 Sonoma** | [0003](../architecture/adr/0003-minimum-macos-14.md) |
 | **A3** | Repository owner | **Personal GitHub account.** It can move to an organization later; GitHub redirects the old URL. The bundle ID does not depend on it | (no architectural impact) |
 | **A4** | Developer ID | **Deferred to P8** (2026-08-03 revision). P1–P7 require no signing identity; the decision and the consequences of both paths are in ADR 0019 | [0019](../architecture/adr/0019-signing-identity-deferred.md) |

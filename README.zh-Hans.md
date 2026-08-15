@@ -8,7 +8,7 @@
 
 免费开源。不需要内核扩展，不改动 SIP，没有遥测。
 
-[![CI](https://github.com/mahirozdin/boreas-mac-fan-control/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirozdin/boreas-mac-fan-control/actions/workflows/ci.yml)
+[![CI](https://github.com/mahirozdin/BoreasMacFanControl/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirozdin/BoreasMacFanControl/actions/workflows/ci.yml)
 [![许可证](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![平台](https://img.shields.io/badge/macOS-14.0%2B-lightgrey.svg)](#系统要求)
 [![架构](https://img.shields.io/badge/arch-Apple%20Silicon-orange.svg)](#系统要求)
@@ -94,7 +94,7 @@ MacBook 的传感器报告同样有价值。
 
 如果你的 Mac 把传感器显示为 `uncategorized`，那是有用的信息——
 **设置 → 传感器 → 报告这些传感器**会在浏览器中打开一份预先填好的
-[未知传感器报告](https://github.com/mahirozdin/boreas-mac-fan-control/issues/new?template=unknown_sensor.yml)，
+[未知传感器报告](https://github.com/mahirozdin/BoreasMacFanControl/issues/new?template=unknown_sensor.yml)，
 其中包含你 Mac 的机型标识符、芯片、未识别的传感器名称和风扇数量，仅此而已。
 未映射的传感器之所以显示而不隐藏，正是为了让它们能被报告。
 
@@ -108,7 +108,7 @@ brew trust mahirozdin/boreas   # Homebrew 在运行第三方 tap 之前会要求
 brew install --cask boreas
 ```
 
-或者从[最新发布](https://github.com/mahirozdin/boreas-mac-fan-control/releases/latest)
+或者从[最新发布](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
 下载已签名的 `.dmg`，并用旁边发布的 `.sha256` 校验：
 
 ```bash
@@ -118,8 +118,8 @@ shasum -a 256 -c Boreas-0.1.1.dmg.sha256
 从源码构建同样可行；如果你想改动什么，那是唯一的途径：
 
 ```bash
-git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
-cd boreas-mac-fan-control
+git clone https://github.com/mahirozdin/BoreasMacFanControl.git
+cd BoreasMacFanControl
 brew bundle          # xcodegen、swiftlint、xcbeautify
 make generate        # 从 project.yml 生成 Xcode 项目
 ```

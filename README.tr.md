@@ -8,7 +8,7 @@
 
 Ücretsiz ve açık kaynak. Çekirdek uzantısı yok, SIP değişikliği yok, telemetri yok.
 
-[![CI](https://github.com/mahirozdin/boreas-mac-fan-control/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirozdin/boreas-mac-fan-control/actions/workflows/ci.yml)
+[![CI](https://github.com/mahirozdin/BoreasMacFanControl/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirozdin/BoreasMacFanControl/actions/workflows/ci.yml)
 [![Lisans](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/macOS-14.0%2B-lightgrey.svg)](#gereksinimler)
 [![Mimari](https://img.shields.io/badge/arch-Apple%20Silicon-orange.svg)](#gereksinimler)
@@ -108,7 +108,7 @@ sensörler üretebilir.
 
 Mac'iniz sensörleri `uncategorized` olarak gösteriyorsa bu değerli bir bilgidir —
 **Ayarlar → Sensörler → Bu Sensörleri Bildir**, tarayıcınızda önceden doldurulmuş
-bir [bilinmeyen sensör raporu](https://github.com/mahirozdin/boreas-mac-fan-control/issues/new?template=unknown_sensor.yml)
+bir [bilinmeyen sensör raporu](https://github.com/mahirozdin/BoreasMacFanControl/issues/new?template=unknown_sensor.yml)
 açar; içinde Mac'inizin model kimliği, yongası, tanınmayan sensör adları ve fan
 sayısı bulunur, başka hiçbir şey yoktur. Eşlenmemiş sensörler tam da
 bildirilebilsinler diye gizlenmez, gösterilir.
@@ -124,7 +124,7 @@ brew install --cask boreas
 ```
 
 Ya da imzalı `.dmg` dosyasını
-[son sürümden](https://github.com/mahirozdin/boreas-mac-fan-control/releases/latest)
+[son sürümden](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
 indirip yanındaki `.sha256` ile doğrulayın:
 
 ```bash
@@ -134,8 +134,8 @@ shasum -a 256 -c Boreas-0.1.1.dmg.sha256
 Kaynaktan derlemek de çalışır ve bir şeyi değiştirmek istiyorsanız tek yol odur:
 
 ```bash
-git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
-cd boreas-mac-fan-control
+git clone https://github.com/mahirozdin/BoreasMacFanControl.git
+cd BoreasMacFanControl
 brew bundle          # xcodegen, swiftlint, xcbeautify
 make generate        # Xcode projesini project.yml'den üretir
 ```

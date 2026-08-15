@@ -198,6 +198,7 @@ any state --(watchdog / sleep / quit / error)--> RELEASING --> MONITORING
 | [0021](docs/architecture/adr/0021-english-only-repository.md) | The repository is written in English | Accepted |
 | [0022](docs/architecture/adr/0022-panic-threshold-ceiling.md) | The panic threshold's ceiling is its default (95 °C) | Accepted |
 | [0023](docs/architecture/adr/0023-watchdog-timeout-not-user-settable.md) | The watchdog timeout is not user settable | Accepted |
+| [0024](docs/architecture/adr/0024-repository-name-readability.md) | The repository name is read before it is searched | Accepted |
 
 ---
 

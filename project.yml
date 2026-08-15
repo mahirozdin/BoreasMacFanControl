@@ -97,7 +97,7 @@ targets:
         # Where the unknown-sensor report (P7.09) files its issue. It lives
         # here rather than in Swift because the address contains the product
         # name, and K2 keeps that out of the code.
-        BORepositoryURL: https://github.com/mahirozdin/boreas-mac-fan-control
+        BORepositoryURL: https://github.com/mahirozdin/BoreasMacFanControl
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bubiapps.boreas

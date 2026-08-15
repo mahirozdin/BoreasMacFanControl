@@ -8,7 +8,7 @@
 
 Бесплатно и с открытым исходным кодом. Без расширений ядра, без изменений SIP, без телеметрии.
 
-[![CI](https://github.com/mahirozdin/boreas-mac-fan-control/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirozdin/boreas-mac-fan-control/actions/workflows/ci.yml)
+[![CI](https://github.com/mahirozdin/BoreasMacFanControl/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirozdin/BoreasMacFanControl/actions/workflows/ci.yml)
 [![Лицензия](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Платформа](https://img.shields.io/badge/macOS-14.0%2B-lightgrey.svg)](#требования)
 [![Архитектура](https://img.shields.io/badge/arch-Apple%20Silicon-orange.svg)](#требования)
@@ -109,7 +109,7 @@ MacBook меньше запас по теплу и он сильнее сбра�
 Если ваш Mac показывает датчики как `uncategorized`, это полезные сведения —
 **Настройки → Датчики → Сообщить об этих датчиках** откроет в браузере
 предварительно заполненный
-[отчёт о неизвестных датчиках](https://github.com/mahirozdin/boreas-mac-fan-control/issues/new?template=unknown_sensor.yml),
+[отчёт о неизвестных датчиках](https://github.com/mahirozdin/BoreasMacFanControl/issues/new?template=unknown_sensor.yml),
 в котором будут идентификатор модели вашего Mac, чип, названия нераспознанных
 датчиков и количество вентиляторов — и больше ничего. Несопоставленные датчики
 показываются, а не скрываются, именно чтобы о них можно было сообщить.
@@ -126,7 +126,7 @@ brew install --cask boreas
 ```
 
 Или скачайте подписанный `.dmg` из
-[последнего релиза](https://github.com/mahirozdin/boreas-mac-fan-control/releases/latest)
+[последнего релиза](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
 и проверьте его по опубликованному рядом `.sha256`:
 
 ```bash
@@ -137,8 +137,8 @@ shasum -a 256 -c Boreas-0.1.1.dmg.sha256
 что-то изменить:
 
 ```bash
-git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
-cd boreas-mac-fan-control
+git clone https://github.com/mahirozdin/BoreasMacFanControl.git
+cd BoreasMacFanControl
 brew bundle          # xcodegen, swiftlint, xcbeautify
 make generate        # создаёт проект Xcode из project.yml
 ```

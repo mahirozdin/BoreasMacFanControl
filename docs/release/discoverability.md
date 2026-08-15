@@ -15,7 +15,7 @@ The product name `Boreas` carries the brand; the keywords are carried by the lay
 
 | Layer | Value | Why it matters |
 |---|---|---|
-| **Repository name** | `boreas-mac-fan-control` | Words in the URL are a strong signal; both brand and keywords |
+| **Repository name** | `BoreasMacFanControl` | Both brand and keywords. **The separator changed in [ADR 0024](../architecture/adr/0024-repository-name-readability.md)** and the trade is recorded there: a hyphen is an unambiguous word separator to an index and a capital letter is not, so this name matches *mac fan control* less well than the hyphenated one did. The name is what a human reads at the top of the page; the four layers below are what an index reads |
 | **Repository description** | *"Free, open-source Mac fan control and temperature monitoring for Apple Silicon (M1–M5). Native menu bar app — no kernel extension, no SIP changes."* | **The most critical field.** What search engines use as the meta description |
 | **GitHub topics** | `mac-fan-control` `fan-control` `macos` `apple-silicon` `temperature-monitor` `thermal` `menu-bar` `swift` `swiftui` `m1` `m2` `m3` `m4` `macos-app` `system-monitor` | Topic pages are an organic traffic source in their own right |
 | **README `<h1>` + tagline** | `# Boreas` → *Mac Fan Control & Temperature Monitoring for Apple Silicon* | The title shown in a search result |
@@ -66,7 +66,7 @@ already set the description and the topics** when the repository was created.
 
 | Layer | State |
 |---|---|
-| Repository name | `boreas-mac-fan-control` — as specified |
+| Repository name | `BoreasMacFanControl` — **changed 2026-08-15**, [ADR 0024](../architecture/adr/0024-repository-name-readability.md). Was `boreas-mac-fan-control` as specified, until the name was read on the page rather than reasoned about |
 | Repository description | Matches, with `SwiftUI` and `no telemetry` added. Both are true and both are searched for |
 | GitHub topics | **All 15 specified topics present**, plus `hardware-monitoring`, `cpu-temperature`, `fan-speed`, `open-source`, `swift6`. That is **20, which is GitHub's maximum** — adding one now means removing one |
 | README `<h1>` + tagline | As specified |

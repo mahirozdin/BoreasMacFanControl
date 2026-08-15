@@ -8,7 +8,7 @@
 
 Gratuito y de código abierto. Sin extensión del kernel, sin cambios en SIP, sin telemetría.
 
-[![CI](https://github.com/mahirozdin/boreas-mac-fan-control/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirozdin/boreas-mac-fan-control/actions/workflows/ci.yml)
+[![CI](https://github.com/mahirozdin/BoreasMacFanControl/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirozdin/BoreasMacFanControl/actions/workflows/ci.yml)
 [![Licencia](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Plataforma](https://img.shields.io/badge/macOS-14.0%2B-lightgrey.svg)](#requisitos)
 [![Arquitectura](https://img.shields.io/badge/arch-Apple%20Silicon-orange.svg)](#requisitos)
@@ -108,7 +108,7 @@ hardware, y la tuya puede producir sensores que Boreas no reconozca.
 
 Si tu Mac muestra sensores como `uncategorized`, esa información es útil:
 **Ajustes → Sensores → Informar de estos sensores** abre en tu navegador un
-[informe de sensor desconocido](https://github.com/mahirozdin/boreas-mac-fan-control/issues/new?template=unknown_sensor.yml)
+[informe de sensor desconocido](https://github.com/mahirozdin/BoreasMacFanControl/issues/new?template=unknown_sensor.yml)
 ya rellenado, que lleva el identificador de modelo de tu Mac, su chip, los nombres
 de los sensores no reconocidos y el número de ventiladores, y nada más. Los
 sensores sin correspondencia se muestran en lugar de ocultarse precisamente para
@@ -125,7 +125,7 @@ brew install --cask boreas
 ```
 
 O descarga el `.dmg` firmado desde
-[la última versión](https://github.com/mahirozdin/boreas-mac-fan-control/releases/latest)
+[la última versión](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
 y compruébalo con el `.sha256` publicado a su lado:
 
 ```bash
@@ -136,8 +136,8 @@ Compilar desde el código también funciona, y es la única vía si quieres camb
 algo:
 
 ```bash
-git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
-cd boreas-mac-fan-control
+git clone https://github.com/mahirozdin/BoreasMacFanControl.git
+cd BoreasMacFanControl
 brew bundle          # xcodegen, swiftlint, xcbeautify
 make generate        # genera el proyecto de Xcode a partir de project.yml
 ```

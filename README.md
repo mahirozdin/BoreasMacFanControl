@@ -13,7 +13,7 @@
 
 Free and open source. No kernel extension, no SIP changes, no telemetry.
 
-[![CI](https://github.com/mahirozdin/boreas-mac-fan-control/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirozdin/boreas-mac-fan-control/actions/workflows/ci.yml)
+[![CI](https://github.com/mahirozdin/BoreasMacFanControl/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirozdin/BoreasMacFanControl/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/macOS-14.0%2B-lightgrey.svg)](#requirements)
 [![Architecture](https://img.shields.io/badge/arch-Apple%20Silicon-orange.svg)](#requirements)
@@ -106,7 +106,7 @@ hardware keys, and yours may produce sensors Boreas does not recognise.
 
 If your Mac shows sensors as `uncategorized`, that is useful information —
 **Settings → Sensors → Report These Sensors** opens a pre-filled
-[unknown sensor report](https://github.com/mahirozdin/boreas-mac-fan-control/issues/new?template=unknown_sensor.yml)
+[unknown sensor report](https://github.com/mahirozdin/BoreasMacFanControl/issues/new?template=unknown_sensor.yml)
 in your browser, carrying your Mac's model identifier, chip, the unrecognised
 sensor names and the fan count, and nothing else. Unmapped sensors are shown
 rather than hidden precisely so they can be reported.
@@ -122,7 +122,7 @@ brew install --cask boreas
 ```
 
 Or download the signed, notarised `.dmg` from
-[the latest release](https://github.com/mahirozdin/boreas-mac-fan-control/releases/latest)
+[the latest release](https://github.com/mahirozdin/BoreasMacFanControl/releases/latest)
 and verify it against the `.sha256` published beside it:
 
 ```bash
@@ -133,8 +133,8 @@ Building from source works too, and is the only route if you want to change
 something:
 
 ```bash
-git clone https://github.com/mahirozdin/boreas-mac-fan-control.git
-cd boreas-mac-fan-control
+git clone https://github.com/mahirozdin/BoreasMacFanControl.git
+cd BoreasMacFanControl
 brew bundle          # xcodegen, swiftlint, xcbeautify
 make generate        # produces the Xcode project from project.yml
 ```
